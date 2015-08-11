@@ -1,0 +1,32 @@
+<configuration>
+  <timestamp key="byDay" datePattern="yyyy-MM-dd" />
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>[%level] %logger{45} | %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <appender name="FILE" class="ch.qos.logback.core.FileAppender">
+    <file>${jiiify.logs.dir}/jiiify-${byDay}.log</file>
+    <append>false</append>
+    <encoder>
+      <pattern>[%level] %logger{45} | %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <logger name="io.vertx.core.Starter" level="WARN" />
+  <logger name="ch.qos.logback" level="WARN" />
+
+  <logger name="info.freelibrary.util.NativeLibraryLoader" level="INFO" />
+  <logger name="info.freelibrary.jiiify.verticles.WatchFolderVerticle" level="INFO" />
+
+  <logger name="info.freelibrary.jiiify" level="DEBUG">
+    <appender-ref ref="FILE" />
+  </logger>
+
+  <root level="WARN">
+    <appender-ref ref="STDOUT" />
+  </root>
+
+</configuration>

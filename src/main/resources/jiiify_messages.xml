@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+  <entry key="message-class-name">info.freelibrary.jiiify.MessageCodes</entry>
+
+  <entry key="EXC-000">{}</entry>
+  <entry key="EXC-011">Supplied format '{}' is not one of the supported formats: {}</entry>
+  <entry key="EXC-012">Supplied quality '{}' is not one of the supported qualities: {}</entry>
+  <entry key="EXC-013">Supplied rotation '{}' is not a float in the range of 0 to 360</entry>
+  <entry key="EXC-014">Supplied size '{}' is not an integer between 1 and 100</entry>
+  <entry key="EXC-015">Supplied size only contained a comma, no height or width</entry>
+  <entry key="EXC-016">Supplied size has more than one comma: {}</entry>
+  <entry key="EXC-017">Supplied size {} is not an integer: {}</entry>
+  <entry key="EXC-018">Supplied region coordinate is not a float: {}</entry>
+  <entry key="EXC-019">Unexpected Region enumeration value: {}</entry>
+  <entry key="EXC-020">Supplied region did not have four coordinates: {}</entry>
+  <entry key="EXC-021">Cannot write to the file uploads directory: {}</entry>
+  <entry key="EXC-022">Cannot create the file uploads directory: {}</entry>
+  <entry key="EXC-023">Cannot write to the ingest watch folder: {}</entry>
+  <entry key="EXC-024">Cannot create the ingest watch folder: {}</entry>
+  <entry key="EXC-025">The ingest watch folder is not configured</entry>
+  <entry key="EXC-026">No supported image reader available for {}</entry>
+  <entry key="EXC-027">Unable to send image path '{}' to tile master [{} attempts]: {}</entry>
+  <entry key="EXC-029">Failed to add new image file '{}' to watch list</entry>
+  <entry key="EXC-030">Failed to add new folder '{}' to watch list</entry>
+  <entry key="EXC-031">The polled WatchKey does not correspond to a watched directory</entry>
+  <entry key="EXC-032">Trying to calculate tiles, but image file '{}' does not exist</entry>
+  <entry key="EXC-033">Tile size from {} wasn't valid so using the default '{}' instead</entry>
+  <entry key="EXC-034">Unable to send tile path ({}) to image worker [{} attempts]: {}</entry>
+  <entry key="EXC-035">Cannot write to the data directory: {}</entry>
+  <entry key="EXC-036">Cannot create the data directory: {}</entry>
+
+  <!-- Info messages -->
+  <entry key="INFO-001">Ingesting added or updated image file: {}</entry>
+  <entry key="INFO-002">Watching '{}' for new images to ingest</entry>
+
+  <!-- Warn messages -->
+  <entry key="WARN-001">Failed to send tile path ({}) so trying again</entry>
+  <entry key="WARN-002">Failed to send image path '{}' so trying again</entry>
+
+  <!-- Messages for debugging -->
+  <entry key="DBG-000">Successfully undeployed {} [{}]</entry>
+  <entry key="DBG-001">New ingest folder added to the watch list: {}</entry>
+  <entry key="DBG-002">No more batch ingest folders are being watched</entry>
+  <entry key="DBG-003">Unable to reset WatchKey for {} so removing it from the watch list</entry>
+  <entry key="DBG-004">New file has been added to watched folder: {}</entry>
+  <entry key="DBG-005">Checking for new watch folder events</entry>
+  <entry key="DBG-006">Successfully deployed {} [{}]</entry>
+  <entry key="DBG-007">Server failed to start at port '{}'</entry>
+
+  <!-- Messages for testing package specific exceptions -->
+  <entry key="TEST-001">test message</entry>
+  <entry key="TEST-002">test message: {} and {}</entry>
+</properties>
