@@ -10,18 +10,7 @@ To install a development release there are several steps.  Because Jiiify uses s
 
 To start, download and install the [iiif-presentation-api](https://github.com/datazuul/iiif-presentation-api) software library.  To do this, you will need [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html), [git](https://git-scm.com/), and [Maven](http://maven.apache.org/) installed on your local machine (this is left as an exercise for the reader).
 
-Once these pre-requisites are installed, you can install the iiif-presentation-api with git:
-
-    git clone https://github.com/datazuul/iiif-presentation-api.git
-    mvn clean install
-
-Next, you will need to install a Maven packaging of OpenCV.  Git can also be used to do this:
-
-    git clone https://github.com/ksclarke/opencv.git
-    git checkout maven
-    mvn clean install
-
-Lastly, you can install the Jiiify Image Server.
+Once these pre-requisites are installed, you can install a development copy of the Jiiify Image Server:
 
     git clone https://github.com/ksclarke/jiiify.git
     mvn clean install -Denforcer.skip=true
@@ -38,10 +27,14 @@ The server should then be available at: [https://localhost:8888](https://localho
 
 ### License
 
-[BSD 3-Clause License](http://github.com/ksclarke/jiiify/LICENSE.txt)
+[BSD 3-Clause License](https://raw.githubusercontent.com/ksclarke/jiiify/master/LICENSE.txt)
+
+### Acknowledgements
+
+This project contains [IIIF Presentation API code](https://github.com/datazuul/iiif-presentation-api) written by Ralf Eichinger ([datazuul](https://github.com/datazuul)). This code is licensed by him under the [Apache License (Version 2.0)](https://raw.githubusercontent.com/datazuul/iiif-presentation-api/master/LICENSE) and included in this project according to its license.
 
 ### Contact
 
-If you have questions about the Jiiify Image Server feel free to contact Kevin S. Clarke &lt;<a href="mailto:ksclarke@gmail.com">ksclarke@gmail.com</a>&gt;.
+If you have questions about the Jiiify Image Server feel free to contact Kevin S. Clarke &lt;<a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>&gt;.
 
 If you encounter a problem or have a feature to suggest, submit it to the [issue queue](https://github.com/ksclarke/jiiify/issues "GitHub Issue Queue").
