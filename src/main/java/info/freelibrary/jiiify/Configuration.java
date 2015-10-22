@@ -2,6 +2,7 @@
 package info.freelibrary.jiiify;
 
 import static info.freelibrary.jiiify.Constants.DATA_DIR_PROP;
+import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_PROP;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.Constants.SOLR_SERVER_PROP;
@@ -40,7 +41,9 @@ import io.vertx.ext.web.handler.BodyHandler;
  */
 public class Configuration implements Shareable {
 
-    public static final int DEFAULT_PORT = 8888;
+    public static final int DEFAULT_PORT = 8443;
+
+    public static final String DEFAULT_HOST = "localhost";
 
     public static final String DEFAULT_SERVICE_PREFIX = "/iiif";
 
@@ -61,6 +64,8 @@ public class Configuration implements Shareable {
     private final int myPort;
 
     private final int myTileSize;
+
+    private final String myHost;
 
     private final String myServicePrefix;
 
@@ -84,6 +89,7 @@ public class Configuration implements Shareable {
         myServicePrefix = setServicePrefix(aConfig);
         myTempDir = setTempDir(aConfig);
         myPort = setPort(aConfig);
+        myHost = setHost(aConfig);
         myWatchFolder = setWatchFolder(aConfig);
         myTileSize = setTileSize(aConfig);
         myDataDirs = setDataDir(aConfig);
@@ -158,8 +164,7 @@ public class Configuration implements Shareable {
      * @return The host name of the server
      */
     public String getHost() {
-        // FIXME: Add optional configuration
-        return "localhost";
+        return myHost;
     }
 
     /**
@@ -367,6 +372,37 @@ public class Configuration implements Shareable {
         } catch (final MalformedURLException details) {
             throw new ConfigurationException("Solr server URL is not well-formed: " + solrServer);
         }
+    }
+
+    /**
+     * Sets the host at which Jiiify listens.
+     *
+     * @param aConfig A JsonObject with configuration information
+     * @throws ConfigurationException If there is trouble configuring Jiiify
+     */
+    private String setHost(final JsonObject aConfig) throws ConfigurationException {
+        String host;
+
+        try {
+            final Properties properties = System.getProperties();
+
+            // We'll give command line properties first priority then fall back to our JSON configuration
+            if (properties.containsKey(HTTP_HOST_PROP)) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Found {} set in system properties", HTTP_HOST_PROP);
+                }
+
+                host = properties.getProperty(HTTP_HOST_PROP);
+            } else {
+                host = aConfig.getString(HTTP_HOST_PROP, DEFAULT_HOST);
+            }
+        } catch (final NumberFormatException details) {
+            LOGGER.warn("Supplied port isn't valid so trying to use {} instead", DEFAULT_PORT);
+            host = DEFAULT_HOST;
+        }
+
+        LOGGER.info("Setting Jiiify HTTP host to: {}", host);
+        return host;
     }
 
     /**

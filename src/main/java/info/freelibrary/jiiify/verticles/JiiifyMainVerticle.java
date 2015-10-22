@@ -76,7 +76,13 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
         // Set the port on which we want to listen for connections
         options.setPort(myConfig.getPort());
-        options.setHost(myConfig.getHost());
+
+        // FIXME? This isn't the same, but an OK indicator of a development box?
+        if (myConfig.getHost().equals("localhost")) {
+            options.setHost("0.0.0.0");
+        } else {
+            options.setHost(myConfig.getHost());
+        }
 
         // Give the option of using https or http -- switching between them requires re-ingesting though
         if (myConfig.usesHttps()) {

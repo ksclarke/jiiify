@@ -11,7 +11,7 @@
   <properties>
     <!-- Application properties -->
     <jiffy.service.prefix>/iiif</jiffy.service.prefix>
-    <jiiify.service.port>8888</jiiify.service.port>
+    <jiiify.port>8443</jiiify.port>
 
     <!-- Versions of dependencies managed in this POM -->
     <vertx.version>3.1.0</vertx.version>

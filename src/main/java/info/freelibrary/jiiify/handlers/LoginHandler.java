@@ -89,7 +89,6 @@ public class LoginHandler extends JiiifyHandler {
                 }
 
                 checkOAuthToken(client, aContext, site, token, StringUtils.trimTo(name, ""));
-                client.close();
             }
         } else {
             aContext.fail(500);
@@ -108,6 +107,7 @@ public class LoginHandler extends JiiifyHandler {
         final HttpClientRequest request = aClient.get(443, hostPath.getValue0(), hostPath.getValue1(), handler -> {
             if (handler.statusCode() == 200) {
                 handler.bodyHandler(new JWTBodyHandler(aContext, aName));
+                aClient.close();
             } else if (handler.statusCode() == 302) {
                 final String redirectURL = handler.getHeader("Location");
 
@@ -132,18 +132,22 @@ public class LoginHandler extends JiiifyHandler {
                                 response.setStatusMessage(redirectHandler.statusMessage());
                                 response.close();
                             }
+
+                            aClient.close();
                         });
                     } catch (final MalformedURLException details) {
                         final HttpServerResponse response = aContext.response();
 
                         response.setStatusCode(500).setStatusMessage("Malformed redirect URL location");
                         response.close();
+                        aClient.close();
                     }
                 } else {
                     final HttpServerResponse response = aContext.response();
 
                     response.setStatusCode(500).setStatusMessage("Redirect didn't have 'Location' header");
                     response.close();
+                    aClient.close();
                 }
             } else {
                 final HttpServerResponse response = aContext.response();
@@ -152,10 +156,12 @@ public class LoginHandler extends JiiifyHandler {
 
                 LOGGER.error("{} verfication responded with: {} [{}]", service, statusMessage, statusCode);
                 response.setStatusCode(statusCode).setStatusMessage(statusMessage).close();
+                aClient.close();
             }
         }).exceptionHandler(exception -> {
             LOGGER.error(exception, exception.getMessage());
             fail(aContext, exception);
+            aClient.close();
         });
 
         request.end();

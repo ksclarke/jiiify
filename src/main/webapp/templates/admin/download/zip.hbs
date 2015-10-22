@@ -9,7 +9,8 @@
     <div class="form-group">
       <label for="server">Destination server location:</label>
       <input class="form-control" type="url" name="server" size="30" id="server"
-        placeholder="{{jiiify-host}}{{jiiify-service-prefix}}" />
+        placeholder="" />
+      <script>$("server").attr('placeholder', window.location.protocol + '//' + window.location.host + {{jiiify-service-prefix}});</script>
     </div>
     <div class="checkbox">
       <label><input type="checkbox"> Delete from this server afterwards</label>
