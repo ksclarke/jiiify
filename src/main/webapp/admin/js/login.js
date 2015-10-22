@@ -24,9 +24,10 @@ function login(site) {
           if (this.responseText == 'success') {
             var loginLink = document.getElementById('login');
 
-            // After this, this is done server side, but for now...
-            loginLink.text = "Logout";
-            loginLink.setAttribute('href', '/admin/logout');
+            if (loginLink !== null) {
+              loginLink.text = "Logout";
+              loginLink.setAttribute('href', '/admin/logout');
+            }
 
             // Let's give more of a visual representation of being logged in
             hello(site).api('me').then(

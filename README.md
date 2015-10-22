@@ -19,7 +19,7 @@ To start Jiiify, from the project directory, type:
 
     target/startup.sh
 
-The server should then be available at: [https://localhost:8888](https://localhost:8888). The out of the box install uses a self-signed certificate, so you will be warned about this on connecting for the first time.
+The server should then be available at: [https://localhost:8443](https://localhost:8443). The out of the box install uses a self-signed certificate, so you will be warned about this on connecting for the first time.
 
 ### Getting Started
 

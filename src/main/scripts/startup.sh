@@ -5,6 +5,7 @@ LOG_DELEGATE="-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.S
 KEY_PASS_CONFIG="-Djiiify.key.pass=${jiiify.key.pass}"
 JIIIFY_TEMP_DIR="-Djiiify.temp.dir=${jiiify.temp.dir}"
 WATCH_FOLDER_DIR="-Djiiify.watch.folder=${jiiify.watch.folder}"
+JIIIFY_PORT="-Djiiify.port=${jiiify.port}"
 
-java $LOG_DELEGATE $KEY_PASS_CONFIG $JIIIFY_TEMP_DIR $WATCH_FOLDER_DIR $1 \
+java $LOG_DELEGATE $KEY_PASS_CONFIG $JIIIFY_TEMP_DIR $WATCH_FOLDER_DIR $JIIIFY_PORT $1 \
   -jar target/jiiify-${project.version}-exec.jar
