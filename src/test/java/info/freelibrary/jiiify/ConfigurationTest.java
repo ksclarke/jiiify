@@ -1,6 +1,11 @@
 
 package info.freelibrary.jiiify;
 
+import static info.freelibrary.jiiify.Configuration.DEFAULT_PORT;
+import static info.freelibrary.jiiify.Configuration.DEFAULT_TEMP_DIR;
+import static info.freelibrary.jiiify.Constants.HTTP_PORT_PROP;
+import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
+import static info.freelibrary.jiiify.Constants.TEMP_DIR_PROP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -33,7 +38,7 @@ public class ConfigurationTest {
 
     @Test
     public void testGetPort() throws ConfigurationException, IOException {
-        final JsonObject JsonCfgObj = new JsonObject().put(Constants.HTTP_PORT_PROP, 9999);
+        final JsonObject JsonCfgObj = new JsonObject().put(HTTP_PORT_PROP, 9999);
         final Configuration config = new Configuration(JsonCfgObj);
 
         assertEquals(9999, config.getPort());
@@ -41,7 +46,7 @@ public class ConfigurationTest {
 
     @Test
     public void testGetServicePrefix() throws ConfigurationException, IOException {
-        final JsonObject JsonCfgObj = new JsonObject().put(Constants.SERVICE_PREFIX_PROP, "/prefix");
+        final JsonObject JsonCfgObj = new JsonObject().put(SERVICE_PREFIX_PROP, "/prefix");
         final Configuration config = new Configuration(JsonCfgObj);
 
         assertEquals("/prefix", config.getServicePrefix());
@@ -50,7 +55,7 @@ public class ConfigurationTest {
     @Test
     public void testGetUploadsDir() throws ConfigurationException, IOException {
         final File dir = new File("/tmp/uploads-dir-" + UUID.randomUUID());
-        final JsonObject JsonCfgObj = new JsonObject().put(Constants.TEMP_DIR_PROP, dir.getAbsolutePath());
+        final JsonObject JsonCfgObj = new JsonObject().put(TEMP_DIR_PROP, dir.getAbsolutePath());
         final Configuration config = new Configuration(JsonCfgObj);
 
         assertEquals(dir.getAbsolutePath(), config.getTempDir().getAbsolutePath());
@@ -64,7 +69,8 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setPort", JsonObject.class);
 
         method.setAccessible(true);
-        assertEquals(8181, method.invoke(config, jsonConfig.put(Constants.HTTP_PORT_PROP, 8181)));
+        System.getProperties().remove(HTTP_PORT_PROP);
+        assertEquals(8181, method.invoke(config, jsonConfig.put(HTTP_PORT_PROP, 8181)));
     }
 
     @Test
@@ -75,9 +81,9 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setPort", JsonObject.class);
 
         method.setAccessible(true);
-        System.setProperty(Constants.HTTP_PORT_PROP, Integer.toString(9191));
-        assertEquals(9191, method.invoke(config, jsonConfig.put(Constants.HTTP_PORT_PROP, 8181)));
-        System.clearProperty(Constants.HTTP_PORT_PROP);
+        System.setProperty(HTTP_PORT_PROP, Integer.toString(9191));
+        assertEquals(9191, method.invoke(config, jsonConfig.put(HTTP_PORT_PROP, 8181)));
+        System.clearProperty(HTTP_PORT_PROP);
     }
 
     @Test
@@ -91,9 +97,9 @@ public class ConfigurationTest {
 
         method.setAccessible(true);
         LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-        System.setProperty(Constants.HTTP_PORT_PROP, Integer.toString(9191));
-        assertEquals(9191, method.invoke(config, jsonConfig.put(Constants.HTTP_PORT_PROP, 8181)));
-        System.clearProperty(Constants.HTTP_PORT_PROP);
+        System.setProperty(HTTP_PORT_PROP, Integer.toString(9191));
+        assertEquals(9191, method.invoke(config, jsonConfig.put(HTTP_PORT_PROP, 8181)));
+        System.clearProperty(HTTP_PORT_PROP);
         LoggingUtils.setLogLevel(Configuration.class, logLevel);
     }
 
@@ -105,9 +111,8 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setPort", JsonObject.class);
 
         method.setAccessible(true);
-        System.setProperty(Constants.HTTP_PORT_PROP, "bad_port");
-        assertEquals(Configuration.DEFAULT_PORT, method.invoke(config, jsonConfig.put(Constants.HTTP_PORT_PROP,
-                8181)));
+        System.setProperty(HTTP_PORT_PROP, "bad_port");
+        assertEquals(DEFAULT_PORT, method.invoke(config, jsonConfig.put(HTTP_PORT_PROP, 8181)));
     }
 
     @Test
@@ -122,9 +127,8 @@ public class ConfigurationTest {
         method.setAccessible(true);
 
         LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-        System.setProperty(Constants.HTTP_PORT_PROP, "bad_port");
-        assertEquals(Configuration.DEFAULT_PORT, method.invoke(config, jsonConfig.put(Constants.HTTP_PORT_PROP,
-                8181)));
+        System.setProperty(HTTP_PORT_PROP, "bad_port");
+        assertEquals(DEFAULT_PORT, method.invoke(config, jsonConfig.put(HTTP_PORT_PROP, 8181)));
         LoggingUtils.setLogLevel(Configuration.class, logLevel);
     }
 
@@ -136,7 +140,7 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setServicePrefix", JsonObject.class);
 
         method.setAccessible(true);
-        assertEquals("/service", method.invoke(config, jsonConfig.put(Constants.SERVICE_PREFIX_PROP, "/service")));
+        assertEquals("/service", method.invoke(config, jsonConfig.put(SERVICE_PREFIX_PROP, "/service")));
     }
 
     @Test
@@ -147,7 +151,7 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setServicePrefix", JsonObject.class);
 
         method.setAccessible(true);
-        assertEquals("/iiif", method.invoke(config, jsonConfig.put(Constants.SERVICE_PREFIX_PROP, "^service")));
+        assertEquals("/iiif", method.invoke(config, jsonConfig.put(SERVICE_PREFIX_PROP, "^service")));
     }
 
     @Test
@@ -161,7 +165,7 @@ public class ConfigurationTest {
 
         method.setAccessible(true);
         LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-        assertEquals("/iiif", method.invoke(config, jsonConfig.put(Constants.SERVICE_PREFIX_PROP, "^service")));
+        assertEquals("/iiif", method.invoke(config, jsonConfig.put(SERVICE_PREFIX_PROP, "^service")));
         LoggingUtils.setLogLevel(Configuration.class, logLevel);
     }
 
@@ -174,10 +178,9 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setServicePrefix", JsonObject.class);
 
         method.setAccessible(true);
-        System.setProperty(Constants.SERVICE_PREFIX_PROP, "/iiif-service");
-        assertEquals("/iiif-service", method.invoke(config, jsonConfig.put(Constants.SERVICE_PREFIX_PROP,
-                "/service")));
-        System.clearProperty(Constants.SERVICE_PREFIX_PROP);
+        System.setProperty(SERVICE_PREFIX_PROP, "/iiif-service");
+        assertEquals("/iiif-service", method.invoke(config, jsonConfig.put(SERVICE_PREFIX_PROP, "/service")));
+        System.clearProperty(SERVICE_PREFIX_PROP);
     }
 
     @Test
@@ -191,10 +194,9 @@ public class ConfigurationTest {
 
         method.setAccessible(true);
         LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-        System.setProperty(Constants.SERVICE_PREFIX_PROP, "/iiif-service");
-        assertEquals("/iiif-service", method.invoke(config, jsonConfig.put(Constants.SERVICE_PREFIX_PROP,
-                "/service")));
-        System.clearProperty(Constants.SERVICE_PREFIX_PROP);
+        System.setProperty(SERVICE_PREFIX_PROP, "/iiif-service");
+        assertEquals("/iiif-service", method.invoke(config, jsonConfig.put(SERVICE_PREFIX_PROP, "/service")));
+        System.clearProperty(SERVICE_PREFIX_PROP);
         LoggingUtils.setLogLevel(Configuration.class, logLevel);
     }
 
@@ -207,8 +209,8 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
 
         method.setAccessible(true);
-        assertEquals(new File(dir.getAbsolutePath()), method.invoke(config, jsonConfig.put(Constants.TEMP_DIR_PROP,
-                dir.getAbsolutePath())));
+        assertEquals(new File(dir.getAbsolutePath()), method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, dir
+                .getAbsolutePath())));
         dir.delete();
     }
 
@@ -220,8 +222,7 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
 
         method.setAccessible(true);
-        assertEquals(Configuration.DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(Constants.TEMP_DIR_PROP,
-                "java.io.tmpdir")));
+        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "java.io.tmpdir")));
     }
 
     @Test
@@ -232,8 +233,7 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
 
         method.setAccessible(true);
-        assertEquals(Configuration.DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(Constants.TEMP_DIR_PROP,
-                "")));
+        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "")));
     }
 
     @Test(expected = InvocationTargetException.class)
@@ -247,7 +247,7 @@ public class ConfigurationTest {
         method.setAccessible(true);
         file.createNewFile();
         file.setReadOnly();
-        method.invoke(config, jsonConfig.put(Constants.TEMP_DIR_PROP, file.getAbsolutePath()));
+        method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, file.getAbsolutePath()));
         file.setWritable(true);
         file.delete();
     }
@@ -261,7 +261,7 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
 
         method.setAccessible(true);
-        method.invoke(config, jsonConfig.put(Constants.TEMP_DIR_PROP, file.getAbsolutePath()));
+        method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, file.getAbsolutePath()));
 
         // It doesn't but just in case
         if (file.exists()) {
@@ -279,10 +279,9 @@ public class ConfigurationTest {
         final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
 
         method.setAccessible(true);
-        System.setProperty(Constants.TEMP_DIR_PROP, "java.io.tmpdir");
-        assertEquals(Configuration.DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(Constants.TEMP_DIR_PROP,
-                "/tmp/test")));
-        System.clearProperty(Constants.TEMP_DIR_PROP);
+        System.setProperty(TEMP_DIR_PROP, "java.io.tmpdir");
+        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "/tmp/test")));
+        System.clearProperty(TEMP_DIR_PROP);
     }
 
     @Test
@@ -296,10 +295,9 @@ public class ConfigurationTest {
 
         method.setAccessible(true);
         LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-        System.setProperty(Constants.TEMP_DIR_PROP, "java.io.tmpdir");
-        assertEquals(Configuration.DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(Constants.TEMP_DIR_PROP,
-                "/tmp/test")));
-        System.clearProperty(Constants.TEMP_DIR_PROP);
+        System.setProperty(TEMP_DIR_PROP, "java.io.tmpdir");
+        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "/tmp/test")));
+        System.clearProperty(TEMP_DIR_PROP);
         LoggingUtils.setLogLevel(Configuration.class, logLevel);
     }
 
@@ -314,10 +312,9 @@ public class ConfigurationTest {
 
         method.setAccessible(true);
         LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-        System.setProperty(Constants.TEMP_DIR_PROP, Configuration.DEFAULT_TEMP_DIR.getAbsolutePath());
-        assertEquals(Configuration.DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(Constants.TEMP_DIR_PROP,
-                "/tmp/test")));
-        System.clearProperty(Constants.TEMP_DIR_PROP);
+        System.setProperty(TEMP_DIR_PROP, DEFAULT_TEMP_DIR.getAbsolutePath());
+        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "/tmp/test")));
+        System.clearProperty(TEMP_DIR_PROP);
         LoggingUtils.setLogLevel(Configuration.class, logLevel);
     }
 
