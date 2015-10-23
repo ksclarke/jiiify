@@ -221,11 +221,11 @@ public class Configuration implements Shareable {
      * @return The directory into which uploads should be put
      */
     public File getTempDir() {
-        if (!new File(BodyHandler.DEFAULT_UPLOADS_DIRECTORY).equals(myTempDir)) {
-            // Sadly, Vertx BodyHandler wants to create this directory on its construction
-            if (!new File(BodyHandler.DEFAULT_UPLOADS_DIRECTORY).delete()) {
-                LOGGER.error("Couldn't delete the BodyHandler default uploads directory");
-            }
+        final File defaultTempDir = new File(BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
+
+        // Sadly, Vertx BodyHandler wants to create this directory on its construction
+        if (!defaultTempDir.equals(myTempDir) && defaultTempDir.exists() && !defaultTempDir.delete()) {
+            LOGGER.error("Couldn't delete the BodyHandler default uploads directory");
         }
 
         return myTempDir;
