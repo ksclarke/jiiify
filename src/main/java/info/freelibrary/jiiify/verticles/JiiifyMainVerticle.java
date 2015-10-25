@@ -190,6 +190,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
      * @param aConfig A Jiiify configuration
      */
     private void deployJiiifyVerticles() {
+        final DeploymentOptions workerOptions = new DeploymentOptions().setWorker(true).setMultiThreaded(true);
         final DeploymentOptions options = new DeploymentOptions();
 
         // Check to see whether we've configured the watch folder ingest service and start it up if so
@@ -198,7 +199,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         }
 
         // TODO: Perhaps some method more dynamic in the future?
-        deployVerticle(ImageWorkerVerticle.class.getName(), new DeploymentOptions().setWorker(true));
+        deployVerticle(ImageWorkerVerticle.class.getName(), workerOptions);
         deployVerticle(TileMasterVerticle.class.getName(), options);
         deployVerticle(SolrServiceVerticle.class.getName(), options);
         deployVerticle(ImageIndexVerticle.class.getName(), options);
