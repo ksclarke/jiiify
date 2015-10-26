@@ -63,6 +63,7 @@ public class LoginHandler extends JiiifyHandler {
     public void handle(final RoutingContext aContext) {
         final HttpMethod method = aContext.request().method();
 
+        // GET requests get served a template page for next actions
         if (method == HttpMethod.GET) {
             final ObjectMapper mapper = new ObjectMapper();
             final ObjectNode jsonNode = mapper.createObjectNode();
@@ -78,7 +79,6 @@ public class LoginHandler extends JiiifyHandler {
         } else if (method == HttpMethod.POST) {
             final String token = aContext.request().getParam("token");
             final String site = aContext.request().getParam("site");
-            final String name = aContext.request().getParam("name");
 
             if (StringUtils.trimToNull(token) != null && StringUtils.trimToNull(site) != null) {
                 final HttpClientOptions options = new HttpClientOptions().setSsl(true);
@@ -88,83 +88,77 @@ public class LoginHandler extends JiiifyHandler {
                     LOGGER.debug("Processing {} login token: {}", site, token);
                 }
 
-                checkOAuthToken(client, aContext, site, token, StringUtils.trimTo(name, ""));
+                checkOAuthToken(client, aContext, site, token);
+            } else {
+                LOGGER.warn("Received a login POST message without a token");
+                aContext.fail(500);
             }
         } else {
-            aContext.fail(500);
+            LOGGER.warn("Received a {} request but only POST and GET are supported", method.name());
+            aContext.response().headers().add("Allow", "GET, POST");
+            aContext.fail(405);
         }
     }
 
-    private void checkOAuthToken(final HttpClient aClient, final RoutingContext aContext, final String aService,
-            final String aToken, final String aName) {
-        final Pair<String, String> hostPath = getHostPath(aService, aToken);
-        final String service = StringUtils.upcase(aService);
+    private void checkOAuthToken(final HttpClient aClient, final RoutingContext aContext, final String aSite,
+            final String aToken) {
+        final Pair<String, String> hostPath = getHostPath(aSite, aToken);
+        final String site = StringUtils.upcase(aSite);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Verifying {}'s token with {}: {}", aName, service, aToken);
+            LOGGER.debug("Verifying user login token with {}: {}", site, aToken);
         }
 
         final HttpClientRequest request = aClient.get(443, hostPath.getValue0(), hostPath.getValue1(), handler -> {
             if (handler.statusCode() == 200) {
-                handler.bodyHandler(new JWTBodyHandler(aContext, aName));
-                aClient.close();
+                handler.bodyHandler(new JWTBodyHandler(aClient, aContext));
             } else if (handler.statusCode() == 302) {
-                final String redirectURL = handler.getHeader("Location");
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Receiving redirect URL from Twitter OAuth: {}", redirectURL);
-                }
-
-                if (redirectURL != null) {
-                    try {
-                        final URL url = new URL(redirectURL);
-                        final String host = url.getHost();
-                        final String oauthCheck = url.getPath() + "?" + url.getQuery();
-
-                        aClient.get(443, host, oauthCheck, redirectHandler -> {
-                            if (redirectHandler.statusCode() == 200) {
-                                LOGGER.debug("Success!");
-                                redirectHandler.bodyHandler(new JWTBodyHandler(aContext, aName));
-                            } else {
-                                final HttpServerResponse response = aContext.response();
-                                LOGGER.debug("Failure!");
-                                response.setStatusCode(redirectHandler.statusCode());
-                                response.setStatusMessage(redirectHandler.statusMessage());
-                                response.close();
-                            }
-
-                            aClient.close();
-                        });
-                    } catch (final MalformedURLException details) {
-                        final HttpServerResponse response = aContext.response();
-
-                        response.setStatusCode(500).setStatusMessage("Malformed redirect URL location");
-                        response.close();
-                        aClient.close();
-                    }
-                } else {
-                    final HttpServerResponse response = aContext.response();
-
-                    response.setStatusCode(500).setStatusMessage("Redirect didn't have 'Location' header");
-                    response.close();
-                    aClient.close();
-                }
+                redirectOAuth1Token(aClient, aContext, aSite, aToken, handler.getHeader("Location"));
             } else {
                 final HttpServerResponse response = aContext.response();
                 final String statusMessage = handler.statusMessage();
                 final int statusCode = handler.statusCode();
 
-                LOGGER.error("{} verfication responded with: {} [{}]", service, statusMessage, statusCode);
+                LOGGER.error("{} verfication responded with: {} [{}]", site, statusMessage, statusCode);
                 response.setStatusCode(statusCode).setStatusMessage(statusMessage).close();
                 aClient.close();
             }
         }).exceptionHandler(exception -> {
-            LOGGER.error(exception, exception.getMessage());
             fail(aContext, exception);
             aClient.close();
         });
 
         request.end();
+    }
+
+    private void redirectOAuth1Token(final HttpClient aClient, final RoutingContext aContext, final String aSite,
+            final String aToken, final String aRedirectURL) {
+        if (aRedirectURL != null) {
+            try {
+                final URL url = new URL(aRedirectURL);
+                final String host = url.getHost();
+                final String oauthCheck = url.getPath() + "?" + url.getQuery();
+
+                LOGGER.debug("Redirecting login... [host: {}] [path: {}]", host, oauthCheck);
+
+                final HttpClientRequest redirectRequest = aClient.get(443, host, oauthCheck, redirect -> {
+                    if (redirect.statusCode() == 200) {
+                        redirect.bodyHandler(new JWTBodyHandler(aClient, aContext));
+                    } else {
+                        fail(aContext, redirect.statusCode(), redirect.statusMessage());
+                        aClient.close();
+                    }
+                });
+
+                redirectRequest.end();
+            } catch (final MalformedURLException details) {
+                fail(aContext, details, "Malformed redirect URL location");
+                aClient.close();
+            }
+        } else {
+            fail(aContext, null, "Redirect didn't have 'Location' header");
+            aClient.close();
+        }
     }
 
     private Pair<String, String> getHostPath(final String aService, final String aToken) {
@@ -181,31 +175,23 @@ public class LoginHandler extends JiiifyHandler {
         }
     }
 
-    private JsonObject extractJWT(final JsonObject aJsonObject, final String aName) {
-        final JsonObject jsonObject = new JsonObject();
-
-        jsonObject.put("name", StringUtils.trimTo(aName, ""));
-        jsonObject.put("email", aJsonObject.getString("email"));
-        jsonObject.put("aud", aJsonObject.getString("aud"));
-
-        return jsonObject;
-    }
-
     private class JWTBodyHandler implements Handler<Buffer> {
-
-        private final String myUserName;
 
         private final RoutingContext myContext;
 
-        private JWTBodyHandler(final RoutingContext aContext, final String aUserName) {
-            myUserName = aUserName;
+        private final HttpClient myClient;
+
+        private JWTBodyHandler(final HttpClient aClient, final RoutingContext aContext) {
             myContext = aContext;
+            myClient = aClient;
         }
 
         @Override
         public void handle(final Buffer aBody) {
-            final JsonObject jwt = extractJWT(new JsonObject(aBody.toString()), myUserName);
-            final JWTOptions jwtOptions = new JWTOptions().setExpiresInMinutes(60);
+            LOGGER.debug("{} handling body: {}", getClass().getSimpleName(), aBody.toString());
+
+            final JsonObject jwt = extractJWT(new JsonObject(aBody.toString()));
+            final JWTOptions jwtOptions = new JWTOptions().setExpiresInMinutes(120);
             final String token = myJwtAuth.generateToken(jwt, jwtOptions);
 
             if (LOGGER.isDebugEnabled()) {
@@ -229,10 +215,30 @@ public class LoginHandler extends JiiifyHandler {
                     response.putHeader(CONTENT_TYPE, TEXT_MIME_TYPE);
                     response.end("failure");
                 }
-            });
 
+                myClient.close();
+            });
         }
 
-    }
+        private JsonObject extractJWT(final JsonObject aJsonObject) {
+            final JsonObject jsonObject = new JsonObject();
 
+            if (aJsonObject.containsKey("email")) {
+                final String email = aJsonObject.getString("email");
+
+                jsonObject.put("email", email);
+                jsonObject.put("username", email);
+            } else {
+                jsonObject.put("username", "screen_name");
+            }
+
+            if (aJsonObject.containsKey("name")) {
+                jsonObject.put("name", aJsonObject.getString("name"));
+            } else {
+                LOGGER.warn("User login JWT does not contain a name");
+            }
+
+            return jsonObject;
+        }
+    }
 }
