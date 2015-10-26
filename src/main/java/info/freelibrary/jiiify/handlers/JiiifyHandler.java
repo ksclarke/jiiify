@@ -118,6 +118,17 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
      * @param aThrowable The exception that caused the context to fail
      */
     void fail(final RoutingContext aContext, final Throwable aThrowable) {
+        fail(aContext, aThrowable, aThrowable.getMessage());
+    }
+
+    /**
+     * A convenience method for failing a particular context.
+     *
+     * @param aContext The context to mark as a failure
+     * @param aThrowable The exception that caused the context to fail
+     * @param aMessage A more detailed message to supplement the exception message
+     */
+    void fail(final RoutingContext aContext, final Throwable aThrowable, final String aMessage) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("{} is failing this RoutingContext", getClass().getName());
         }
@@ -128,7 +139,22 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
             aContext.fail(aThrowable);
         }
 
-        // This is just a default message... a more detailed one can be set
-        aContext.put(FailureHandler.ERROR_MESSAGE, aThrowable.getMessage());
+        aContext.put(FailureHandler.ERROR_MESSAGE, aMessage);
+    }
+
+    /**
+     * A convenience method for failing a particular context.
+     *
+     * @param aContext The context to mark as a failure
+     * @param aFailCode The type of HTTP response failure
+     * @param aMessage A more detailed message to supplement the exception message
+     */
+    void fail(final RoutingContext aContext, final int aFailCode, final String aMessage) {
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("{} is failing this RoutingContext", getClass().getName());
+        }
+
+        aContext.fail(aFailCode);
+        aContext.put(FailureHandler.ERROR_MESSAGE, aMessage);
     }
 }
