@@ -1,10 +1,11 @@
 {{> templates/admin/header}}
 <div class="container">
-
-  <h3>Welcome</h3>
+  <div class="page-header">
+    <h2>Login</h2>
+  </div>
   <p>Rather than create yet one more username and password, you can login to Jiiify's administrative interface through
     one of your other online accounts. This does not give Jiiify permission to do anything other than just verify your
-    account on that other service (it can't, for instance, post on that service as you).
+    account on that other service (it can not, for instance, post on that service as you).
   </p>
   <!-- TODO: merge these to 2 files: hello, login -->
   <script src="/admin/js/hello-min.js" defer="true"></script>
@@ -27,3 +28,8 @@
     <div class="col-md-4" id="facebook-login"><button class="zocial facebook" onclick="login('facebook')">Login with Facebook</button></div>
   </div>
 </div>
+
+<!-- div#wrap close -->
+  <div id="push"></div>
+</div>
+{{> templates/admin/footer}}

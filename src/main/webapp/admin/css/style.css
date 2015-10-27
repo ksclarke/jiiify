@@ -1,28 +1,31 @@
-
 html, body {
   height: 100%;
 }
 
-/* Wrapper for page content to push down footer */
 #wrap {
+  min-height: 100%;
+  height: auto !important;
   height: 100%;
-  /*height: auto !important;*/
-  /* height: 100%; */
   /* Negative indent footer by it's height */
-  margin: 0 auto -53px;
+  margin: 0 auto -50px;
 }
 
 /* Set the fixed height of the footer here */
 #push, #footer {
-  height: 53px;
+  height: 50px;
 }
 
 #footer {
   background-color: #f5f5f5;
   padding: 0;
+  border-color: #ddd;
+  font-size: 80%;
 }
 
-/* Lastly, apply responsive CSS fixes as necessary */
+#footer div.container {
+  padding-top: 18px;
+}
+
 @media (max-width: 767px) {
   #footer {
     margin-left: -20px;
@@ -34,30 +37,43 @@ html, body {
 
 #wrap > .container {
   padding-top: 60px;
-  margin-bottom: -53px;
-  height: 100%;
-}
-
-#footer div.container {
-  padding-top: 16px;
 }
 
 .container .credit {
   margin: 20px 0;
 }
 
-.navbar-header, .navbar-collapse {
-  padding-top: 2px;
+.navbar-brand {
+  padding-top: 18px;
+  margin-top: -4px;
+  font-size: 25px;
 }
 
 .navbar-nav li {
-  margin-right: -15px;
-  margin-left: 15px;
+  margin-right: -25px;
+  margin-left: 25px;
 }
 
-/* Following are styles specific to Jiiify's administrative UI */
+.navbar-nav li a {
+  padding-top: 18px;
+}
 
-#image-results {
+.dropdown-menu li {
+  padding: 0px;
+  margin: 0px 8px;
+  line-height: 1.0;
+}
+
+.dropdown-menu li a {
+  padding: 5px 8px;
+  line-height: 1.0;
+}
+
+/* Below custom to Jiiify */
+
+.page-header {
+  margin: -15px 0px 0px 0px;
+  border-bottom: 0px;
 }
 
 #image-results tr td.thumbnail {
@@ -86,8 +102,4 @@ html, body {
 
 #google-login-response, #twitter-login-response, #facebook-login-response {
   padding: 15px 5px 5px 5px;
-}
-
-.smaller {
-  font-size: 75%;
 }
