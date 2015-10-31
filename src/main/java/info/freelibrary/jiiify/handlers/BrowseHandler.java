@@ -71,7 +71,7 @@ public class BrowseHandler extends JiiifyHandler {
         });
     }
 
-    /* FIXME: We need a better way to work with all this JSON */
+    /* FIXME: We need a better way to work with all this JSON -- a Solr object(?) */
     private ObjectNode toJsonNode(final JsonObject aJsonObject) {
         final JsonObject emptyObject = new JsonObject();
         final JsonObject responseHeader = aJsonObject.getJsonObject("responseHeader", emptyObject);

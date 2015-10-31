@@ -9,7 +9,6 @@ import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
@@ -19,8 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.Metadata;
-import info.freelibrary.util.PairtreeObject;
-import info.freelibrary.util.PairtreeRoot;
+import info.freelibrary.jiiify.util.PathUtils;
 
 import io.vertx.core.file.FileSystem;
 import io.vertx.ext.web.RoutingContext;
@@ -36,14 +34,12 @@ public class PropertiesHandler extends JiiifyHandler {
         final String requestPath = aContext.request().uri();
         final String id = requestPath.split("\\/")[4];
         final FileSystem fileSystem = aContext.vertx().fileSystem();
-        final PairtreeRoot pairtree = getPairtreeRoot(id, myConfig);
-        final PairtreeObject idObject = pairtree.getObject(id);
-        final String propertiesPath = new File(idObject, Metadata.PROPERTIES_FILE).getAbsolutePath();
+        final String properties = PathUtils.getFilePath(aContext.vertx(), id, Metadata.PROPERTIES_FILE);
 
-        fileSystem.exists(propertiesPath, existsHandler -> {
+        fileSystem.exists(properties, existsHandler -> {
             if (existsHandler.succeeded()) {
                 if (existsHandler.result()) {
-                    fileSystem.readFile(propertiesPath, readHandler -> {
+                    fileSystem.readFile(properties, readHandler -> {
                         if (readHandler.succeeded()) {
                             processProperties(aContext, readHandler.result().getBytes(), id);
                         } else {
@@ -52,7 +48,7 @@ public class PropertiesHandler extends JiiifyHandler {
                     });
                 } else {
                     aContext.fail(404);
-                    aContext.put(ERROR_MESSAGE, msg("Image properties file ({}) not found", propertiesPath));
+                    aContext.put(ERROR_MESSAGE, msg("Image properties file ({}) not found", properties));
                 }
             } else {
                 fail(aContext, existsHandler.cause());

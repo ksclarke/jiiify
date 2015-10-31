@@ -8,7 +8,7 @@ import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.iiif.ImageInfo;
-import info.freelibrary.util.PairtreeRoot;
+import info.freelibrary.jiiify.util.PathUtils;
 
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerRequest;
@@ -38,20 +38,20 @@ public class ImageInfoHandler extends JiiifyHandler {
 
         // Path: /service-prefix/[ID]/info.json
         final String id = request.uri().split("\\/")[2];
-        final PairtreeRoot pairtree = getPairtreeRoot(id, myConfig);
-        final String filePath = getPairtreePath(pairtree, id, ImageInfo.FILE_NAME);
+        final String imageInfo = PathUtils.getFilePath(aContext.vertx(), id, ImageInfo.FILE_NAME);
         final FileSystem fileSystem = aContext.vertx().fileSystem();
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Checking for image info file: '{}'", filePath);
+            LOGGER.debug("Checking for image info file: '{}'", imageInfo);
         }
 
+        // FIXME: put this centrally for all IIIF routes(?)
         response.headers().set("Access-Control-Allow-Origin", "*");
 
-        fileSystem.exists(filePath, fsHandler -> {
+        fileSystem.exists(imageInfo, fsHandler -> {
             if (fsHandler.succeeded()) {
                 if (fsHandler.result()) {
-                    fileSystem.readFile(filePath, fileHandler -> {
+                    fileSystem.readFile(imageInfo, fileHandler -> {
                         if (fileHandler.succeeded()) {
                             response.putHeader(CONTENT_TYPE, JSON_MIME_TYPE);
                             response.end(fileHandler.result());

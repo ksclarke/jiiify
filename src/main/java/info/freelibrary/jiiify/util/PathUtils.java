@@ -5,6 +5,7 @@ import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -17,6 +18,7 @@ import info.freelibrary.jiiify.Constants;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.PairtreeRoot;
+import info.freelibrary.util.PairtreeUtils;
 
 import io.vertx.core.Vertx;
 
@@ -162,19 +164,39 @@ public class PathUtils {
         return builder.toString();
     }
 
+    /**
+     * Gets the path of a Pairtree object.
+     *
+     * @param aVertx The VertX object
+     * @param aID The ID of the object whose path should be retrieved
+     * @return The path of the object represented by the supplied ID
+     */
     public static String getObjectPath(final Vertx aVertx, final String aID) {
-        final Configuration config = (Configuration) aVertx.sharedData().getLocalMap(SHARED_DATA_KEY).get(CONFIG_KEY);
-        final PairtreeRoot pairtree;
-
-        if (config.hasIDPrefixMatch(aID)) {
-            pairtree = config.getDataDir(config.getIDPrefix(aID));
-        } else {
-            pairtree = config.getDataDir();
-        }
-
-        return pairtree.getObject(aID).getAbsolutePath();
+        return getPairtreeRoot(aVertx, aID).getObject(aID).getAbsolutePath();
     }
 
+    /**
+     * Gets the path of a file in a Pairtree object's directory.
+     *
+     * @param aVertx The VertX object
+     * @param aID The ID of a Pairtree object
+     * @param aFileName The name of the file for which to get a path
+     * @return The path for the requested file
+     */
+    public static String getFilePath(final Vertx aVertx, final String aID, final String aFileName) {
+        final PairtreeRoot pairtreeRoot = getPairtreeRoot(aVertx, aID);
+        final String objPath = PairtreeUtils.mapToPtPath(pairtreeRoot.getAbsolutePath(), aID, aID);
+
+        return objPath + File.separator + aFileName;
+    }
+
+    /**
+     * Gets the Pairtree root for the supplied ID.
+     *
+     * @param aVertx The VertX object
+     * @param aID An ID for which to get a Pairtree root
+     * @return The Pairtree root for the supplied ID
+     */
     public static PairtreeRoot getPairtreeRoot(final Vertx aVertx, final String aID) {
         final Configuration config = (Configuration) aVertx.sharedData().getLocalMap(SHARED_DATA_KEY).get(CONFIG_KEY);
 
