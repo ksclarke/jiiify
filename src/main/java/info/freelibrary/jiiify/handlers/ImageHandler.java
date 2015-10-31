@@ -17,6 +17,7 @@ import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.ImageRequest;
+import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.jiiify.verticles.ImageWorkerVerticle;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.IOUtils;
@@ -40,7 +41,7 @@ public class ImageHandler extends JiiifyHandler {
 
         try {
             final ImageRequest image = new ImageRequest(request.path());
-            final PairtreeRoot pairtree = getPairtreeRoot(image.getID(), myConfig);
+            final PairtreeRoot pairtree = PathUtils.getPairtreeRoot(aContext.vertx(), image.getID());
             final String cacheFilePath = image.getCacheFile(pairtree).getAbsolutePath();
             final FileSystem fileSystem = aContext.vertx().fileSystem();
 

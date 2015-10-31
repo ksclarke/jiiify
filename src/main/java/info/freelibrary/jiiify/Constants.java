@@ -57,6 +57,8 @@ public interface Constants {
 
     public static final String ID_KEY = "id";
 
+    public static final String OVERWRITE_KEY = "jiiify.file.overwrite";
+
     public static final String THUMBNAIL_KEY = "jiiify_thumbnail_s";
 
     public static final String JIIIFY_ARRAY = "jiiify.json.array";

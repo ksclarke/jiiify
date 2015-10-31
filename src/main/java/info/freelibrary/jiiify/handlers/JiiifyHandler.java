@@ -3,8 +3,6 @@ package info.freelibrary.jiiify.handlers;
 
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 
-import java.io.File;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.JsonNodeValueResolver;
@@ -12,8 +10,6 @@ import com.github.jknack.handlebars.JsonNodeValueResolver;
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
-import info.freelibrary.util.PairtreeRoot;
-import info.freelibrary.util.PairtreeUtils;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
@@ -31,41 +27,6 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
      */
     protected JiiifyHandler(final Configuration aConfig) {
         myConfig = aConfig;
-    }
-
-    /**
-     * Returns the appropriate Pairtree data directory.
-     *
-     * @param aID An ID to access
-     * @param aConfig An application configuration
-     * @return The appropriate Pairtree data directory
-     */
-    PairtreeRoot getPairtreeRoot(final String aID, final Configuration aConfig) {
-        if (aConfig.hasIDPrefixMatch(aID)) {
-            final String idPrefix = aConfig.getIDPrefix(aID);
-
-            if (aConfig.hasDataDir(idPrefix)) {
-                return aConfig.getDataDir(idPrefix);
-            } else {
-                LOGGER.warn("Checking an ID with a prefix for which there isn't a data directory");
-                return aConfig.getDataDir();
-            }
-        } else {
-            return aConfig.getDataDir();
-        }
-    }
-
-    /**
-     * Returns a Pairtree path for a file in a Pairtree structure.
-     *
-     * @param aPairtreeRoot The root of the Pairtree structure
-     * @param aID The ID of the object in the Pairtree structure
-     * @param aFileName The name of the file from the object in the Pairtree structure
-     * @return The Pairtree path for the supplied file
-     */
-    String getPairtreePath(final PairtreeRoot aPairtreeRoot, final String aID, final String aFileName) {
-        final String objPath = PairtreeUtils.mapToPtPath(aPairtreeRoot.getAbsolutePath(), aID, aID);
-        return objPath + File.separator + aFileName;
     }
 
     /**

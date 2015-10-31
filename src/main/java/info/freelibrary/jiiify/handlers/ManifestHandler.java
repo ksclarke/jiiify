@@ -5,7 +5,7 @@ import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.Metadata;
-import info.freelibrary.util.PairtreeRoot;
+import info.freelibrary.jiiify.util.PathUtils;
 
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerRequest;
@@ -25,20 +25,19 @@ public class ManifestHandler extends JiiifyHandler {
 
         // Path: /service-prefix/[ID]/manifest
         final String id = request.uri().split("\\/")[2];
-        final PairtreeRoot pairtree = getPairtreeRoot(id, myConfig);
-        final String filePath = getPairtreePath(pairtree, id, Metadata.MANIFEST_FILE);
+        final String manifest = PathUtils.getFilePath(aContext.vertx(), id, Metadata.MANIFEST_FILE);
         final FileSystem fileSystem = aContext.vertx().fileSystem();
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Checking for IIIF manifest file: {}", filePath);
+            LOGGER.debug("Checking for IIIF manifest file: {}", manifest);
         }
 
         response.headers().set("Access-Control-Allow-Origin", "*");
 
-        fileSystem.exists(filePath, fsHandler -> {
+        fileSystem.exists(manifest, fsHandler -> {
             if (fsHandler.succeeded()) {
                 if (fsHandler.result()) {
-                    fileSystem.readFile(filePath, fileHandler -> {
+                    fileSystem.readFile(manifest, fileHandler -> {
                         if (fileHandler.succeeded()) {
                             response.putHeader(Metadata.CONTENT_TYPE, Metadata.JSON_MIME_TYPE);
                             response.end(fileHandler.result());
@@ -62,5 +61,4 @@ public class ManifestHandler extends JiiifyHandler {
             }
         });
     }
-
 }

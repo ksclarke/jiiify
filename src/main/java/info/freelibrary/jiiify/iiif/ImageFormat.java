@@ -100,6 +100,14 @@ public class ImageFormat {
         return EXT2MIME_MAP.containsKey(aFileExtension.toLowerCase());
     }
 
+    public static String[] getExtensions() {
+        return EXT2MIME_MAP.keySet().toArray(new String[EXT2MIME_MAP.size()]);
+    }
+
+    public static String[] getMimeTypes() {
+        return MIME2EXT_MAP.keySet().toArray(new String[MIME2EXT_MAP.size()]);
+    }
+
     @Override
     public String toString() {
         return myFormat;

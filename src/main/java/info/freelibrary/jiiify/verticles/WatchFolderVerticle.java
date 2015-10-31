@@ -5,6 +5,8 @@
 package info.freelibrary.jiiify.verticles;
 
 import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
+import static info.freelibrary.jiiify.Constants.FILE_PATH_KEY;
+import static info.freelibrary.jiiify.Constants.OVERWRITE_KEY;
 import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
 import static java.nio.file.FileVisitResult.CONTINUE;
 import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
@@ -13,6 +15,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_CREATE;
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
 import static java.nio.file.StandardWatchEventKinds.OVERFLOW;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
@@ -33,11 +36,11 @@ import javax.naming.ConfigurationException;
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageFormat;
+import info.freelibrary.util.FileExtFileFilter;
 import info.freelibrary.util.FileUtils;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -80,6 +83,21 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
                 checkWatchFolder();
             }
         });
+
+        // FIXME: Blocking for now
+        // Check the watch folder on startup for new items which need to be ingested
+        // Is this a good idea for large collections? We should at least make it non-blocking
+        // TODO: Get some measurements on how long this takes for large collections
+        final FileExtFileFilter extFilter = new FileExtFileFilter(ImageFormat.getExtensions());
+        final File[] files = FileUtils.listFiles(config.getWatchFolder(), extFilter, true);
+
+        for (final File file : files) {
+            final JsonObject json = new JsonObject().put(OVERWRITE_KEY, false);
+            final String filePath = file.getAbsolutePath();
+
+            // Sends an ingest request which will be ignored if it exists already
+            sendMessage(json.put(FILE_PATH_KEY, filePath), ImageIngestVerticle.class.getName(), 0);
+        }
 
         aFuture.complete();
     }
@@ -130,20 +148,21 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
                 final Path child = dir.resolve(name);
 
                 // Check the watch folder event
-                if (kind == ENTRY_MODIFY && !Files.isDirectory(child, NOFOLLOW_LINKS) &&
-                        ImageFormat.isSupportedFormat(FileUtils.getExt(child.toString()))) {
+                if (kind == ENTRY_MODIFY && !Files.isDirectory(child, NOFOLLOW_LINKS) && ImageFormat
+                        .isSupportedFormat(FileUtils.getExt(child.toString()))) {
                     final String childPath = child.toAbsolutePath().toString();
+                    final JsonObject json = new JsonObject().put(OVERWRITE_KEY, true);
 
                     LOGGER.info(MessageCodes.INFO_001, childPath);
 
                     // Notify our tiling verticle that we have an image that needs to be (re)tiled
-                    sendImagePath(vertx.eventBus(), childPath, 0);
+                    sendMessage(json.put(FILE_PATH_KEY, childPath), ImageIngestVerticle.class.getName(), 0);
                 } else if (kind == ENTRY_CREATE) {
                     try {
                         if (Files.isDirectory(child, NOFOLLOW_LINKS)) {
                             recursivelyRegister(child);
-                        } else if (LOGGER.isDebugEnabled() &&
-                                ImageFormat.isSupportedFormat(FileUtils.getExt(child.toString()))) {
+                        } else if (LOGGER.isDebugEnabled() && ImageFormat.isSupportedFormat(FileUtils.getExt(child
+                                .toString()))) {
                             LOGGER.debug(MessageCodes.DBG_004, child);
                         }
                     } catch (final IOException details) {
@@ -176,28 +195,6 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
         } else {
             LOGGER.error(MessageCodes.EXC_031);
         }
-    }
-
-    /**
-     * Out of the box, Vertx offers a best-effort delivery system. We want to try a couple of times when at first we
-     * don't succeed.
-     *
-     * @param aEventBus An event bus over which we'll send our messages
-     * @param aImagePath The path of the newly added (or updated) image
-     * @param aCount The number of times we've tried resending the path
-     */
-    private void sendImagePath(final EventBus aEventBus, final String aImagePath, final int aCount) {
-        /* FIXME: Do something with this? At least stop hard-coding count */
-        aEventBus.send(ImageIngestVerticle.class.getName(), aImagePath, response -> {
-            if (response.failed()) {
-                if (aCount < 10) {
-                    LOGGER.warn(MessageCodes.WARN_002, aImagePath);
-                    sendImagePath(aEventBus, aImagePath, aCount + 1);
-                } else {
-                    LOGGER.error(MessageCodes.EXC_027, aImagePath, 10, response.cause().getMessage());
-                }
-            }
-        });
     }
 
     /**
