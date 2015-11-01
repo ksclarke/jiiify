@@ -4,6 +4,7 @@ package info.freelibrary.jiiify;
 import static info.freelibrary.jiiify.Constants.DATA_DIR_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_PROP;
+import static info.freelibrary.jiiify.Constants.HTTP_PORT_REDIRECT_PROP;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.Constants.SOLR_SERVER_PROP;
 import static info.freelibrary.jiiify.Constants.TEMP_DIR_PROP;
@@ -43,6 +44,8 @@ public class Configuration implements Shareable {
 
     public static final int DEFAULT_PORT = 8443;
 
+    public static final int DEFAULT_REDIRECT_PORT = 8000;
+
     public static final String DEFAULT_HOST = "localhost";
 
     public static final String DEFAULT_SERVICE_PREFIX = "/iiif";
@@ -62,6 +65,8 @@ public class Configuration implements Shareable {
     private final Logger LOGGER = LoggerFactory.getLogger(Configuration.class, Constants.MESSAGES);
 
     private final int myPort;
+
+    private final int myRedirectPort;
 
     private final int myTileSize;
 
@@ -89,6 +94,7 @@ public class Configuration implements Shareable {
         myServicePrefix = setServicePrefix(aConfig);
         myTempDir = setTempDir(aConfig);
         myPort = setPort(aConfig);
+        myRedirectPort = setRedirectPort(aConfig);
         myHost = setHost(aConfig);
         myWatchFolder = setWatchFolder(aConfig);
         myTileSize = setTileSize(aConfig);
@@ -156,6 +162,15 @@ public class Configuration implements Shareable {
      */
     public int getPort() {
         return myPort;
+    }
+
+    /**
+     * Gets the redirect port that redirects to the secure port.
+     *
+     * @return The redirect port that redirects to the secure port
+     */
+    public int getRedirectPort() {
+        return myRedirectPort;
     }
 
     /**
@@ -433,6 +448,37 @@ public class Configuration implements Shareable {
         }
 
         LOGGER.info("Setting Jiiify HTTP port to: {}", port);
+        return port;
+    }
+
+    /**
+     * Sets the port that redirects to a secure port (only when https is configured).
+     *
+     * @param aConfig A JsonObject with configuration information
+     * @throws ConfigurationException If there is trouble configuring Jiiify
+     */
+    private int setRedirectPort(final JsonObject aConfig) throws ConfigurationException {
+        int port;
+
+        try {
+            final Properties properties = System.getProperties();
+
+            // We'll give command line properties first priority then fall back to our JSON configuration
+            if (properties.containsKey(HTTP_PORT_REDIRECT_PROP)) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Found {} set in system properties", HTTP_PORT_REDIRECT_PROP);
+                }
+
+                port = Integer.parseInt(properties.getProperty(HTTP_PORT_REDIRECT_PROP));
+            } else {
+                port = aConfig.getInteger(HTTP_PORT_REDIRECT_PROP, DEFAULT_REDIRECT_PORT);
+            }
+        } catch (final NumberFormatException details) {
+            LOGGER.warn("Supplied redirect port isn't valid so trying to use {} instead", DEFAULT_REDIRECT_PORT);
+            port = DEFAULT_REDIRECT_PORT;
+        }
+
+        LOGGER.info("Setting Jiiify HTTP redirect port to: {}", port);
         return port;
     }
 
