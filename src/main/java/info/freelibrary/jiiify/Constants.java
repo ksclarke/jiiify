@@ -13,6 +13,8 @@ public interface Constants {
 
     public static final String HTTP_PORT_PROP = "jiiify.port";
 
+    public static final String HTTP_PORT_REDIRECT_PROP = "jiiify.redirect.port";
+
     public static final String HTTP_HOST_PROP = "jiiify.host";
 
     public static final String URL_SCHEME_PROP = "jiiify.url.scheme";

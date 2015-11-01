@@ -38,6 +38,7 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerOptions;
+import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.JksOptions;
 import io.vertx.ext.auth.jwt.JWTAuth;
@@ -101,6 +102,8 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
             options.setSsl(true);
             options.setKeyStoreOptions(jksOptions);
+
+            configureHttpRedirect(aFuture);
         } else {
             jwtAuth = null;
         }
@@ -152,9 +155,6 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         router.get(ROOT).handler(genericPageHandler);
         router.get(ROOT).handler(templateHandler).failureHandler(failureHandler);
 
-        // Everything else will be handled by the static handler (FIXME: or should we use page handler?)
-        // router.route().handler(StaticHandler.create()).failureHandler(failureHandler);
-
         // Start the server and start listening for connections
         vertx.createHttpServer(options).requestHandler(router::accept).listen(response -> {
             if (response.succeeded()) {
@@ -171,6 +171,36 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 aFuture.fail(response.cause());
             }
         });
+    }
+
+    /**
+     * Redirect all requests to the non-secure port to the secure port when there is a secure port available.
+     *
+     * @param aFuture A verticle future that we can fail if we can't bind to the redirect port
+     */
+    private void configureHttpRedirect(final Future<Void> aFuture) {
+        vertx.createHttpServer().requestHandler(redirect -> {
+            final HttpServerResponse response = redirect.response();
+            final String httpsURL = "https://" + myConfig.getHost() + ":" + myConfig.getPort() + redirect.uri();
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Redirecting HTTP request to: {}", httpsURL);
+            }
+
+            response.setStatusCode(303).putHeader("Location", httpsURL).end();
+            response.close();
+        }).listen(myConfig.getRedirectPort(), response -> {
+            if (response.failed()) {
+                if (response.cause() != null) {
+                    LOGGER.error("{}", response.cause(), response.cause());
+                }
+
+                aFuture.fail(LOGGER.getMessage("Could not configure redirect port: {}", myConfig.getRedirectPort()));
+            }
+        });
+
+        // FIXME: Accidentally connecting to http port with a https connection fails badly
+        // https://bugs.eclipse.org/bugs/show_bug.cgi?id=479488
     }
 
     /**
