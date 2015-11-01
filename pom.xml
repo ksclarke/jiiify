@@ -12,6 +12,7 @@
     <!-- Application properties -->
     <jiffy.service.prefix>/iiif</jiffy.service.prefix>
     <jiiify.port>8443</jiiify.port>
+    <jiiify.redirect.port>8000</jiiify.redirect.port>
 
     <!-- Versions of dependencies managed in this POM -->
     <vertx.version>3.1.0</vertx.version>
@@ -19,7 +20,7 @@
     <freelib.utils.version>0.6.0-SNAPSHOT</freelib.utils.version>
     <opencv.version>3.0.0-SNAPSHOT</opencv.version>
     <imgscalr.version>4.2</imgscalr.version>
-    <twelvemonkeys.version>3.1.2</twelvemonkeys.version>
+    <twelvemonkeys.version>3.2</twelvemonkeys.version>
     <handlebars.version>2.2.3</handlebars.version>
     <scribe.version>1.3.7</scribe.version>
     <iiif.presentation.api.version>2.0.0-SNAPSHOT</iiif.presentation.api.version>
@@ -72,6 +73,11 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-auth-jwt</artifactId>
+      <version>${vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-dropwizard-metrics</artifactId>
       <version>${vertx.version}</version>
     </dependency>
     <!-- Administrative UI dependencies -->
@@ -218,8 +224,7 @@
               <storepass>${jiiify.key.pass}</storepass>
               <keypass>${jiiify.key.pass}</keypass>
               <alias>jiiify</alias>
-              <dname>cn=localhost, ou=Jiiify Image Server, L=Boone, ST=North Carolina, o=FreeLibrary Projects,
-                c=US</dname>
+              <dname><![CDATA[cn=localhost, ou=Jiiify Image Server, L=Boone, ST=North Carolina, o=FreeLibrary Projects, c=US]]></dname>
               <sigalg>SHA256withRSA</sigalg>
               <validity>100</validity>
               <keyalg>RSA</keyalg>
