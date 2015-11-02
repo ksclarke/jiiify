@@ -39,6 +39,12 @@ public interface Constants {
 
     public static final String KEY_PASS_PROP = "jiiify.key.pass";
 
+    public static final String JCEKS_PROP = "jiiify.jceks";
+
+    public static final String JKS_PROP = "jiiify.jks";
+
+    public static final String METRICS_REG_PROP = "jiiify.metrics";
+
     /* These config values are only used internally. */
 
     public static final String FILE_PATH_KEY = "jiiify.file.path";

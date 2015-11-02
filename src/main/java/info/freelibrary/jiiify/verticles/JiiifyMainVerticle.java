@@ -2,6 +2,8 @@
 package info.freelibrary.jiiify.verticles;
 
 import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
+import static info.freelibrary.jiiify.Constants.JCEKS_PROP;
+import static info.freelibrary.jiiify.Constants.JKS_PROP;
 import static info.freelibrary.jiiify.Constants.KEY_PASS_PROP;
 import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
 
@@ -24,12 +26,13 @@ import info.freelibrary.jiiify.handlers.ItemHandler;
 import info.freelibrary.jiiify.handlers.LoginHandler;
 import info.freelibrary.jiiify.handlers.LogoutHandler;
 import info.freelibrary.jiiify.handlers.ManifestHandler;
+import info.freelibrary.jiiify.handlers.MetricsHandler;
 import info.freelibrary.jiiify.handlers.PageHandler;
 import info.freelibrary.jiiify.handlers.PropertiesHandler;
 import info.freelibrary.jiiify.handlers.RedirectHandler;
 import info.freelibrary.jiiify.handlers.RefreshHandler;
 import info.freelibrary.jiiify.handlers.SearchHandler;
-import info.freelibrary.jiiify.handlers.StatisticsHandler;
+import info.freelibrary.jiiify.handlers.StatusHandler;
 import info.freelibrary.jiiify.templates.HandlebarsTemplateEngine;
 import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.StringUtils;
@@ -62,9 +65,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         final TemplateEngine templateEngine = HandlebarsTemplateEngine.create();
         final TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
         final FailureHandler failureHandler = new FailureHandler(myConfig, templateEngine);
-        final PageHandler genericPageHandler = new PageHandler(myConfig);
         final HttpServerOptions options = new HttpServerOptions();
-        final String keyPass = System.getProperty(KEY_PASS_PROP);
         final Router router = Router.router(vertx);
         final JWTAuth jwtAuth;
 
@@ -85,19 +86,21 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             options.setHost(myConfig.getHost());
         }
 
-        // Give the option of using https or http -- switching between them requires re-ingesting though
+        // Use https or http, but switching between them requires re-ingesting everything
         if (myConfig.usesHttps()) {
-            final InputStream inStream = getClass().getResourceAsStream("/jiiify.jks");
-            final JksOptions jksOptions = new JksOptions().setPassword(keyPass);
+            final InputStream inStream = getClass().getResourceAsStream("/" + JKS_PROP);
+            final String keystorePassword = System.getProperty(KEY_PASS_PROP, "");
+            final JksOptions jksOptions = new JksOptions().setPassword(keystorePassword);
+            final JsonObject jceksConfig = new JsonObject();
 
-            jwtAuth = JWTAuth.create(vertx, new JsonObject().put("keyStore", new JsonObject().put("path",
-                    "jiiify.jceks").put("type", "jceks").put("password", keyPass)));
+            jceksConfig.put("path", JCEKS_PROP).put("type", "jceks").put("password", keystorePassword);
+            jwtAuth = JWTAuth.create(vertx, new JsonObject().put("keyStore", jceksConfig));
 
             if (inStream != null) {
                 jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
             } else {
                 // TODO: Make the store configurable (but keep this one around too for testing purposes)
-                jksOptions.setPath("target/classes/jiiify.jks");
+                jksOptions.setPath("target/classes/" + JKS_PROP);
             }
 
             options.setSsl(true);
@@ -114,7 +117,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
 
         // Serve static files like images, scripts, css, etc.
-        router.getWithRegex(STATIC_FILES).handler(StaticHandler.create());
+        router.getWithRegex(STATIC_FILES_RE).handler(StaticHandler.create());
 
         // Put everything in the administrative interface behind an authentication check
         if (jwtAuth != null) {
@@ -123,37 +126,40 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             }
 
             router.route().handler(UserSessionHandler.create(jwtAuth));
-            router.routeWithRegex(ADMIN_UI).handler(JWTAuthHandler.create(jwtAuth, LOGIN));
+            router.routeWithRegex(ADMIN_UI_RE).handler(JWTAuthHandler.create(jwtAuth, LOGIN));
         }
 
         // Configure our IIIF specific handlers
-        router.getWithRegex(iiif(BASE_URI)).handler(new RedirectHandler(myConfig));
-        router.getWithRegex(iiif(IMAGE_INFO_DOC)).handler(new ImageInfoHandler(myConfig));
-        router.getWithRegex(iiif(IMAGE_REQUEST)).handler(new ImageHandler(myConfig));
-        router.getWithRegex(iiif(IMAGE_MANIFEST)).handler(new ManifestHandler(myConfig));
-        router.getWithRegex(iiif(IIIF_URI)).failureHandler(new IIIFErrorHandler(myConfig));
+        router.getWithRegex(iiif(BASE_URI_RE)).handler(new RedirectHandler(myConfig));
+        router.getWithRegex(iiif(IMAGE_INFO_DOC_RE)).handler(new ImageInfoHandler(myConfig));
+        router.getWithRegex(iiif(IMAGE_REQUEST_RE)).handler(new ImageHandler(myConfig));
+        router.getWithRegex(iiif(IMAGE_MANIFEST_RE)).handler(new ManifestHandler(myConfig));
+        router.getWithRegex(iiif(IIIF_URI_RE)).failureHandler(new IIIFErrorHandler(myConfig));
 
-        // Then we have the plain old administrative UI patterns
+        // Login and logout routes
+        router.get(LOGOUT).handler(new LogoutHandler(myConfig));
         router.get(LOGIN).handler(new LoginHandler(myConfig, jwtAuth));
         router.post(LOGIN).handler(new LoginHandler(myConfig, jwtAuth));
-        router.get(LOGIN_RESPONSE).handler(new LoginHandler(myConfig, jwtAuth));
-        router.getWithRegex(BROWSE).handler(new BrowseHandler(myConfig));
-        router.getWithRegex(SEARCH).handler(new SearchHandler(myConfig));
-        router.getWithRegex(INGEST).handler(new IngestHandler(myConfig));
-        router.getWithRegex(STATISTICS).handler(new StatisticsHandler(myConfig));
-        router.getWithRegex(ITEM).handler(new ItemHandler(myConfig));
-        router.getWithRegex(PROPERTIES).handler(new PropertiesHandler(myConfig));
-        router.getWithRegex(REFRESH).handler(new RefreshHandler(myConfig));
-        router.getWithRegex(DOWNLOAD).handler(new DownloadHandler(myConfig));
-        router.postWithRegex(DOWNLOAD).handler(new DownloadHandler(myConfig));
-        router.getWithRegex(LOGOUT).handler(new LogoutHandler(myConfig));
+        router.getWithRegex(LOGIN_RESPONSE_RE).handler(new LoginHandler(myConfig, jwtAuth));
+        router.getWithRegex(LOGIN_RESPONSE_RE).handler(templateHandler).failureHandler(failureHandler);
 
-        router.getWithRegex(LOGIN_RESPONSE).handler(templateHandler).failureHandler(failureHandler);
-        router.getWithRegex(ADMIN_UI).handler(templateHandler).failureHandler(failureHandler);
+        // Then we have the plain old administrative UI patterns
+        router.getWithRegex(BROWSE_RE).handler(new BrowseHandler(myConfig));
+        router.getWithRegex(SEARCH_RE).handler(new SearchHandler(myConfig));
+        router.getWithRegex(INGEST_RE).handler(new IngestHandler(myConfig));
+        router.getWithRegex(METRICS_RE).handler(new MetricsHandler(myConfig));
+        router.getWithRegex(ITEM_RE).handler(new ItemHandler(myConfig));
+        router.getWithRegex(PROPERTIES_RE).handler(new PropertiesHandler(myConfig));
+        router.getWithRegex(REFRESH_RE).handler(new RefreshHandler(myConfig));
+        router.getWithRegex(DOWNLOAD_RE).handler(new DownloadHandler(myConfig));
+        router.postWithRegex(DOWNLOAD_RE).handler(new DownloadHandler(myConfig));
+        router.getWithRegex(ADMIN_UI_RE).handler(templateHandler).failureHandler(failureHandler);
 
         // Create a index handler just to test for session; this could go in template handler
-        router.get(ROOT).handler(genericPageHandler);
+        router.get(ROOT).handler(new PageHandler(myConfig));
         router.get(ROOT).handler(templateHandler).failureHandler(failureHandler);
+
+        router.get(STATUS).handler(new StatusHandler(myConfig));
 
         // Start the server and start listening for connections
         vertx.createHttpServer(options).requestHandler(router::accept).listen(response -> {
