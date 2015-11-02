@@ -92,6 +92,10 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
             }
 
             templateFileName = pathBuilder.deleteCharAt(pathBuilder.length() - 1).toString();
+
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Using skip paths ({}) to get template file: {}", skip, aTemplateFileName);
+            }
         } else {
             templateFileName = aTemplateFileName;
         }

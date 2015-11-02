@@ -2,7 +2,7 @@
 package info.freelibrary.jiiify.handlers;
 
 import static info.freelibrary.jiiify.Constants.MESSAGES;
-import static info.freelibrary.jiiify.RoutePatterns.BASE_URI;
+import static info.freelibrary.jiiify.RoutePatterns.BASE_URI_RE;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.iiif.ImageInfo;
@@ -31,7 +31,7 @@ public class RedirectHandler implements Handler<RoutingContext> {
      * @param aConfig A configuration object
      */
     public RedirectHandler(final Configuration aConfig) {
-        myBaseURI = StringUtils.format(BASE_URI, aConfig.getServicePrefix());
+        myBaseURI = StringUtils.format(BASE_URI_RE, aConfig.getServicePrefix());
     }
 
     @Override
