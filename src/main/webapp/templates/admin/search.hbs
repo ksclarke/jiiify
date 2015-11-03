@@ -1,9 +1,14 @@
 {{> templates/admin/header}}
 <div class="container">
   <div class="page-header">
-    <h2>Search</h2>
+    <form class="form-horizontal" id="search-form" role="form" action="search" method="get">
+      <h2>Search
+        <input type="text" class="form-control" name="query" id="query" value="{{searchQuery}}"
+          placeholder="Try an ID search with wildcards:  id:*sharpie*">
+      </h2>
+    </form>
   </div>
-  <p>[Search page goes here]</p>
+  {{> templates/admin/search-results}}
 </div>
 
 <!-- div#wrap close -->

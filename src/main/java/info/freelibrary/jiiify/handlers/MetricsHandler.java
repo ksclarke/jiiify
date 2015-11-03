@@ -1,7 +1,6 @@
 
 package info.freelibrary.jiiify.handlers;
 
-
 import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
 import static info.freelibrary.jiiify.Metadata.JSON_MIME_TYPE;
 

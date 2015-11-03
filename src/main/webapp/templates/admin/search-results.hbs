@@ -1,0 +1,93 @@
+<div class="pull-right">
+  <div class="panel panel-default" style="margin-right:10px;margin-top:5px;">
+    <div class="panel-heading">
+      <h2 class="panel-title">{{#if browseQuery}}Browse Parameters{{else}}Search Modifiers{{/if}}</h2>
+    </div>
+    <div class="panel-body" style="padding:10px;">
+      <form class="form-horizontal" id="search-form" role="form"
+        action="{{#if browseQuery}}browse{{else}}search{{/if}}" method="get">
+        <div class="form-group" style="padding:0px 20px;">
+          <label class="control-label" for="type">Filter:</label>
+          <select class="form-control" name="type" id="type">
+            <option {{#if imageType}}selected="selected" {{/if}}>image</option>
+            <option {{#if manifestType}}selected="selected"{{/if}}>manifest</option>
+          </select>
+        </div>
+        <div class="form-group" style="padding:0px 20px;">
+          <label class="control-label" for="start">Start:</label>
+          <input type="number" class="form-control" name="start" id="start" value="{{start}}">
+        </div>
+        <div class="form-group" style="padding:0px 20px;">
+          <label class="control-label" for="count">Count:</label>
+          <select class="form-control" name="count" id="count">
+            <option {{#if count10}}selected="selected"{{/if}}>10</option>
+            <option {{#if count15}}selected="selected"{{/if}}>15</option>
+            <option {{#if count20}}selected="selected"{{/if}}>20</option>
+            <option {{#if count50}}selected="selected"{{/if}}>50</option>
+          </select>
+        </div>
+        <input type="hidden" id="query" name="query"
+          value="{{#if browseQuery}}{{browseQuery}}{{else}}{{searchQuery}}{{/if}}"/>
+        <div class="text-center">
+          <button type="submit" class="btn btn-default">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="panel panel-default" style="margin-right:10px;margin-top:5px;">
+    <div class="panel-heading">
+      <h2 class="panel-title">Page Navigation</h2>
+    </div>
+    <div class="panel-body" style="padding:10px;">
+      {{#each pages}}
+      <a href="{{#if browseQuery}}browse{{else}}search{{/if}}?start={{this.page-start}}&count={{count}}&filter={{filter}}">{{this.page-number}}</a>
+      {{/each}}
+    </div>
+  </div>
+</div>
+<table id="image-results">
+  {{#each images}}
+  <tr>
+    <td class="thumbnail">
+      <a href="/admin/item/{{this.id}}">
+        <img src="{{this.jiiify_thumbnail_s}}" alt="{{this.id}} thumbnail" />
+      </a>
+    </td>
+    <td class="brief-metadata">
+      <a href="/admin/item/{{this.id}}">{{this.id}}</a>
+      <br />
+      <span class="smaller">&nbsp;&nbsp;View:&nbsp;
+        <a href="{{jiiify-service-prefix}}/{{this.id}}">image info</a> |
+        <a href="{{jiiify-service-prefix}}/{{this.id}}/manifest">manifest</a> |
+        <a href="/admin/item/properties/{{this.id}}">properties</a> |
+        <a href="/admin/item/{{this.id}}">item</a>
+      </span>
+      <br />
+      <span class="smaller">&nbsp;&nbsp;Refresh:&nbsp;
+        <a href="/admin/refresh/info/{{this.id}}">image info</a> |
+        <a href="/admin/refresh/manifest/{{this.id}}">manifest</a> |
+        <a href="/admin/refresh/index/{{this.id}}">indexing</a> |
+        <a href="/admin/refresh/tiles/{{this.id}}">tiles</a> |
+        <a href="/admin/refresh/thumbnails/{{this.id}}">thumbnails</a> |
+        <a href="/admin/refresh/everything/{{this.id}}">everything</a>
+      </span>
+      <br />
+      <span class="smaller">&nbsp;&nbsp;Download:&nbsp;
+        <a href="/admin/download/zip/{{this.id}}">zip file</a>
+      </span>
+    </td>
+  </tr>
+  {{/each}}
+</table>
+<ul class="pager">
+  {{#if prevPage}}
+  <li class="previous">
+    <a href="{{#if browseQuery}}browse{{else}}search{{/if}}?start={{prevPageNum}}&count={{count}}&filter={{filter}}">Previous Page</a>
+  </li>
+  {{/if}}
+  {{#if nextPage}}
+  <li class="next">
+    <a href="{{#if browseQuery}}browse{{else}}search{{/if}}?start={{nextPageNum}}&count={{count}}&filter={{filter}}">Next Page</a>
+  </li>
+  {{/if}}
+</ul>
