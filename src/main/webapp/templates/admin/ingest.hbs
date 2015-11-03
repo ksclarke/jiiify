@@ -21,8 +21,23 @@
       <p>This is not implemented yet</p>
     </div>
     <div id="csv" class="tab-pane fade in active">
-      <h3>CSV File</h3>
-      <p>Implementing now</p>
+      {{#if csv-file}}
+      <h3>Success!</h3>
+      <p>The file '{{csv-file}}' has been uploaded and its entries submitted to the ingest queue.</p>
+      {{else}}
+      <h3>Upload CSV File</h3>
+      <p>A CSV file can be used to ingest images that are available on the server's file system. The two column
+      file allows for IDs to be associated with files to be ingested. The expected format is:</p>
+      <pre><code>id-1,/path/to/an/image/to/be/ingested-1.tif
+id-2,/path/to/an/image/to/be/ingested-2.tif
+id-3,/path/to/an/image/to/be/ingested-3.tif</code></pre>
+      <p/>
+      <form action="ingest" method="post" role="form" class="form-inline" enctype="multipart/form-data">
+        <label class="sr-only" for="csv-file">CSV Upload:</label>
+        <input type="file" name="csv-file" class="form-control" id="csv-file" />
+        <button type="submit" class="btn btn-default">Upload</button>
+      </form>
+      {{/if}}
     </div>
     <div id="uri" class="tab-pane fade">
       <h3>URI</h3>

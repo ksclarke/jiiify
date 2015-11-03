@@ -16,6 +16,7 @@
 
     <!-- Versions of dependencies managed in this POM -->
     <vertx.version>3.1.0</vertx.version>
+    <opencsv.version>2.3</opencsv.version>
     <javatuples.version>1.2</javatuples.version>
     <freelib.utils.version>0.6.0-SNAPSHOT</freelib.utils.version>
     <opencv.version>3.0.0-SNAPSHOT</opencv.version>
@@ -90,6 +91,11 @@
       <groupId>com.github.jknack</groupId>
       <artifactId>handlebars-jackson2</artifactId>
       <version>${handlebars.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.sf.opencsv</groupId>
+      <artifactId>opencsv</artifactId>
+      <version>${opencsv.version}</version>
     </dependency>
     <!-- Just some general utilities -->
     <dependency>
