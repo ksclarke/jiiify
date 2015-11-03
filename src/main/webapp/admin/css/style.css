@@ -76,6 +76,10 @@ html, body {
   border-bottom: 0px;
 }
 
+#search-form {
+  padding-right: 10px;
+}
+
 #image-results tr td.thumbnail {
   padding: 5px;
   width: 155px;

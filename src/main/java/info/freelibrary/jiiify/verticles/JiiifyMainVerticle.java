@@ -15,7 +15,6 @@ import javax.naming.ConfigurationException;
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.RoutePatterns;
-import info.freelibrary.jiiify.handlers.BrowseHandler;
 import info.freelibrary.jiiify.handlers.DownloadHandler;
 import info.freelibrary.jiiify.handlers.FailureHandler;
 import info.freelibrary.jiiify.handlers.IIIFErrorHandler;
@@ -64,7 +63,6 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
     public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
         final TemplateEngine templateEngine = HandlebarsTemplateEngine.create();
         final TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
-        final FailureHandler failureHandler = new FailureHandler(myConfig, templateEngine);
         final HttpServerOptions options = new HttpServerOptions();
         final Router router = Router.router(vertx);
         final JWTAuth jwtAuth;
@@ -111,6 +109,11 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             jwtAuth = null;
         }
 
+        // Some reused handlers
+        final FailureHandler failureHandler = new FailureHandler(myConfig, templateEngine);
+        final DownloadHandler downloadHandler = new DownloadHandler(myConfig);
+        final SearchHandler searchHandler = new SearchHandler(myConfig);
+
         // Configure some basics
         router.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getTempDir().getAbsolutePath()));
         router.route().handler(CookieHandler.create());
@@ -144,15 +147,15 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         router.getWithRegex(LOGIN_RESPONSE_RE).handler(templateHandler).failureHandler(failureHandler);
 
         // Then we have the plain old administrative UI patterns
-        router.getWithRegex(BROWSE_RE).handler(new BrowseHandler(myConfig));
-        router.getWithRegex(SEARCH_RE).handler(new SearchHandler(myConfig));
+        router.getWithRegex(BROWSE_RE).handler(searchHandler);
+        router.getWithRegex(SEARCH_RE).handler(searchHandler);
         router.getWithRegex(INGEST_RE).handler(new IngestHandler(myConfig));
         router.getWithRegex(METRICS_RE).handler(new MetricsHandler(myConfig));
         router.getWithRegex(ITEM_RE).handler(new ItemHandler(myConfig));
         router.getWithRegex(PROPERTIES_RE).handler(new PropertiesHandler(myConfig));
         router.getWithRegex(REFRESH_RE).handler(new RefreshHandler(myConfig));
-        router.getWithRegex(DOWNLOAD_RE).handler(new DownloadHandler(myConfig));
-        router.postWithRegex(DOWNLOAD_RE).handler(new DownloadHandler(myConfig));
+        router.getWithRegex(DOWNLOAD_RE).handler(downloadHandler);
+        router.postWithRegex(DOWNLOAD_RE).handler(downloadHandler);
         router.getWithRegex(ADMIN_UI_RE).handler(templateHandler).failureHandler(failureHandler);
 
         // Create a index handler just to test for session; this could go in template handler
