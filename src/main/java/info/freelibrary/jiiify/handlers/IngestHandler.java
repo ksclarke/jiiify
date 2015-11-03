@@ -1,25 +1,28 @@
 
 package info.freelibrary.jiiify.handlers;
 
+import static info.freelibrary.jiiify.Constants.FILE_PATH_KEY;
 import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
-import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
-import static info.freelibrary.jiiify.Constants.SOLR_SERVICE_KEY;
-import static info.freelibrary.jiiify.Constants.THUMBNAIL_KEY;
-import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_HEADER;
-import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
-import static info.freelibrary.jiiify.util.SolrUtils.DOCS;
-import static info.freelibrary.jiiify.util.SolrUtils.RESPONSE;
+import static info.freelibrary.jiiify.Constants.OVERWRITE_KEY;
+
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Arrays;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
-import info.freelibrary.jiiify.services.SolrService;
+import info.freelibrary.jiiify.MessageCodes;
+import info.freelibrary.jiiify.verticles.ImageIngestVerticle;
 
-import io.vertx.core.json.JsonArray;
+import au.com.bytecode.opencsv.CSVReader;
+import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
 public class IngestHandler extends JiiifyHandler {
@@ -30,51 +33,98 @@ public class IngestHandler extends JiiifyHandler {
 
     @Override
     public void handle(final RoutingContext aContext) {
-        final SolrService service = SolrService.createProxy(aContext.vertx(), SOLR_SERVICE_KEY);
-        final JsonObject query = new JsonObject().put("query", "*:*");
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Constructing new Solr query: {}", query);
-        }
-
-        service.search(query, handler -> {
-            if (handler.succeeded()) {
-                final JsonObject solrJson = handler.result();
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Solr response: {}", solrJson.toString());
-                }
-
-                aContext.data().put(HBS_DATA_KEY, toHbsContext(toJsonNode(solrJson), aContext));
-                aContext.next();
-            } else {
-                fail(aContext, handler.cause());
-                aContext.put(ERROR_HEADER, "Search Error");
-                aContext.put(ERROR_MESSAGE, msg("Solr search failed: {}", handler.cause().getMessage()));
-            }
-        });
-    }
-
-    private ObjectNode toJsonNode(final JsonObject aJsonObject) {
-        final JsonObject response = aJsonObject.getJsonObject(RESPONSE, new JsonObject());
-        final JsonArray docs = response.getJsonArray(DOCS, new JsonArray());
+        final HttpMethod method = aContext.request().method();
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode jsonNode = mapper.createObjectNode();
-        final ArrayNode arrayNode = jsonNode.putArray("images");
 
-        for (int index = 0; index < docs.size(); index++) {
-            final JsonObject jsonObject = docs.getJsonObject(index);
-            final ObjectNode objNode = mapper.createObjectNode();
+        if (method.equals(HttpMethod.POST)) {
+            for (final FileUpload upload : aContext.fileUploads()) {
+                final String fileName = upload.fileName();
+                final String filePath = upload.uploadedFileName();
 
-            objNode.put(ID_KEY, jsonObject.getString(ID_KEY));
-            objNode.put(THUMBNAIL_KEY, jsonObject.getString(THUMBNAIL_KEY));
-            arrayNode.add(objNode);
+                CSVReader reader = null;
+                String[] line;
+
+                jsonNode.put("csv-file", fileName);
+
+                try {
+                    reader = new CSVReader(new FileReader(filePath));
+
+                    // File is ID,PATH_TO_IMAGE
+                    while ((line = reader.readNext()) != null) {
+                        if (line.length >= 2) {
+                            final JsonObject json = new JsonObject();
+
+                            json.put(ID_KEY, line[0]);
+                            json.put(FILE_PATH_KEY, line[1]);
+                            json.put(OVERWRITE_KEY, true);
+
+                            if (LOGGER.isDebugEnabled()) {
+                                LOGGER.debug("To be ingested: {} ({})", line[1], fileName);
+                            }
+
+                            sendMessage(aContext, json, ImageIngestVerticle.class.getName(), 0);
+
+                            if (LOGGER.isDebugEnabled()) {
+                                LOGGER.debug("Added to ingest queue: {}", line[1]);
+                            }
+                        } else {
+                            if (LOGGER.isWarnEnabled()) {
+                                LOGGER.warn("Invalid CSV values detected: {}", Arrays.toString(line));
+                            }
+                        }
+                    }
+                } catch (final IOException details) {
+                    LOGGER.error(details.getMessage(), details);
+                } finally {
+                    if (reader != null) {
+                        try {
+                            reader.close();
+                        } catch (final IOException details) {
+                            LOGGER.error(details.getMessage(), details);
+                        }
+                    }
+                }
+            }
         }
 
-        // Put our service prefix in so we can construct URLs with it
-        jsonNode.put(fmt(SERVICE_PREFIX_PROP), myConfig.getServicePrefix());
+        aContext.data().put(HBS_DATA_KEY, toHbsContext(jsonNode, aContext));
+        aContext.next();
+    }
 
-        return jsonNode;
+    // A copy and paste from the AbstractJiiifyVerticle... something to put in a utility class?
+    protected void sendMessage(final RoutingContext aContext, final JsonObject aJsonObject,
+            final String aVerticleName, final int aCount) {
+        final long sendTimeout = DeliveryOptions.DEFAULT_TIMEOUT * aCount;
+        final int retryCount = 10;
+        final DeliveryOptions options = new DeliveryOptions();
+        final EventBus eventBus = aContext.vertx().eventBus();
+
+        // Slow down timeout expectations if we're taking a long time processing images
+        if (aCount > 0) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Slowing down the {}'s timeout to: {}", getClass().getSimpleName(), sendTimeout);
+            }
+
+            options.setSendTimeout(sendTimeout);
+        }
+
+        eventBus.send(aVerticleName, aJsonObject, options, response -> {
+            if (response.failed()) {
+                if (aCount < retryCount) {
+                    LOGGER.warn("Unable to send message to {}; retrying: {}", aVerticleName, aJsonObject);
+                    sendMessage(aContext, aJsonObject, aVerticleName, aCount + 1);
+                } else {
+                    if (response.cause() != null) {
+                        LOGGER.error(response.cause(), MessageCodes.EXC_000, "Unable to send message to {}: {}",
+                                aVerticleName, aJsonObject);
+                    } else {
+                        LOGGER.error(MessageCodes.EXC_000, "Unable to send message to {}: {}", aVerticleName,
+                                aJsonObject);
+                    }
+                }
+            }
+        });
     }
 
 }

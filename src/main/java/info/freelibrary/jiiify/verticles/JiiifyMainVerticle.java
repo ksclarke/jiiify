@@ -113,6 +113,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         final FailureHandler failureHandler = new FailureHandler(myConfig, templateEngine);
         final DownloadHandler downloadHandler = new DownloadHandler(myConfig);
         final SearchHandler searchHandler = new SearchHandler(myConfig);
+        final IngestHandler ingestHandler = new IngestHandler(myConfig);
 
         // Configure some basics
         router.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getTempDir().getAbsolutePath()));
@@ -149,7 +150,9 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         // Then we have the plain old administrative UI patterns
         router.getWithRegex(BROWSE_RE).handler(searchHandler);
         router.getWithRegex(SEARCH_RE).handler(searchHandler);
-        router.getWithRegex(INGEST_RE).handler(new IngestHandler(myConfig));
+        router.getWithRegex(INGEST_RE).handler(ingestHandler);
+        router.postWithRegex(INGEST_RE).handler(ingestHandler);
+        router.postWithRegex(INGEST_RE).handler(templateHandler);
         router.getWithRegex(METRICS_RE).handler(new MetricsHandler(myConfig));
         router.getWithRegex(ITEM_RE).handler(new ItemHandler(myConfig));
         router.getWithRegex(PROPERTIES_RE).handler(new PropertiesHandler(myConfig));

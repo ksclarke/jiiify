@@ -42,11 +42,18 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
 
             fileSystem.exists(configPath, fsHandler -> {
                 if (fsHandler.succeeded()) {
+                    // Sidecar configurations override other options (at this time anyway)
                     if (fsHandler.result()) {
                         // Found a special sidecar configuration, so let's use it for our ingest
                         useObjectConfig(fileSystem, file, configPath, message, overwriteIfExists);
                     } else {
-                        final String id = FileUtils.stripExt(file.getName());
+                        final String id;
+
+                        if (json.containsKey(ID_KEY)) {
+                            id = json.getString(ID_KEY);
+                        } else {
+                            id = FileUtils.stripExt(file.getName());
+                        }
                         ingest(fileSystem, file, id, new Properties(), overwriteIfExists, message);
                     }
                 } else {
