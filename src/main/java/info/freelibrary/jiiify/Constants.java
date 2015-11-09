@@ -57,7 +57,7 @@ public interface Constants {
 
     public static final String SOLR_SERVICE_KEY = "jiiify.solr";
 
-    public static final String CONFIG_KEY = "jiffy.config";
+    public static final String CONFIG_KEY = "jiiify.config";
 
     public static final String HBS_DATA_KEY = "hbs.data";
 
