@@ -52,7 +52,7 @@ public class Configuration implements Shareable {
 
     public static final int DEFAULT_TILE_SIZE = 1024;
 
-    public static final File DEFAULT_TEMP_DIR = new File(System.getProperty("java.io.tmpdir"), "jiiify-temp-dir");
+    public static final File DEFAULT_TEMP_DIR = new File(System.getProperty("java.io.tmpdir"), TEMP_DIR_PROP);
 
     public static final File DEFAULT_DATA_DIR = new File("jiiify-data");
 
