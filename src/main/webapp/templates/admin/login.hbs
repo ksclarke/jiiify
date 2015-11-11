@@ -14,12 +14,13 @@
   <script src="/admin/js/facebook-min.js" defer="true"></script>
   <script src="/admin/js/login.js" defer="true"></script>
   <script>
+    var urlParts = window.location.href.split("/");
     window.onload = function() {
       hello.init({
         'google': '{{google}}',
         'twitter': '{{twitter}}',
         'facebook': '{{facebook}}'
-      }, {redirect_uri: '{{jiiify-host}}/login-response'});
+      }, {redirect_uri: urlParts[0] + "//" + urlParts[2] + '/login-response'});
     }
   </script>
   <div style="text-align:center" class="row">
