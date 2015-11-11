@@ -2,6 +2,8 @@
 package info.freelibrary.jiiify;
 
 import static info.freelibrary.jiiify.Constants.DATA_DIR_PROP;
+import static info.freelibrary.jiiify.Constants.FACEBOOK_OAUTH_CLIENT_ID;
+import static info.freelibrary.jiiify.Constants.GOOGLE_OAUTH_CLIENT_ID;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_REDIRECT_PROP;
@@ -9,6 +11,8 @@ import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.Constants.SOLR_SERVER_PROP;
 import static info.freelibrary.jiiify.Constants.TEMP_DIR_PROP;
 import static info.freelibrary.jiiify.Constants.TILE_SIZE_PROP;
+import static info.freelibrary.jiiify.Constants.TWITTER_OAUTH_CLIENT_ID;
+import static info.freelibrary.jiiify.Constants.TWITTER_OAUTH_SECRET_KEY;
 import static info.freelibrary.jiiify.Constants.URL_SCHEME_PROP;
 import static info.freelibrary.jiiify.Constants.WATCH_FOLDER_PROP;
 
@@ -82,6 +86,14 @@ public class Configuration implements Shareable {
 
     private final String myURLScheme;
 
+    private final String myGoogleClientID;
+
+    private final String myFacebookClientID;
+
+    private final String myTwitterClientID;
+
+    private final String myTwitterSecretKey;
+
     private final Map<String, PairtreeRoot> myDataDirs;
 
     /**
@@ -101,23 +113,87 @@ public class Configuration implements Shareable {
         myDataDirs = setDataDir(aConfig);
         mySolrServer = setSolrServer(aConfig);
         myURLScheme = setURLScheme(aConfig);
+        myGoogleClientID = setGoogleClientID(aConfig);
+        myFacebookClientID = setFacebookClientID(aConfig);
+        myTwitterClientID = setTwitterClientID(aConfig);
+        myTwitterSecretKey = setTwitterSecretKey(aConfig);
 
         // We can add additional data directories if needed
         addAdditionalDataDirs(aConfig);
+    }
+
+    public String setGoogleClientID(final JsonObject aConfig) {
+        final Properties properties = System.getProperties();
+
+        // We'll give command line properties first priority then fall back to our JSON configuration
+        if (properties.containsKey(GOOGLE_OAUTH_CLIENT_ID)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Found {} set in system properties", GOOGLE_OAUTH_CLIENT_ID);
+            }
+
+            return properties.getProperty(GOOGLE_OAUTH_CLIENT_ID);
+        } else {
+            return aConfig.getString(GOOGLE_OAUTH_CLIENT_ID, "");
+        }
+    }
+
+    public String setFacebookClientID(final JsonObject aConfig) {
+        final Properties properties = System.getProperties();
+
+        // We'll give command line properties first priority then fall back to our JSON configuration
+        if (properties.containsKey(FACEBOOK_OAUTH_CLIENT_ID)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Found {} set in system properties", FACEBOOK_OAUTH_CLIENT_ID);
+            }
+
+            return properties.getProperty(FACEBOOK_OAUTH_CLIENT_ID);
+        } else {
+            return aConfig.getString(FACEBOOK_OAUTH_CLIENT_ID, "");
+        }
+    }
+
+    public String setTwitterClientID(final JsonObject aConfig) {
+        final Properties properties = System.getProperties();
+
+        // We'll give command line properties first priority then fall back to our JSON configuration
+        if (properties.containsKey(TWITTER_OAUTH_CLIENT_ID)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Found {} set in system properties", TWITTER_OAUTH_CLIENT_ID);
+            }
+
+            return properties.getProperty(TWITTER_OAUTH_CLIENT_ID);
+        } else {
+            return aConfig.getString(TWITTER_OAUTH_CLIENT_ID, "");
+        }
+    }
+
+    public String setTwitterSecretKey(final JsonObject aConfig) {
+        final Properties properties = System.getProperties();
+
+        // We'll give command line properties first priority then fall back to our JSON configuration
+        if (properties.containsKey(TWITTER_OAUTH_SECRET_KEY)) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("Found {} set in system properties", TWITTER_OAUTH_SECRET_KEY);
+            }
+
+            return properties.getProperty(TWITTER_OAUTH_SECRET_KEY);
+        } else {
+            return aConfig.getString(TWITTER_OAUTH_SECRET_KEY, "");
+        }
     }
 
     public String getOAuthClientID(final String aService) {
         final String service = aService.toLowerCase();
 
         if (service.equals(LoginHandler.GOOGLE)) {
-            return "587760109846-8ctkp2qbuag2n7kh0lnd0vv8ur5u1os9.apps.googleusercontent.com";
+            return myGoogleClientID;
         } else if (service.equals(LoginHandler.TWITTER)) {
-            return "LVNtnfPxmnTvBsKm9UumVmwiS";
+            return myTwitterClientID;
         } else if (service.equals(LoginHandler.FACEBOOK)) {
-            return "403322423208635";
+            return myFacebookClientID;
         }
 
-        // FIXME: something better than a RuntimeException
+        // FIXME: With something better than a RuntimeException
         throw new RuntimeException("Unsupported OAuth service");
     }
 
@@ -127,12 +203,12 @@ public class Configuration implements Shareable {
         if (service.equals(LoginHandler.GOOGLE)) {
             return "";
         } else if (service.equals(LoginHandler.TWITTER)) {
-            return "jE8sqlZ9skUg1GtEZtu6bw1e0tmMteXHXNKbbQHAOb39yvMMAK";
+            return myTwitterSecretKey;
         } else if (service.equals(LoginHandler.FACEBOOK)) {
             return "";
         }
 
-        // FIXME: something better than a RuntimeException
+        // FIXME: With something better than a RuntimeException
         throw new RuntimeException("Unsupported OAuth service");
     }
 
