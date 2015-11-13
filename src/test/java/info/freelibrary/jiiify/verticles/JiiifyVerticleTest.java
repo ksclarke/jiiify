@@ -1,6 +1,8 @@
 
 package info.freelibrary.jiiify.verticles;
 
+import static info.freelibrary.jiiify.Configuration.DEFAULT_HOST;
+import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_PROP;
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 
@@ -59,6 +61,9 @@ public class JiiifyVerticleTest {
             myPort = Configuration.DEFAULT_PORT;
             config.put(HTTP_PORT_PROP, myPort);
         }
+
+        // Configure our host setting to use localhost for testing
+        config.put(HTTP_HOST_PROP, DEFAULT_HOST + "-test");
 
         // Deploy our base verticle, which should deploy its related verticles
         myVertx.deployVerticle(JiiifyMainVerticle.class.getName(), options.setConfig(config), aContext
