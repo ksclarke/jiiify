@@ -177,7 +177,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 aFuture.complete();
             } else {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(MessageCodes.DBG_007, myConfig.getPort());
+                    LOGGER.debug("Server failed to start server at {}:{}", myConfig.getHost(), myConfig.getPort());
                 }
 
                 aFuture.fail(response.cause());

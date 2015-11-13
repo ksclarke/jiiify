@@ -472,18 +472,23 @@ public class Configuration implements Shareable {
      * @throws ConfigurationException If there is trouble configuring Jiiify
      */
     private String setHost(final JsonObject aConfig) throws ConfigurationException {
+        final String configHost = aConfig.getString(HTTP_HOST_PROP, "");
+        final String testHost = DEFAULT_HOST + "-test";
+
         String host;
 
         try {
             final Properties properties = System.getProperties();
 
             // We'll give command line properties first priority then fall back to our JSON configuration
-            if (properties.containsKey(HTTP_HOST_PROP)) {
+            if (properties.containsKey(HTTP_HOST_PROP) && !configHost.equals(testHost)) {
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Found {} set in system properties", HTTP_HOST_PROP);
                 }
 
                 host = properties.getProperty(HTTP_HOST_PROP);
+            } else if (configHost.equals(testHost)) {
+                host = DEFAULT_HOST;
             } else {
                 host = aConfig.getString(HTTP_HOST_PROP, DEFAULT_HOST);
             }
