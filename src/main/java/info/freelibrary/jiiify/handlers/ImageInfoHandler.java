@@ -37,7 +37,7 @@ public class ImageInfoHandler extends JiiifyHandler {
         final HttpServerRequest request = aContext.request();
 
         // Path: /service-prefix/[ID]/info.json
-        final String id = request.uri().split("\\/")[2];
+        final String id = PathUtils.decode(request.uri().split("\\/")[2]);
         final String imageInfo = PathUtils.getFilePath(aContext.vertx(), id, ImageInfo.FILE_NAME);
         final FileSystem fileSystem = aContext.vertx().fileSystem();
 

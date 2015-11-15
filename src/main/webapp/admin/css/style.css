@@ -71,6 +71,10 @@ html, body {
 
 /* Below custom to Jiiify */
 
+.browse-details {
+  margin-top: 15px;
+}
+
 .page-header {
   margin: -15px 0px 0px 0px;
   border-bottom: 0px;

@@ -73,6 +73,16 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
     }
 
     /**
+     * Returns the number of slashes in the supplied ID.
+     *
+     * @param aID An identifier
+     * @return The number of slashes in the identifier
+     */
+    int slashCount(final String aID) {
+        return aID.length() - aID.replace("/", "").length();
+    }
+
+    /**
      * A convenience method for failing a particular context.
      *
      * @param aContext The context to mark as a failure
