@@ -11,12 +11,15 @@ import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 import static info.freelibrary.jiiify.util.SolrUtils.DOCS;
 import static info.freelibrary.jiiify.util.SolrUtils.RESPONSE;
 
+import java.net.URISyntaxException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.services.SolrService;
+import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.http.HttpServerRequest;
@@ -65,8 +68,12 @@ public class SearchHandler extends JiiifyHandler {
                     LOGGER.debug("Solr response: {}", solrJson.toString());
                 }
 
-                aContext.data().put(HBS_DATA_KEY, toHbsContext(toJsonNode(solrJson), aContext));
-                aContext.next();
+                try {
+                    aContext.data().put(HBS_DATA_KEY, toHbsContext(toJsonNode(solrJson), aContext));
+                    aContext.next();
+                } catch (final URISyntaxException details) {
+                    fail(aContext, details);
+                }
             } else {
                 fail(aContext, handler.cause());
                 aContext.put(ERROR_HEADER, "Search Error");
@@ -76,7 +83,7 @@ public class SearchHandler extends JiiifyHandler {
     }
 
     /* FIXME: We need a better way to work with all this JSON -- a Solr object(?) */
-    private ObjectNode toJsonNode(final JsonObject aJsonObject) {
+    private ObjectNode toJsonNode(final JsonObject aJsonObject) throws URISyntaxException {
         final JsonObject emptyObject = new JsonObject();
         final JsonObject responseHeader = aJsonObject.getJsonObject("responseHeader", emptyObject);
         final JsonObject queryParams = responseHeader.getJsonObject("params", emptyObject);
@@ -98,7 +105,7 @@ public class SearchHandler extends JiiifyHandler {
             final JsonObject jsonObject = docs.getJsonObject(index);
             final ObjectNode objNode = mapper.createObjectNode();
 
-            objNode.put(ID_KEY, jsonObject.getString(ID_KEY));
+            objNode.put(ID_KEY, PathUtils.encodeIdentifier(jsonObject.getString(ID_KEY)));
             objNode.put(THUMBNAIL_KEY, jsonObject.getString(THUMBNAIL_KEY));
             imageArray.add(objNode);
         }

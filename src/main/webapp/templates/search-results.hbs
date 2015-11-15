@@ -50,31 +50,40 @@
   <tr>
     <td class="thumbnail">
       <a href="/admin/item/{{this.id}}">
-        <img src="{{this.jiiify_thumbnail_s}}" alt="{{this.id}} thumbnail" />
+        <script>
+        var altText = decodeURIComponent('{{this.id}}') + ' thumbnail';
+        document.write('<img src="{{this.jiiify_thumbnail_s}}" alt="' + altText + '" />');
+        </script>
       </a>
     </td>
-    <td class="brief-metadata">
-      <a href="/admin/item/{{this.id}}">{{this.id}}</a>
-      <br />
-      <span class="smaller">&nbsp;&nbsp;View:&nbsp;
-        <a href="{{jiiify-service-prefix}}/{{this.id}}">image info</a> |
-        <a href="{{jiiify-service-prefix}}/{{this.id}}/manifest">manifest</a> |
-        <a href="/admin/item/properties/{{this.id}}">properties</a> |
-        <a href="/admin/item/{{this.id}}">item</a>
-      </span>
-      <br />
-      <span class="smaller">&nbsp;&nbsp;Refresh:&nbsp;
-        <a href="/admin/refresh/info/{{this.id}}">image info</a> |
-        <a href="/admin/refresh/manifest/{{this.id}}">manifest</a> |
-        <a href="/admin/refresh/index/{{this.id}}">indexing</a> |
-        <a href="/admin/refresh/tiles/{{this.id}}">tiles</a> |
-        <a href="/admin/refresh/thumbnails/{{this.id}}">thumbnails</a> |
-        <a href="/admin/refresh/everything/{{this.id}}">everything</a>
-      </span>
-      <br />
-      <span class="smaller">&nbsp;&nbsp;Download:&nbsp;
-        <a href="/admin/download/zip/{{this.id}}">zip file</a>
-      </span>
+    <td class="brief-metadata">Identifier:
+      <a href="/admin/item/{{this.id}}">
+        <script>document.write(decodeURIComponent('{{this.id}}'));</script>
+      </a>
+      {{#if imageType}}
+      <div class="browse-details">
+        <span class="smaller">&nbsp;&nbsp;&nbsp;View:&nbsp;
+          <a href="{{jiiify-service-prefix}}/{{this.id}}/info.json">image info</a> |
+          <a href="{{jiiify-service-prefix}}/{{this.id}}/manifest">manifest</a> |
+          <a href="/admin/item/properties/{{this.id}}">properties</a>
+        </span>
+        <br />
+        <span class="smaller">&nbsp;&nbsp;&nbsp;Refresh:&nbsp;
+          <a href="/admin/refresh/info/{{this.id}}">image info</a> |
+          <a href="/admin/refresh/manifest/{{this.id}}">manifest</a> |
+          <a href="/admin/refresh/index/{{this.id}}">indexing</a> |
+          <a href="/admin/refresh/tiles/{{this.id}}">tiles</a> |
+          <a href="/admin/refresh/thumbnails/{{this.id}}">thumbnails</a> |
+          <a href="/admin/refresh/everything/{{this.id}}">everything</a>
+        </span>
+        <br />
+        <span class="smaller">&nbsp;&nbsp;&nbsp;Download:&nbsp;
+          <a href="/admin/download/zip/{{this.id}}">zip file</a>
+        </span>
+        {{/if}}
+        {{#if manifestType}}
+        {{/if}}
+      </div>
     </td>
   </tr>
   {{/each}}

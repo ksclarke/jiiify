@@ -38,6 +38,11 @@ public class ImageHandler extends JiiifyHandler {
     @Override
     public void handle(final RoutingContext aContext) {
         final HttpServerRequest request = aContext.request();
+        final String uri = request.uri();
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("IIIF Image request: {}", uri);
+        }
 
         try {
             final ImageRequest image = new ImageRequest(request.path());
@@ -49,15 +54,12 @@ public class ImageHandler extends JiiifyHandler {
                 LOGGER.debug("Checking whether cached image file '{}' exists", cacheFilePath);
             }
 
-            /* Check whether a cached image file exists */
             fileSystem.exists(cacheFilePath, fsHandler -> {
-                /* Check itself succeeds */
                 if (fsHandler.succeeded()) {
+                    /* fsHandler's result is the whether file exists or not */
                     if (fsHandler.result()) {
-                        /* And, if checked file exists, we can serve the image file */
                         serveImageFile(fileSystem, cacheFilePath, aContext);
                     } else {
-                        /* Or we try to find a source file from which we can generate a new image */
                         trySourceFile(pairtree, image, fileSystem, aContext);
                     }
                 } else {

@@ -32,7 +32,7 @@ public class PropertiesHandler extends JiiifyHandler {
     @Override
     public void handle(final RoutingContext aContext) {
         final String requestPath = aContext.request().uri();
-        final String id = requestPath.split("\\/")[4];
+        final String id = PathUtils.decode(requestPath.split("\\/")[4]);
         final FileSystem fileSystem = aContext.vertx().fileSystem();
         final String properties = PathUtils.getFilePath(aContext.vertx(), id, Metadata.PROPERTIES_FILE);
 
@@ -76,7 +76,7 @@ public class PropertiesHandler extends JiiifyHandler {
             jsonNode.put(fmt(HTTP_HOST_PROP), myConfig.getServer());
 
             /* To drop the ID from the path for template processing */
-            aContext.data().put(HBS_PATH_SKIP_KEY, 1);
+            aContext.data().put(HBS_PATH_SKIP_KEY, 1 + slashCount(aID));
             aContext.data().put(HBS_DATA_KEY, toHbsContext(jsonNode, aContext));
             aContext.next();
         } catch (final IOException details) {
