@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.util.PathUtils;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -34,12 +35,16 @@ public class ItemHandler extends JiiifyHandler {
             id = requestPath.split("\\/")[3];
         }
 
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Getting item page for : {}", id);
+        }
+
         jsonNode.put(ID_KEY, id);
         jsonNode.put(SERVICE_PREFIX_PROP.replace('.', '-'), servicePrefix);
         jsonNode.put(HTTP_HOST_PROP.replace('.', '-'), myConfig.getServer());
 
         /* To drop the ID from the path for template processing */
-        aContext.data().put(HBS_PATH_SKIP_KEY, 1);
+        aContext.data().put(HBS_PATH_SKIP_KEY, 1 + slashCount(PathUtils.decode(id)));
         aContext.data().put(HBS_DATA_KEY, toHbsContext(jsonNode, aContext));
         aContext.next();
     }

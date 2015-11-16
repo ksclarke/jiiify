@@ -5,6 +5,7 @@ import static info.freelibrary.jiiify.Constants.MESSAGES;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.util.Logger;
@@ -96,8 +97,8 @@ public class ImageRequest {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Request [Prefix: {}], [ID: {}], [Region: {}], [Size: {}], [Rotation: {}], [File: {}]",
-                    pathComponents[0], pathComponents[1], pathComponents[2], pathComponents[3], pathComponents[4],
-                    pathComponents[5]);
+                    pathComponents[0], PairtreeUtils.decodeID(pathComponents[1]), pathComponents[2],
+                    pathComponents[3], pathComponents[4], pathComponents[5]);
         }
 
         myServicePrefix = pathComponents[0];
@@ -141,8 +142,14 @@ public class ImageRequest {
     public String toString() {
         final StringBuilder sb = new StringBuilder("/").append(myServicePrefix).append('/');
 
-        sb.append(myID).append('/').append(myRegion).append('/').append(mySize).append('/');
-        sb.append(myRotation).append('/').append(myQuality).append('.').append(myFormat);
+        try {
+            sb.append(PathUtils.encodeIdentifier(myID)).append('/').append(myRegion).append('/').append(mySize);
+            sb.append('/').append(myRotation).append('/').append(myQuality).append('.').append(myFormat);
+        } catch (final URISyntaxException details) {
+            LOGGER.warn("Identifier contains characters invalid for a URI: {}", myID);
+            sb.append(myID).append('/').append(myRegion).append('/').append(mySize);
+            sb.append('/').append(myRotation).append('/').append(myQuality).append('.').append(myFormat);
+        }
 
         return sb.toString();
     }

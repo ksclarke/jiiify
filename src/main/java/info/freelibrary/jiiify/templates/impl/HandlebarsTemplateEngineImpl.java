@@ -97,7 +97,12 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
                 LOGGER.debug("Using skip paths ({}) to get template file: {}", skip, aTemplateFileName);
             }
         } else {
-            templateFileName = aTemplateFileName;
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug("No skip paths, using passed template file: {}", aTemplateFileName);
+            }
+
+            // FIXME: Seems some paths are coming in with /admin/ and some aren't... related to POST(?!)
+            templateFileName = aTemplateFileName.replaceAll("\\/admin\\/", "/");
         }
 
         try {

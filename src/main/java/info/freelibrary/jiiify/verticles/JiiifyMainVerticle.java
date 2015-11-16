@@ -28,7 +28,6 @@ import info.freelibrary.jiiify.handlers.ManifestHandler;
 import info.freelibrary.jiiify.handlers.MetricsHandler;
 import info.freelibrary.jiiify.handlers.PageHandler;
 import info.freelibrary.jiiify.handlers.PropertiesHandler;
-import info.freelibrary.jiiify.handlers.RedirectHandler;
 import info.freelibrary.jiiify.handlers.RefreshHandler;
 import info.freelibrary.jiiify.handlers.SearchHandler;
 import info.freelibrary.jiiify.handlers.StatusHandler;
@@ -61,6 +60,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
     @Override
     public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+        final SessionHandler sessionHandler = SessionHandler.create(LocalSessionStore.create(vertx));
         final TemplateEngine templateEngine = HandlebarsTemplateEngine.create();
         final TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
         final HttpServerOptions options = new HttpServerOptions();
@@ -101,8 +101,8 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 jksOptions.setPath("target/classes/" + JKS_PROP);
             }
 
-            options.setSsl(true);
-            options.setKeyStoreOptions(jksOptions);
+            options.setSsl(true).setKeyStoreOptions(jksOptions);
+            sessionHandler.setCookieHttpOnlyFlag(true).setCookieSecureFlag(true);
 
             configureHttpRedirect(aFuture);
         } else {
@@ -118,7 +118,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         // Configure some basics
         router.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getTempDir().getAbsolutePath()));
         router.route().handler(CookieHandler.create());
-        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
+        router.route().handler(sessionHandler);
 
         // Serve static files like images, scripts, css, etc.
         router.getWithRegex(STATIC_FILES_RE).handler(StaticHandler.create());
@@ -129,16 +129,20 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 LOGGER.debug("Using the JWT authentication handler");
             }
 
-            router.route().handler(UserSessionHandler.create(jwtAuth));
-            router.routeWithRegex(ADMIN_UI_RE).handler(JWTAuthHandler.create(jwtAuth, LOGIN));
+            router.route(ADMIN_UI).handler(UserSessionHandler.create(jwtAuth));
+            router.route(ADMIN_UI).handler(JWTAuthHandler.create(jwtAuth, LOGIN));
+            router.route(ADMIN_UI).handler(handler -> {
+                handler.response().headers().add("Cache-Control", "no-store, no-cache");
+                handler.next();
+            });
         }
 
         // Configure our IIIF specific handlers
-        router.getWithRegex(iiif(BASE_URI_RE)).handler(new RedirectHandler(myConfig));
         router.getWithRegex(iiif(IMAGE_INFO_DOC_RE)).handler(new ImageInfoHandler(myConfig));
         router.getWithRegex(iiif(IMAGE_REQUEST_RE)).handler(new ImageHandler(myConfig));
         router.getWithRegex(iiif(IMAGE_MANIFEST_RE)).handler(new ManifestHandler(myConfig));
-        router.getWithRegex(iiif(IIIF_URI_RE)).failureHandler(new IIIFErrorHandler(myConfig));
+        // router.getWithRegex(iiif(BASE_URI)).handler(new RedirectHandler(myConfig));
+        router.get(iiif(IIIF_URI)).failureHandler(new IIIFErrorHandler(myConfig));
 
         // Login and logout routes
         router.get(LOGOUT).handler(new LogoutHandler(myConfig));
@@ -154,12 +158,12 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         router.postWithRegex(INGEST_RE).handler(ingestHandler);
         router.postWithRegex(INGEST_RE).handler(templateHandler);
         router.getWithRegex(METRICS_RE).handler(new MetricsHandler(myConfig));
-        router.getWithRegex(ITEM_RE).handler(new ItemHandler(myConfig));
-        router.getWithRegex(PROPERTIES_RE).handler(new PropertiesHandler(myConfig));
-        router.getWithRegex(REFRESH_RE).handler(new RefreshHandler(myConfig));
+        router.get(ITEM).handler(new ItemHandler(myConfig));
+        router.get(PROPERTIES).handler(new PropertiesHandler(myConfig));
+        router.get(REFRESH).handler(new RefreshHandler(myConfig));
         router.getWithRegex(DOWNLOAD_RE).handler(downloadHandler);
         router.postWithRegex(DOWNLOAD_RE).handler(downloadHandler);
-        router.getWithRegex(ADMIN_UI_RE).handler(templateHandler).failureHandler(failureHandler);
+        router.get(ADMIN_UI).handler(templateHandler).failureHandler(failureHandler);
 
         // Create a index handler just to test for session; this could go in template handler
         router.get(ROOT).handler(new PageHandler(myConfig));
