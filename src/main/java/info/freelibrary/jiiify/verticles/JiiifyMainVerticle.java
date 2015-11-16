@@ -60,6 +60,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
     @Override
     public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+        final SessionHandler sessionHandler = SessionHandler.create(LocalSessionStore.create(vertx));
         final TemplateEngine templateEngine = HandlebarsTemplateEngine.create();
         final TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
         final HttpServerOptions options = new HttpServerOptions();
@@ -100,8 +101,8 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 jksOptions.setPath("target/classes/" + JKS_PROP);
             }
 
-            options.setSsl(true);
-            options.setKeyStoreOptions(jksOptions);
+            options.setSsl(true).setKeyStoreOptions(jksOptions);
+            sessionHandler.setCookieHttpOnlyFlag(true).setCookieSecureFlag(true);
 
             configureHttpRedirect(aFuture);
         } else {
@@ -117,7 +118,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         // Configure some basics
         router.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getTempDir().getAbsolutePath()));
         router.route().handler(CookieHandler.create());
-        router.route().handler(SessionHandler.create(LocalSessionStore.create(vertx)));
+        router.route().handler(sessionHandler);
 
         // Serve static files like images, scripts, css, etc.
         router.getWithRegex(STATIC_FILES_RE).handler(StaticHandler.create());
@@ -130,6 +131,10 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
             router.route(ADMIN_UI).handler(UserSessionHandler.create(jwtAuth));
             router.route(ADMIN_UI).handler(JWTAuthHandler.create(jwtAuth, LOGIN));
+            router.route(ADMIN_UI).handler(handler -> {
+                handler.response().headers().add("Cache-Control", "no-store, no-cache");
+                handler.next();
+            });
         }
 
         // Configure our IIIF specific handlers
