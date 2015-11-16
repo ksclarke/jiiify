@@ -53,21 +53,25 @@ public class DownloadHandler extends JiiifyHandler {
     @Override
     public void handle(final RoutingContext aContext) {
         final String requestPath = aContext.request().uri();
-        final String id = requestPath.split("\\/")[4];
+        final String id = PathUtils.decode(requestPath.split("\\/")[4]);
 
         if (aContext.request().method().equals(HttpMethod.GET)) {
             final ObjectMapper objMapper = new ObjectMapper();
             final ObjectNode jsonNode = objMapper.createObjectNode();
             final String servicePrefix = myConfig.getServicePrefix();
 
-            jsonNode.put(ID_KEY, id);
-            jsonNode.put(fmt(SERVICE_PREFIX_PROP), servicePrefix);
-            jsonNode.put(fmt(HTTP_HOST_PROP), myConfig.getServer());
+            try {
+                jsonNode.put(ID_KEY, PathUtils.encodeIdentifier(id));
+                jsonNode.put(fmt(SERVICE_PREFIX_PROP), servicePrefix);
+                jsonNode.put(fmt(HTTP_HOST_PROP), myConfig.getServer());
 
-            /* To drop the ID from the path for template processing */
-            aContext.data().put(HBS_PATH_SKIP_KEY, 1);
-            aContext.data().put(HBS_DATA_KEY, toHbsContext(jsonNode, aContext));
-            aContext.next();
+                /* To drop the ID from the path for template processing */
+                aContext.data().put(HBS_PATH_SKIP_KEY, 1 + slashCount(id));
+                aContext.data().put(HBS_DATA_KEY, toHbsContext(jsonNode, aContext));
+                aContext.next();
+            } catch (final URISyntaxException details) {
+                fail(aContext, details);
+            }
         } else {
             final HttpServerRequest request = aContext.request();
             final String param = request.getParam(DOWNLOAD_SERVER_PARAM);
@@ -99,6 +103,7 @@ public class DownloadHandler extends JiiifyHandler {
                     final int width = jsonObject.getInteger(ImageInfo.WIDTH);
                     final int height = jsonObject.getInteger(ImageInfo.HEIGHT);
 
+                    // Getting the list of images needed for OpenSeadragon so we can bundle them up
                     if (ImageUtils.getTilePaths(servicePrefix, aID, tileSize, width, height).stream().allMatch(
                             tilePath -> isReady(aFileSystem, tilePath, aContext.vertx(), aID))) {
                         startDownload(aContext, aFileSystem, aID);

@@ -6,33 +6,33 @@ public interface RoutePatterns {
     /**
      * The IIIF service path (all requests are extensions of this).
      */
-    public static final String IIIF_URI_RE = "\\{}\\/.*";
+    public static final String IIIF_URI = "{}/*";
 
     /**
      * The IIIF service path (all requests are extensions of this).
      */
-    public static final String IIIF_URI_404_RE = "\\{}\\/?";
+    // public static final String IIIF_URI_404_RE = "\\{}\\/?";
 
     /**
      * The base URI for an image request; it redirects to an image info document for the image.
      */
-    public static final String BASE_URI_RE = "\\{}\\/([^\\/]+\\/?)";
+    // public static final String BASE_URI = "{}/*";
 
     /**
      * An image info document request.
      */
-    public static final String IMAGE_INFO_DOC_RE = "\\{}\\/([^\\/]+)\\/info.json";
+    public static final String IMAGE_INFO_DOC_RE = "\\{}\\/.+\\/info.json";
 
     /**
      * An image request.
      */
     public static final String IMAGE_REQUEST_RE =
-            "\\{}\\/([^\\/]+)\\/([^\\/]+)\\/([^\\/]+)\\/([^\\/]+)\\/([^\\/]+)\\.([^\\/]+)";
+            "\\{}\\/.+\\/(default|color|gray|bitonal)\\.(jpg|gif|tif|png|jp2|pdf|webp)";
 
     /**
      * A manifest request.
      */
-    public static final String IMAGE_MANIFEST_RE = "\\{}\\/([^\\/]+)\\/manifest";
+    public static final String IMAGE_MANIFEST_RE = "\\{}\\/.+\\/manifest";
 
     /**
      * A catch-all path for the administrative browse.
@@ -72,7 +72,7 @@ public interface RoutePatterns {
     /**
      * An administrative image view.
      */
-    public static final String ITEM_RE = "\\/admin\\/item\\/([^\\/]+)(\\/[^\\/]+)?";
+    public static final String ITEM = "/admin/item/*"; // "\\/admin\\/item\\/.+";
 
     /**
      * A generic path for the root of the Web application.
@@ -87,22 +87,22 @@ public interface RoutePatterns {
     /**
      * An administrative object refresh path.
      */
-    public static final String REFRESH_RE = "\\/admin\\/refresh\\/.*";
+    public static final String REFRESH = "/admin/refresh/*";
 
     /**
      * An administrative image properties view.
      */
-    public static final String PROPERTIES_RE = "\\/admin\\/item\\/properties\\/([^\\/]+)(\\/)?";
+    public static final String PROPERTIES = "/admin/item/properties/*";
 
     /**
      * An administrative image zip download.
      */
-    public static final String DOWNLOAD_RE = "\\/admin\\/download\\/(zip|bagit)\\/([^\\/]+)(\\/)?";
+    public static final String DOWNLOAD_RE = "\\/admin\\/download\\/(zip|bagit)\\/.+";
 
     /**
      * A catch-all path for the administrative UI page templates (not static files though).
      */
-    public static final String ADMIN_UI_RE = "\\/admin\\/([^\\.]+)";
+    public static final String ADMIN_UI = "/admin/*";
 
     /**
      * A route pattern for serving static files.

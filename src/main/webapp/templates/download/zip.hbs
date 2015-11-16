@@ -1,6 +1,6 @@
-{{> templates/admin/header}}
+{{> templates/header}}
 <div class="container">
-  <h3>Download {{this.id}}</h3>
+  <h3>Download <script>document.write(decodeURIComponent('{{this.id}}'));</script></h3>
   <p>To download a zip file of derivative images (and image metadata) that can be served from another machine, input
     the name of the server on which the files will be unzipped. Include the path to the images and the expected URL
     scheme.
@@ -8,9 +8,12 @@
   <form id="download-form" role="form" action="/admin/download/zip/{{this.id}}" method="post">
     <div class="form-group">
       <label for="server">Destination server location:</label>
-      <input class="form-control" type="url" name="server" size="30" id="server"
-        placeholder="" />
-      <script>$("server").attr('placeholder', window.location.protocol + '//' + window.location.host + {{jiiify-service-prefix}});</script>
+      <input class="form-control" type="url" id="server" name="server" size="30" id="server" placeholder="" />
+      <script>
+        document.getElementById('server').setAttribute('placeholder',
+          window.location.protocol + '//' + window.location.host + '{{jiiify-service-prefix}}'
+        );
+      </script>
     </div>
     <div class="checkbox">
       <label><input type="checkbox"> Delete from this server afterwards</label>
@@ -22,4 +25,4 @@
 <!-- div#wrap close -->
   <div id="push"></div>
 </div>
-{{> templates/admin/footer}}
+{{> templates/footer}}

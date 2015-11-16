@@ -24,7 +24,7 @@ public class ManifestHandler extends JiiifyHandler {
         final HttpServerRequest request = aContext.request();
 
         // Path: /service-prefix/[ID]/manifest
-        final String id = request.uri().split("\\/")[2];
+        final String id = PathUtils.decode(request.uri().split("\\/")[2]);
         final String manifest = PathUtils.getFilePath(aContext.vertx(), id, Metadata.MANIFEST_FILE);
         final FileSystem fileSystem = aContext.vertx().fileSystem();
 
