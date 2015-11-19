@@ -3,50 +3,107 @@
   <div class="page-header">
     <h2>Ingest</h2>
   </div>
-  
+
   <ul class="nav nav-tabs">
-    <li><a data-toggle="tab" href="#image">Image</a></li>
-    <li><a data-toggle="tab" href="#zip">Zip File</a></li>
-    <li class="active"><a data-toggle="tab" href="#csv">CSV File</a></li>
-    <li><a data-toggle="tab" href="#uri">URI</a></li>
+    <li class="{{#if image-file}}active{{/if}}">
+      <a data-toggle="tab" href="#image">Image</a>
+    </li>
+    <li class="{{#if zip-file}}active{{/if}}">
+      <a data-toggle="tab" href="#zip">Zip File</a>
+    </li>
+    <li class="{{#if csv-file}}active{{/if}}{{#if default-view}}active{{/if}}{{#if csv-view}}active{{/if}}">
+      <a data-toggle="tab" href="#csv">CSV File</a>
+    </li>
+    <li class="{{#if uri-file}}active{{/if}}">
+      <a data-toggle="tab" href="#uri">URI</a>
+    </li>
+    <li class="{{#if manifest-file}}active{{/if}}{{#if manifest-view}}active{{/if}}">
+      <a data-toggle="tab" href="#manifest">Manifest</a>
+    </li>
   </ul>
 
   <div class="tab-content">
-    <div id="image" class="tab-pane fade">
-      <h3>Image</h3>
+    <div id="image" class="tab-pane fade {{#if image-file}}active{{/if}}">
+      <h3>Upload an Image File</h3>
       <p>This is not implemented yet</p>
     </div>
-    <div id="zip" class="tab-pane fade">
-      <h3>Zip File</h3>
+    <div id="zip" class="tab-pane fade {{#if zip-file}}active{{/if}}">
+      <h3>Upload a Zip File</h3>
       <p>This is not implemented yet</p>
     </div>
-    <div id="csv" class="tab-pane fade in active">
+    <div id="csv" class="tab-pane fade in {{#if csv-file}}active{{/if}}{{#if default-view}}active{{/if}}{{#if csv-view}}active{{/if}}">
       {{#if csv-file}}
       <h3>Success!</h3>
       <p>The file '{{csv-file}}' has been uploaded and its entries submitted to the ingest queue.</p>
+      <p><a href="/admin/ingest?file-type=csv-file">Ingest another</a></p>
       {{else}}
-      <h3>Upload CSV File</h3>
+      <h3>Upload a CSV File</h3>
       <p>A CSV file can be used to ingest images that are available on the server's file system. The two column
-      file allows for IDs to be associated with files to be ingested. The expected format is:</p>
+        file allows for IDs to be associated with files to be ingested. The expected format is:
+      </p>
       <pre><code>id-1,/path/to/an/image/to/be/ingested-1.tif
 id-2,/path/to/an/image/to/be/ingested-2.tif
 id-3,/path/to/an/image/to/be/ingested-3.tif</code></pre>
-      <p/>
-      <form action="ingest" method="post" role="form" class="form-inline" enctype="multipart/form-data">
-        <label class="sr-only" for="csv-file">CSV Upload:</label>
-        <input type="file" name="csv-file" class="form-control" id="csv-file" />
-        <button type="submit" class="btn btn-default">Upload</button>
+      <p />
+      <form action="ingest" method="post" role="form" class="form-horizontal" enctype="multipart/form-data">
+        <div class="form-inline">
+          <label class="sr-only" for="csv-file">CSV Upload:</label>
+          <input type="file" name="csv-file" class="form-control" id="csv-file" />
+          <input type="hidden" name="file-type" value="csv-file" />
+          <button type="submit" class="btn btn-default">Upload</button>
+        </div>
+        <div style="padding-top: 20px;" class="small">
+          <input type="checkbox" id="overwrite" name="overwrite" value="overwrite" /> Overwrite images if they already
+          exist
+        </div>
       </form>
       {{/if}}
     </div>
-    <div id="uri" class="tab-pane fade">
-      <h3>URI</h3>
+    <div id="uri" class="tab-pane fade {{#if uri-file}}active{{/if}}">
+      <h3>Load a File from URI</h3>
       <p>This is not implemented yet</p>
+    </div>
+    <div id="manifest" class="tab-pane fade in {{#if manifest-file}}active{{/if}}{{#if manifest-view}}active{{/if}}">
+      {{#if manifest-file}}
+        {{#if upload-message}}
+          <h3>Could not upload '{{manifest-file}}'</h3>
+          <p>{{upload-message}}</p>
+          <p>
+            <a href="/admin/ingest?file-type=manifest-file">Ingest another (or try again with overwrite specified)</a>
+          </p>
+        {{else}}
+          <h3>Success!</h3>
+          <p>The file '{{manifest-file}}' has been uploaded and <a target="_blank"
+            href="{{jiiify-service-prefix}}/{{manifest-id}}/manifest">can be accessed</a> now.</p>
+          <p><a href="/admin/ingest?file-type=manifest-file">Ingest another</a></p>
+        {{/if}}
+      {{else}}
+      <h3>Upload a Manifest File</h3>
+      <p>
+      A manifest file describes structural and presentation information for a group of images. More information about
+      manifests can be found at the <a href="http://iiif.io/api/presentation/2.0/">IIIF website</a>.</p>
+      <form action="ingest" method="post" role="form" class="form-horizontal" enctype="multipart/form-data">
+        <div class="form-inline">
+          <label for="manifest-id" style="padding-bottom: 10px;" class="small">Manifest ID: </label>
+          <input type="text" class="form-control" id="manifest-id" name="manifest-id" required="required" />
+        </div>
+        <div class="form-inline">
+          <label class="sr-only" for="manifest-file">Manifest Upload:</label>
+          <input type="file" name="manifest-file" class="form-control" id="manifest-file" />
+          <input type="hidden" name="file-type" value="manifest-file" />
+          <button type="submit" class="btn btn-default">Upload</button>
+        </div>
+        <div style="padding-top: 20px;" class="small">
+          <input type="checkbox" id="overwrite" name="overwrite" value="overwrite" /> Overwrite manifest if it already
+          exists
+        </div>
+      </form>
+      {{/if}}
     </div>
   </div>
 </div>
 
-<!-- div#wrap close -->
+  <!-- div#wrap close -->
   <div id="push"></div>
 </div>
 {{> templates/footer}}
