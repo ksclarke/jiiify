@@ -26,7 +26,6 @@
     <twelvemonkeys.version>3.2</twelvemonkeys.version>
     <handlebars.version>2.2.3</handlebars.version>
     <scribe.version>1.3.7</scribe.version>
-    <iiif.presentation.api.version>2.0.0-SNAPSHOT</iiif.presentation.api.version>
 
     <!-- Versions of plugins managed in this POM -->
     <maven.shade.plugin.version>2.4.1</maven.shade.plugin.version>

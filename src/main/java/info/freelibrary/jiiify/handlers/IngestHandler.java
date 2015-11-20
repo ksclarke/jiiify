@@ -5,9 +5,13 @@ import static info.freelibrary.jiiify.Constants.FILE_PATH_KEY;
 import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
 import static info.freelibrary.jiiify.Constants.OVERWRITE_KEY;
+import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.Arrays;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,11 +19,15 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
+import info.freelibrary.jiiify.Metadata;
+import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.jiiify.verticles.ImageIngestVerticle;
 
 import au.com.bytecode.opencsv.CSVReader;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
@@ -33,6 +41,7 @@ public class IngestHandler extends JiiifyHandler {
 
     @Override
     public void handle(final RoutingContext aContext) {
+        final String fileType = aContext.request().getParam("file-type");
         final HttpMethod method = aContext.request().method();
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode jsonNode = mapper.createObjectNode();
@@ -42,53 +51,176 @@ public class IngestHandler extends JiiifyHandler {
                 final String fileName = upload.fileName();
                 final String filePath = upload.uploadedFileName();
 
-                CSVReader reader = null;
-                String[] line;
+                if (fileType.equals("csv-file")) {
+                    jsonNode.put("csv-file", fileName);
+                    processCSVUpload(fileName, filePath, aContext, jsonNode);
+                } else if (fileType.equals("manifest-file")) {
+                    final String id = aContext.request().getParam("manifest-id");
 
-                jsonNode.put("csv-file", fileName);
+                    try {
+                        jsonNode.put(fmt(SERVICE_PREFIX_PROP), myConfig.getServicePrefix());
+                        jsonNode.put("manifest-file", fileName);
+                        jsonNode.put("manifest-id", PathUtils.encodeIdentifier(id));
 
-                try {
-                    reader = new CSVReader(new FileReader(filePath));
-
-                    // File is ID,PATH_TO_IMAGE
-                    while ((line = reader.readNext()) != null) {
-                        if (line.length >= 2) {
-                            final JsonObject json = new JsonObject();
-
-                            json.put(ID_KEY, line[0]);
-                            json.put(FILE_PATH_KEY, line[1]);
-                            json.put(OVERWRITE_KEY, true);
-
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("To be ingested: {} ({})", line[1], fileName);
-                            }
-
-                            sendMessage(aContext, json, ImageIngestVerticle.class.getName(), 0);
-
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("Added to ingest queue: {}", line[1]);
-                            }
-                        } else {
-                            if (LOGGER.isWarnEnabled()) {
-                                LOGGER.warn("Invalid CSV values detected: {}", Arrays.toString(line));
-                            }
-                        }
+                        processManifestUpload(id, fileName, filePath, aContext, jsonNode);
+                    } catch (final URISyntaxException details) {
+                        fail(aContext, details);
+                        toTemplate(aContext, jsonNode);
                     }
-                } catch (final IOException details) {
-                    LOGGER.error(details.getMessage(), details);
-                } finally {
-                    if (reader != null) {
-                        try {
-                            reader.close();
-                        } catch (final IOException details) {
-                            LOGGER.error(details.getMessage(), details);
+                } else {
+                    fail(aContext, new FileNotFoundException("No ingest file found"));
+                    toTemplate(aContext, jsonNode);
+                }
+            }
+        } else {
+            if (fileType == null) {
+                jsonNode.put("default-view", "csv-file");
+            } else if (fileType.equals("csv-file")) {
+                jsonNode.put("csv-view", true);
+            } else if (fileType.equals("manifest-file")) {
+                jsonNode.put("manifest-view", true);
+            }
+
+            toTemplate(aContext, jsonNode);
+        }
+    }
+
+    private void processManifestUpload(final String aID, final String aFilename, final String aFilePath,
+            final RoutingContext aContext, final ObjectNode aJsonNode) {
+        final Vertx vertx = aContext.vertx();
+        final String manifestPath = PathUtils.getFilePath(vertx, aID, Metadata.MANIFEST_FILE);
+        final FileSystem fileSystem = aContext.vertx().fileSystem();
+        final File manifest = new File(manifestPath);
+        final String parentPath = manifest.getParentFile().getAbsolutePath();
+
+        fileSystem.mkdirs(parentPath, fsHandler -> {
+            if (fsHandler.succeeded()) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Creating {} directory for uploaded manifest succeeded", parentPath);
+                }
+
+                writeManifest(fileSystem, manifestPath, aFilePath, aContext, aJsonNode);
+            } else {
+                fileSystem.exists(parentPath, existsHandler -> {
+                    if (existsHandler.succeeded()) {
+                        if (existsHandler.result()) {
+                            if (LOGGER.isDebugEnabled()) {
+                                LOGGER.debug("Directory for uploaded manifest already exists: {}", parentPath);
+                            }
+
+                            writeManifest(fileSystem, manifestPath, aFilePath, aContext, aJsonNode);
+                        } else {
+                            fail(aContext, new IOException("Parent dir couldn't be created and doesn't exist"));
+                            toTemplate(aContext, aJsonNode);
                         }
+                    } else {
+                        fail(aContext, existsHandler.cause());
+                        toTemplate(aContext, aJsonNode);
+                    }
+                });
+            }
+        });
+    }
+
+    private void writeManifest(final FileSystem aFileSystem, final String aManifestPath, final String aFilePath,
+            final RoutingContext aContext, final ObjectNode aJsonNode) {
+        final String overwrite = aContext.request().getParam("overwrite");
+        final boolean shouldOverwrite = overwrite != null && overwrite.equals("overwrite");
+
+        aFileSystem.exists(aManifestPath, existsHandler -> {
+            if (existsHandler.succeeded()) {
+                if (existsHandler.result()) {
+                    if (shouldOverwrite) {
+                        aFileSystem.delete(aManifestPath, deleteHandler -> {
+                            if (deleteHandler.succeeded()) {
+                                copyUpload(aFileSystem, aManifestPath, aFilePath, aContext, aJsonNode);
+                            } else {
+                                fail(aContext, deleteHandler.cause());
+                                toTemplate(aContext, aJsonNode);
+                            }
+                        });
+                    } else {
+                        aJsonNode.put("upload-message", "Manifest already exists and overwrite was not specified");
+                        LOGGER.warn("Didn't write manifest because it already existed: {}", aManifestPath);
+                        toTemplate(aContext, aJsonNode);
+                    }
+                } else {
+                    copyUpload(aFileSystem, aManifestPath, aFilePath, aContext, aJsonNode);
+                }
+            } else {
+                fail(aContext, existsHandler.cause());
+                toTemplate(aContext, aJsonNode);
+            }
+        });
+    }
+
+    private void copyUpload(final FileSystem aFileSystem, final String aManifestPath, final String aFilePath,
+            final RoutingContext aContext, final ObjectNode aJsonNode) {
+        aFileSystem.copy(aFilePath, aManifestPath, copyHandler -> {
+            if (copyHandler.succeeded()) {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Successfully uploaded manifest: {}", aManifestPath);
+                }
+            } else {
+                fail(aContext, copyHandler.cause());
+            }
+
+            toTemplate(aContext, aJsonNode);
+        });
+    }
+
+    private void processCSVUpload(final String aFileName, final String aFilePath, final RoutingContext aContext,
+            final ObjectNode aJsonNode) {
+        final String overwrite = aContext.request().getParam("overwrite");
+        final boolean overwriteValue = overwrite != null && overwrite.equals("overwrite");
+
+        CSVReader reader = null;
+        String[] line;
+
+        try {
+            reader = new CSVReader(new FileReader(aFilePath));
+
+            // File is ID,PATH_TO_IMAGE
+            while ((line = reader.readNext()) != null) {
+                if (line.length >= 2) {
+                    final JsonObject json = new JsonObject();
+
+                    json.put(ID_KEY, line[0]);
+                    json.put(FILE_PATH_KEY, line[1]);
+                    json.put(OVERWRITE_KEY, overwriteValue);
+
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("To be ingested: {} ({})", line[1], aFileName);
+                    }
+
+                    sendMessage(aContext, json, ImageIngestVerticle.class.getName(), 0);
+
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Added to ingest queue: {}", line[1]);
+                    }
+                } else {
+                    if (LOGGER.isWarnEnabled()) {
+                        LOGGER.warn("Invalid CSV values detected: {}", Arrays.toString(line));
                     }
                 }
             }
-        }
+        } catch (final IOException details) {
+            fail(aContext, details);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (final IOException details) {
+                    LOGGER.error(details.getMessage(), details);
+                }
+            }
 
-        aContext.data().put(HBS_DATA_KEY, toHbsContext(jsonNode, aContext));
+            toTemplate(aContext, aJsonNode);
+        }
+    }
+
+    private void toTemplate(final RoutingContext aContext, final ObjectNode aJsonNode) {
+        aContext.data().put(HBS_DATA_KEY, toHbsContext(aJsonNode, aContext));
         aContext.next();
     }
 
