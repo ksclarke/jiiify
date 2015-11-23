@@ -21,12 +21,17 @@
   <logger name="info.freelibrary.util.NativeLibraryLoader" level="INFO" />
   <logger name="info.freelibrary.jiiify.verticles.WatchFolderVerticle" level="INFO" />
 
-  <logger name="info.freelibrary.jiiify" level="DEBUG">
-    <appender-ref ref="FILE" />
+  <logger name="info.freelibrary.jiiify.Configuration" level="INFO">
+    <appender-ref ref="STDOUT" />
+  </logger>
+  <logger name="info.freelibrary.jiiify.verticles.JiiifyMainVerticle" level="DEBUG">
+    <appender-ref ref="STDOUT" />
   </logger>
 
+  <logger name="info.freelibrary.jiiify" level="DEBUG"/>
+
   <root level="WARN">
-    <appender-ref ref="STDOUT" />
+    <appender-ref ref="FILE" />
   </root>
 
 </configuration>
