@@ -514,7 +514,7 @@
           <groupId>info.freelibrary</groupId>
           <artifactId>opencv</artifactId>
           <version>${opencv.version}</version>
-          <classifier>linux</classifier>
+          <classifier>linux64</classifier>
         </dependency>
       </dependencies>
       <!-- Default "out-of-the-box" deployment options to be overridden -->

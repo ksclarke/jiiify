@@ -172,9 +172,6 @@ public class ImageUtils {
             LOGGER.debug("Transforming '{}' into '{}'", aImageFile, aCacheFile);
         }
 
-        // FIXME: For now, hard-coding to use our Java imaging libraries
-        // useNativeLibs = false;
-
         if (useNativeLibs) {
             image = new NativeImageObject(aImageFile);
         } else {
