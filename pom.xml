@@ -510,14 +510,12 @@
         </os>
       </activation>
       <dependencies>
-        <!-- 
         <dependency>
-          <groupId>org.opencv</groupId>
+          <groupId>info.freelibrary</groupId>
           <artifactId>opencv</artifactId>
           <version>${opencv.version}</version>
           <classifier>linux</classifier>
         </dependency>
-        -->
       </dependencies>
       <!-- Default "out-of-the-box" deployment options to be overridden -->
       <properties>
