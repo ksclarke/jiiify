@@ -71,11 +71,10 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
                     sendMessage(aJsonObject, aVerticleName, aCount + 1);
                 } else {
                     if (response.cause() != null) {
-                        LOGGER.error(response.cause(), MessageCodes.EXC_000, "Unable to send message to {}: {}",
-                                aVerticleName, aJsonObject);
-                    } else {
-                        LOGGER.error(MessageCodes.EXC_000, "Unable to send message to {}: {}", aVerticleName,
+                        LOGGER.error(response.cause(), "Unable to send message to {}: {}", aVerticleName,
                                 aJsonObject);
+                    } else {
+                        LOGGER.error("Unable to send message to {}: {}", aVerticleName, aJsonObject);
                     }
                 }
             }

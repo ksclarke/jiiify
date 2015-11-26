@@ -18,7 +18,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
-import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.jiiify.verticles.ImageIngestVerticle;
@@ -248,11 +247,10 @@ public class IngestHandler extends JiiifyHandler {
                     sendMessage(aContext, aJsonObject, aVerticleName, aCount + 1);
                 } else {
                     if (response.cause() != null) {
-                        LOGGER.error(response.cause(), MessageCodes.EXC_000, "Unable to send message to {}: {}",
-                                aVerticleName, aJsonObject);
-                    } else {
-                        LOGGER.error(MessageCodes.EXC_000, "Unable to send message to {}: {}", aVerticleName,
+                        LOGGER.error(response.cause(), "Unable to send message to {}: {}", aVerticleName,
                                 aJsonObject);
+                    } else {
+                        LOGGER.error("Unable to send message to {}: {}", aVerticleName, aJsonObject);
                     }
                 }
             }
