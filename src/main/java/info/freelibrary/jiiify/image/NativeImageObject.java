@@ -42,7 +42,7 @@ public class NativeImageObject implements ImageObject {
         }
 
         newImage = myImage.submat(roi);
-        myImage.release();
+        myImage.free();
         myImage = newImage;
     }
 
@@ -56,7 +56,7 @@ public class NativeImageObject implements ImageObject {
 
             resizedImage = new Mat(myImage.rows(), myImage.cols(), myImage.type());
             Imgproc.resize(myImage, resizedImage, new Size(width, height));
-            myImage.release();
+            myImage.free();
             myImage = resizedImage;
         }
     }
@@ -79,13 +79,16 @@ public class NativeImageObject implements ImageObject {
     @Override
     public void write(final File aImageFile) throws IOException {
         final File parent = aImageFile.getParentFile();
+        final boolean written;
 
         if (!parent.exists() && !parent.mkdirs()) {
             throw new IOException("Unable to create directory structure: " + parent);
         }
 
-        if (!Imgcodecs.imwrite(aImageFile.getAbsolutePath(), myImage)) {
-            myImage.release();
+        written = Imgcodecs.imwrite(aImageFile.getAbsolutePath(), myImage);
+        myImage.free();
+
+        if (!written) {
             throw new IOException("Unable to write image with native libraries");
         }
     }
