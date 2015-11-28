@@ -41,7 +41,7 @@ public class ImageUtils {
     static {
         try {
             NativeLibraryLoader.load(Core.NATIVE_LIBRARY_NAME);
-            useNativeLibs = true;
+            // useNativeLibs = true;
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Using native image processing libraries");
