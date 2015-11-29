@@ -28,6 +28,7 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
@@ -40,8 +41,9 @@ public class IngestHandler extends JiiifyHandler {
 
     @Override
     public void handle(final RoutingContext aContext) {
-        final String fileType = aContext.request().getParam("file-type");
-        final HttpMethod method = aContext.request().method();
+        final HttpServerRequest request = aContext.request();
+        final String fileType = request.getParam("file-type");
+        final HttpMethod method = request.method();
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode jsonNode = mapper.createObjectNode();
 
@@ -170,8 +172,12 @@ public class IngestHandler extends JiiifyHandler {
 
     private void processCSVUpload(final String aFileName, final String aFilePath, final RoutingContext aContext,
             final ObjectNode aJsonNode) {
-        final String overwrite = aContext.request().getParam("overwrite");
+        final HttpServerRequest request = aContext.request();
+        final String overwrite = request.getParam("overwrite");
         final boolean overwriteValue = overwrite != null && overwrite.equals("overwrite");
+        final String skipTiles = request.getParam("skiptiles");
+        final String skipThumbs = request.getParam("skipthumbs");
+        final String skipIndexing = request.getParam("skipindexing");
 
         CSVReader reader = null;
         String[] line;
@@ -187,6 +193,18 @@ public class IngestHandler extends JiiifyHandler {
                     json.put(ID_KEY, line[0]);
                     json.put(FILE_PATH_KEY, line[1]);
                     json.put(OVERWRITE_KEY, overwriteValue);
+
+                    if (skipTiles != null) {
+                        json.put(skipTiles, true);
+                    }
+
+                    if (skipThumbs != null) {
+                        json.put(skipThumbs, true);
+                    }
+
+                    if (skipIndexing != null) {
+                        json.put(skipIndexing, true);
+                    }
 
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("To be ingested: {} ({})", line[1], aFileName);
