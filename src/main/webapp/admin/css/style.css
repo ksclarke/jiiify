@@ -80,6 +80,10 @@ html, body {
   border-bottom: 0px;
 }
 
+.pull-right {
+  width: 12em;
+}
+
 #search-form {
   padding-right: 10px;
 }
