@@ -39,7 +39,15 @@ public class ImageIndexVerticle extends AbstractJiiifyVerticle {
 
             service.index(SolrUtils.getSimpleIndexDoc(fields), handler -> {
                 if (handler.failed()) {
-                    LOGGER.error("Failed submitting '{}' to Solr: {}", message.body(), handler.result());
+                    final String exceptionMessage;
+
+                    if (handler.cause() != null) {
+                        exceptionMessage = handler.cause().getMessage();
+                    } else {
+                        exceptionMessage = "(No details)";
+                    }
+
+                    LOGGER.error("Failed submitting '{}' to Solr: {}", message.body(), exceptionMessage);
                     message.reply(FAILURE_RESPONSE);
                 } else if (handler.succeeded()) {
                     if (LOGGER.isDebugEnabled()) {
