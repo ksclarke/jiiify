@@ -29,7 +29,7 @@ public class LogoutHandler extends JiiifyHandler {
             LOGGER.debug("Logging out of session '{}': {} ({})", session.id(), user, email);
         }
 
-        session.destroy();
+        aContext.clearUser();
         response.setStatusCode(303).putHeader("Location", LOGIN).end();
     }
 
