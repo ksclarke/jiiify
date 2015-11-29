@@ -178,6 +178,7 @@ public class IngestHandler extends JiiifyHandler {
         final String skipTiles = request.getParam("skiptiles");
         final String skipThumbs = request.getParam("skipthumbs");
         final String skipIndexing = request.getParam("skipindexing");
+        final String skipProperties = request.getParam("skipproperties");
 
         CSVReader reader = null;
         String[] line;
@@ -204,6 +205,10 @@ public class IngestHandler extends JiiifyHandler {
 
                     if (skipIndexing != null) {
                         json.put(skipIndexing, true);
+                    }
+
+                    if (skipProperties != null) {
+                        json.put(skipProperties, true);
                     }
 
                     if (LOGGER.isDebugEnabled()) {
