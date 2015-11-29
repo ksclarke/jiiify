@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import info.freelibrary.jiiify.util.PathUtils;
+import info.freelibrary.util.IOUtils;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -77,6 +78,8 @@ public class ImagePropertiesVerticle extends AbstractJiiifyVerticle {
         } catch (final IOException details) {
             LOGGER.error(details, "Failed to write image properties files: {}", aPropFilePath);
             aMessage.reply(FAILURE_RESPONSE);
+        } finally {
+            IOUtils.closeQuietly(stream);
         }
     }
 
