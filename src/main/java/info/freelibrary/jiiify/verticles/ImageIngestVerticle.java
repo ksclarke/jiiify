@@ -37,7 +37,6 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         getJsonConsumer().handler(message -> {
             final JsonObject json = message.body();
             final File file = new File(json.getString(FILE_PATH_KEY));
-            final boolean overwriteIfExists = json.getBoolean(OVERWRITE_KEY, false);
             final String configPath = new File(file.getParentFile(), file.getName() + ".cfg").getAbsolutePath();
 
             fileSystem.exists(configPath, fsHandler -> {
@@ -45,7 +44,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
                     // Sidecar configurations override other options (at this time anyway)
                     if (fsHandler.result()) {
                         // Found a special sidecar configuration, so let's use it for our ingest
-                        useObjectConfig(fileSystem, file, configPath, message, overwriteIfExists);
+                        useObjectConfig(fileSystem, file, configPath, message);
                     } else {
                         final String id;
 
@@ -54,7 +53,8 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
                         } else {
                             id = FileUtils.stripExt(file.getName());
                         }
-                        ingest(fileSystem, file, id, new Properties(), overwriteIfExists, message);
+
+                        ingest(fileSystem, file, id, new Properties(), message);
                     }
                 } else {
                     // FIXME: EXC_032 is wrong exception -- fix ALL its occurrences everywhere!
@@ -68,7 +68,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
     }
 
     private void useObjectConfig(final FileSystem aFileSystem, final File aImageFile, final String aConfigPath,
-            final Message<JsonObject> aMessage, final boolean aOverwriteIfExists) {
+            final Message<JsonObject> aMessage) {
         aFileSystem.open(aConfigPath, new OpenOptions().setWrite(false), fileHandler -> {
             if (fileHandler.succeeded()) {
                 final AsyncFile asyncFile = fileHandler.result();
@@ -89,7 +89,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
                         }
 
                         id = props.getProperty(ID_KEY, FileUtils.stripExt(aImageFile.getName()));
-                        ingest(aFileSystem, aImageFile, id, props, aOverwriteIfExists, aMessage);
+                        ingest(aFileSystem, aImageFile, id, props, aMessage);
                     } catch (final IOException details) {
                         LOGGER.error(details, MessageCodes.EXC_032, aImageFile);
                         aMessage.reply(FAILURE_RESPONSE);
@@ -103,15 +103,17 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
     }
 
     private void ingest(final FileSystem aFileSystem, final File aImageFile, final String aID,
-            final Properties aProps, final boolean aOverwriteIfExists, final Message<JsonObject> aMessage) {
-        if (aOverwriteIfExists) {
-            messageIngestListeners(aProps, aImageFile, aID);
+            final Properties aProps, final Message<JsonObject> aMessage) {
+        final JsonObject json = aMessage.body();
+
+        if (json.getBoolean(OVERWRITE_KEY, false)) {
+            messageIngestListeners(aProps, aImageFile, aID, json);
             aMessage.reply(SUCCESS_RESPONSE);
         } else {
             aFileSystem.exists(PathUtils.getObjectPath(vertx, aID), fsHandler -> {
                 if (fsHandler.succeeded()) {
                     if (!fsHandler.result()) {
-                        messageIngestListeners(aProps, aImageFile, aID);
+                        messageIngestListeners(aProps, aImageFile, aID, json);
                     } // else it exists and we don't want to overwrite it
 
                     aMessage.reply(SUCCESS_RESPONSE);
@@ -123,7 +125,8 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         }
     }
 
-    private void messageIngestListeners(final Properties aProperties, final File aImageFile, final String aID) {
+    private void messageIngestListeners(final Properties aProperties, final File aImageFile, final String aID,
+            final JsonObject aJsonObject) {
         final Object ts = aProperties.getOrDefault(TILE_SIZE_PROP, getConfiguration().getTileSize());
         final JsonObject jsonMessage = new JsonObject();
 
@@ -132,11 +135,29 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         jsonMessage.put(TILE_SIZE_PROP, ts instanceof String ? Integer.parseInt((String) ts) : ts);
         jsonMessage.put(FILE_PATH_KEY, aImageFile.getAbsolutePath());
 
-        /* TODO: send to different processes depending on ingest profile */
-        sendMessage(jsonMessage, TileMasterVerticle.class.getName(), 0);
-        sendMessage(jsonMessage, ImageIndexVerticle.class.getName(), 0);
-        sendMessage(jsonMessage, ThumbnailVerticle.class.getName(), 0);
-        sendMessage(jsonMessage, ImagePropertiesVerticle.class.getName(), 0);
+        if (!aJsonObject.getBoolean("skiptiles", false)) {
+            sendMessage(jsonMessage, TileMasterVerticle.class.getName(), 0);
+        } else if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Skipping tile generation for: {}", aID);
+        }
+
+        if (!aJsonObject.getBoolean("skipindexing", false)) {
+            sendMessage(jsonMessage, ImageIndexVerticle.class.getName(), 0);
+        } else if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Skipping indexing  for: {}", aID);
+        }
+
+        if (!aJsonObject.getBoolean("skipthumbs", false)) {
+            sendMessage(jsonMessage, ThumbnailVerticle.class.getName(), 0);
+        } else if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Skipping thumbnail generation for: {}", aID);
+        }
+
+        if (!aJsonObject.getBoolean("skipproperties", false)) {
+            sendMessage(jsonMessage, ImagePropertiesVerticle.class.getName(), 0);
+        } else if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Skipping property file generation for: {}", aID);
+        }
     }
 
 }

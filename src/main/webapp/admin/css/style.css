@@ -115,3 +115,7 @@ html, body {
 #google-login-response, #twitter-login-response, #facebook-login-response {
   padding: 15px 5px 5px 5px;
 }
+
+input#skiptiles, input#skipthumbs, input#skipindexing {
+  margin-left: 15px;
+}
