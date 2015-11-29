@@ -191,7 +191,7 @@ public class LoginHandler extends JiiifyHandler {
             LOGGER.debug("{} handling body: {}", getClass().getSimpleName(), aBody.toString());
 
             final JsonObject jwt = extractJWT(new JsonObject(aBody.toString()));
-            final JWTOptions jwtOptions = new JWTOptions().setExpiresInMinutes(480);
+            final JWTOptions jwtOptions = new JWTOptions();
             final String token = myJwtAuth.generateToken(jwt, jwtOptions);
 
             if (LOGGER.isDebugEnabled()) {

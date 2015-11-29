@@ -1,6 +1,7 @@
 
 package info.freelibrary.jiiify.verticles;
 
+import static info.freelibrary.jiiify.Configuration.DEFAULT_SESSION_TIMEOUT;
 import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.JCEKS_PROP;
 import static info.freelibrary.jiiify.Constants.JKS_PROP;
@@ -97,6 +98,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
             options.setSsl(true).setKeyStoreOptions(jksOptions);
             sessionHandler.setCookieHttpOnlyFlag(true).setCookieSecureFlag(true);
+            sessionHandler.setSessionTimeout(DEFAULT_SESSION_TIMEOUT);
 
             configureHttpRedirect(aFuture);
         } else {
