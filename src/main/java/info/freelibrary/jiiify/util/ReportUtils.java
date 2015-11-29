@@ -30,8 +30,17 @@ public class ReportUtils {
     private static int myNotFoundCount;
 
     public static final void main(final String[] args) throws IOException {
+        if (args.length > 1 && args[0].equals("ptcheck")) {
+            checkPairtree(args[1]);
+        } else {
+            System.err.println("Usage: java -cp path/to/my.jar " + ReportUtils.class.getName() +
+                    " ptcheck /my/pt/path");
+        }
+    }
+
+    private static final void checkPairtree(final String aFilePath) throws IOException {
         final CSVReader csvReader = new CSVReader(new FileReader(CSV_FILE));
-        final PairtreeRoot ptRoot = new PairtreeRoot(new File(args[0]));
+        final PairtreeRoot ptRoot = new PairtreeRoot(new File(aFilePath));
         final CSVWriter csvWriter = new CSVWriter(new FileWriter(CSV_OUT));
 
         csvReader.readAll().forEach(image -> {
