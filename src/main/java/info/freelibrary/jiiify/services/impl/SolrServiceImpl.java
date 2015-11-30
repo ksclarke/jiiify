@@ -15,6 +15,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
 
@@ -24,6 +25,8 @@ import io.vertx.core.json.JsonObject;
 public class SolrServiceImpl implements SolrService {
 
     private final Logger LOGGER = LoggerFactory.getLogger(SolrServiceImpl.class, MESSAGES);
+
+    private final int MAX_TRIES = 10;
 
     private final Configuration myConfig;
 
@@ -64,17 +67,33 @@ public class SolrServiceImpl implements SolrService {
     @Override
     public void index(final JsonObject aJsonObject, final Handler<AsyncResult<String>> aHandler) {
         final String solr = myConfig.getSolrServer().toExternalForm() + "/update/json?commit=true";
-        final HttpClient client = myVertx.createHttpClient();
-        final HttpClientRequest request;
+        final HttpClientOptions options = new HttpClientOptions().setTcpKeepAlive(false).setMaxPoolSize(1);
+        final HttpClient client = myVertx.createHttpClient(options);
 
-        request = client.postAbs(solr, response -> {
+        post(client, solr, aJsonObject, aHandler, 0);
+    }
+
+    private void post(final HttpClient aClient, final String aURL, final JsonObject aJsonObject,
+            final Handler<AsyncResult<String>> aHandler, final int aCounter) {
+        final HttpClientRequest request = aClient.postAbs(aURL, response -> {
             if (response.statusCode() == 200) {
+                aClient.close();
                 aHandler.handle(Future.succeededFuture());
+            } else if (response.statusCode() == 503) {
+                if (aCounter < MAX_TRIES) {
+                    post(aClient, aURL, aJsonObject, aHandler, aCounter + 1);
+                } else {
+                    aClient.close();
+                    aHandler.handle(Future.failedFuture(response.statusMessage()));
+                }
             } else {
+                aClient.close();
                 aHandler.handle(Future.failedFuture(response.statusMessage()));
             }
-        }).exceptionHandler(exceptionHandler -> {
-            aHandler.handle(Future.failedFuture(exceptionHandler));
+        }).exceptionHandler(exception -> {
+            LOGGER.error(exception, exception.getMessage());
+            aClient.close();
+            aHandler.handle(Future.failedFuture(exception));
         });
 
         request.putHeader(Metadata.CONTENT_TYPE, Metadata.JSON_MIME_TYPE);
@@ -84,8 +103,5 @@ public class SolrServiceImpl implements SolrService {
         } else {
             request.end(aJsonObject.toString());
         }
-
-        client.close();
     }
-
 }
