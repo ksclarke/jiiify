@@ -23,7 +23,8 @@ import io.vertx.serviceproxy.ProxyHelper;
 public interface SolrService {
 
     static SolrService create(final Vertx aVertx) {
-        return new SolrServiceImpl((Configuration) aVertx.sharedData().getLocalMap(SHARED_DATA_KEY).get(CONFIG_KEY), aVertx);
+        return new SolrServiceImpl((Configuration) aVertx.sharedData().getLocalMap(SHARED_DATA_KEY).get(CONFIG_KEY),
+                aVertx);
     }
 
     static SolrService createProxy(final Vertx aVertx, final String aAddress) {

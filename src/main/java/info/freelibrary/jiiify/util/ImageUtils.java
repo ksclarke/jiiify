@@ -13,6 +13,7 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import javax.naming.ConfigurationException;
 
 import org.opencv.core.Core;
@@ -43,7 +44,7 @@ public class ImageUtils {
             NativeLibraryLoader.load(Core.NATIVE_LIBRARY_NAME);
             // useNativeLibs = true;
 
-            if (LOGGER.isDebugEnabled()) {
+            if (LOGGER.isDebugEnabled() && useNativeLibs) {
                 LOGGER.debug("Using native image processing libraries");
             }
         } catch (final IOException details) {
@@ -213,11 +214,13 @@ public class ImageUtils {
 
         if (readers.hasNext()) {
             final ImageReader reader = readers.next();
+            final ImageInputStream inStream = ImageIO.createImageInputStream(aImageFile);
 
             try {
-                reader.setInput(ImageIO.createImageInputStream(aImageFile));
+                reader.setInput(inStream);
                 return new Dimension(reader.getWidth(0), reader.getHeight(0));
             } finally {
+                inStream.close();
                 reader.dispose();
             }
         }

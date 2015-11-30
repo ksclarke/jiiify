@@ -34,18 +34,18 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
 
         // Create a connection to see if Solr responds at the expected location
         request = client.getAbs(solr, response -> {
-            handlePingResponse(response, aFuture);
+            handlePingResponse(response, aFuture, client);
         }).exceptionHandler(exceptionHandler -> {
             LOGGER.error("Couldn't connect to Solr server: [" + exceptionHandler.getMessage() + "]");
+            client.close();
             aFuture.fail(exceptionHandler.getMessage());
         });
 
-        // Wrap things up...
         request.end();
-        client.close();
     }
 
-    private void handlePingResponse(final HttpClientResponse aResponse, final Future<Void> aFuture) {
+    private void handlePingResponse(final HttpClientResponse aResponse, final Future<Void> aFuture,
+            final HttpClient aClient) {
         if (aResponse.statusCode() == 200) {
             aResponse.bodyHandler(body -> {
                 final String status = new JsonObject(body.toString()).getString(SOLR_STATUS);
@@ -54,14 +54,17 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
                     myService = new SolrServiceImpl(getConfiguration(), vertx);
                     ProxyHelper.registerService(SolrService.class, vertx, myService, SOLR_SERVICE_KEY);
 
+                    aClient.close();
                     aFuture.complete();
                 } else {
+                    aClient.close();
                     aFuture.fail("Unexpected Solr server status response: " + status);
                 }
             });
         } else {
-            LOGGER.error("Couldn't connect to Solr server: [" + aResponse.statusCode() + ": " +
-                    aResponse.statusMessage() + "]");
+            LOGGER.error("Couldn't connect to Solr server: [" + aResponse.statusCode() + ": " + aResponse
+                    .statusMessage() + "]");
+            aClient.close();
             aFuture.fail(aResponse.statusMessage() + " [" + aResponse.statusCode() + "]");
         }
     }
