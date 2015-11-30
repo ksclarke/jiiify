@@ -61,6 +61,7 @@ public class SolrServiceImpl implements SolrService {
 
         request.putHeader(Metadata.CONTENT_TYPE, Metadata.JSON_MIME_TYPE);
         request.end(aJsonObject.toString());
+        // request.setTimeout(arg0)
         client.close();
     }
 
