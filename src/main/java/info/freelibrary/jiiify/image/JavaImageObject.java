@@ -86,7 +86,8 @@ public class JavaImageObject implements ImageObject {
 
         if (iterator.hasNext()) {
             final ImageWriter writer = iterator.next();
-            final FileImageOutputStream outStream = new FileImageOutputStream(aImageFile);
+
+            FileImageOutputStream outStream = null;
 
             try {
                 final File parent = aImageFile.getParentFile();
@@ -95,6 +96,7 @@ public class JavaImageObject implements ImageObject {
                     throw new IOException("Unable to create directory structure: " + parent);
                 }
 
+                outStream = new FileImageOutputStream(aImageFile);
                 writer.setOutput(outStream);
                 writer.write(myImage);
 
