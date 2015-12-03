@@ -36,8 +36,11 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
 
                 ImageUtils.transform(imageFile, request, cacheFile);
                 message.reply(SUCCESS_RESPONSE);
-            } catch (final Exception | OutOfMemoryError details) {
+            } catch (final Exception details) {
                 LOGGER.error(details, MessageCodes.EXC_000, details.getMessage());
+                message.reply(FAILURE_RESPONSE);
+            } catch (final OutOfMemoryError details) {
+                LOGGER.error(details, "OutOfMemoryError: {}", json.getString(IIIF_PATH_KEY));
                 message.reply(FAILURE_RESPONSE);
             }
         });
