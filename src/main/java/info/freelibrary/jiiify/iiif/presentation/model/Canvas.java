@@ -42,13 +42,16 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 public class Canvas extends AbstractIiifResource {
 
     private String description; // optional
-    private final int height; // required
+
+    private int height; // required
     private List<Image> images;
+
     private final String label; // required
     private List<Metadata> metadata; // optional
     private String thumbnail; // recommended
     private String viewingHint; // optional
-    private final int width; // required
+
+    private int width; // required
 
     public Canvas(final String id, final String label, final int height, final int width) {
         assert id != null;
@@ -97,6 +100,10 @@ public class Canvas extends AbstractIiifResource {
 
     public int getHeight() {
         return height;
+    }
+
+    public void setHeight(final int aHeight) {
+        this.height = aHeight;
     }
 
     public List<Image> getImages() {
@@ -151,4 +158,9 @@ public class Canvas extends AbstractIiifResource {
     public int getWidth() {
         return width;
     }
+
+    public void setWidth(final int aWidth) {
+        this.width = aWidth;
+    }
+
 }
