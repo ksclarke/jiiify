@@ -13,7 +13,7 @@
     <jiffy.service.prefix>/iiif</jiffy.service.prefix>
     <jiiify.port>8443</jiiify.port>
     <jiiify.redirect.port>8000</jiiify.redirect.port>
-    <jiiify.memory>1024m</jiiify.memory>
+    <jiiify.memory>4096m</jiiify.memory>
     <!-- These are samples for testing purposes only ... DO NOT USE THEM IN PRODUCTION!!! -->
     <jiiify.json.config.path>${basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
 
