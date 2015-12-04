@@ -32,6 +32,7 @@ import info.freelibrary.jiiify.handlers.PropertiesHandler;
 import info.freelibrary.jiiify.handlers.RefreshHandler;
 import info.freelibrary.jiiify.handlers.SearchHandler;
 import info.freelibrary.jiiify.handlers.StatusHandler;
+import info.freelibrary.jiiify.handlers.ThumbnailsHandler;
 import info.freelibrary.jiiify.templates.HandlebarsTemplateEngine;
 import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.StringUtils;
@@ -137,6 +138,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         router.getWithRegex(iiif(IMAGE_INFO_DOC_RE)).handler(new ImageInfoHandler(myConfig));
         router.getWithRegex(iiif(IMAGE_REQUEST_RE)).handler(new ImageHandler(myConfig));
         router.getWithRegex(iiif(IMAGE_MANIFEST_RE)).handler(new ManifestHandler(myConfig));
+        router.getWithRegex(iiif(IMAGE_THUMBNAILS_RE)).handler(new ThumbnailsHandler(myConfig));
         // router.getWithRegex(iiif(BASE_URI)).handler(new RedirectHandler(myConfig));
         router.get(iiif(IIIF_URI)).failureHandler(new IIIFErrorHandler(myConfig));
 
