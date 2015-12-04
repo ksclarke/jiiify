@@ -93,7 +93,7 @@ public class ThumbnailsHandler extends JiiifyHandler {
             jsonArray.add(jsonObject);
         }
 
-        return jsonArray.toString();
+        return new JsonObject().put("items", jsonArray).toString();
     }
 
     private String extractID(final String aURL) {
