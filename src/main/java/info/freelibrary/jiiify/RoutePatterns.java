@@ -35,6 +35,11 @@ public interface RoutePatterns {
     public static final String IMAGE_MANIFEST_RE = "\\{}\\/.+\\/manifest";
 
     /**
+     * A thumbnails request.
+     */
+    public static final String IMAGE_THUMBNAILS_RE = "\\{}\\/.+\\/manifest\\/thumbnails";
+
+    /**
      * A catch-all path for the administrative browse.
      */
     public static final String BROWSE_RE = "\\/admin\\/browse\\/?";
