@@ -79,6 +79,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         // Set the port on which we want to listen for connections
         options.setPort(myConfig.getPort());
         options.setHost("0.0.0.0");
+        options.setCompressionSupported(true);
 
         // Use https or http, but switching between them requires re-ingesting everything
         if (myConfig.usesHttps()) {
