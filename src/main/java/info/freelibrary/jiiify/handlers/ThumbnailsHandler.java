@@ -76,9 +76,11 @@ public class ThumbnailsHandler extends JiiifyHandler {
         final String json = aBuffer.toString();
         final Object jdoc = com.jayway.jsonpath.Configuration.defaultConfiguration().jsonProvider().parse(json);
         final String idPath = "$.sequences[0].canvases[*].images[0].resource.service.@id";
+        final String thumbnailPath = "$.sequences[0].canvases[*].thumbnail";
         final String labelPath = "$.sequences[0].canvases[*].label";
         final List<String> images = JsonPath.read(jdoc, idPath);
         final List<String> labels = JsonPath.read(jdoc, labelPath);
+        final List<String> thumbnails = JsonPath.read(jdoc, thumbnailPath);
         final JsonArray jsonArray = new JsonArray();
 
         for (int index = 0; index < images.size(); index++) {
@@ -88,6 +90,10 @@ public class ThumbnailsHandler extends JiiifyHandler {
 
             if (labels.size() >= images.size()) {
                 jsonObject.put("label", labels.get(index));
+            }
+
+            if (thumbnails.size() >= images.size()) {
+                jsonObject.put("thumbnail", thumbnails.get(index));
             }
 
             jsonArray.add(jsonObject);
