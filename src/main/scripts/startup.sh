@@ -10,6 +10,7 @@ DROPWIZARD_METRICS="-Dvertx.metrics.options.enabled=true -Dvertx.metrics.options
 JMX_METRICS="-Dcom.sun.management.jmxremote -Dvertx.options.jmxEnabled=true"
 AUTHBIND=""
 JIIIFY_CONFIG=""
+JKS_CONFIG=""
 
 # If we have authbind and it's configured to run our port, let's use it
 if hash authbind 2>/dev/null; then
@@ -22,5 +23,9 @@ if [ -e "${jiiify.json.config.path}" ]; then
   JIIIFY_CONFIG="-conf ${jiiify.json.config.path}"
 fi
 
+if [ -e "${jiiify.jks}" ]; then
+  JKS_CONFIG="-Djiiify.jks=${jiiify.jks}"
+fi
+
 $AUTHBIND java -Xmx${jiiify.memory} $LOG_DELEGATE $KEY_PASS_CONFIG $JIIIFY_TEMP_DIR $WATCH_FOLDER_DIR \
-  $JIIIFY_PORT $DROPWIZARD_METRICS $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG
+  $JKS_CONFIG $JIIIFY_PORT $DROPWIZARD_METRICS $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG
