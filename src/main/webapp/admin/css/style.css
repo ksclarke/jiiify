@@ -107,12 +107,12 @@ html, body {
   margin-bottom: 40px;
 }
 
-#google-login, #twitter-login, #facebook-login {
+#google-login, #facebook-login {
   text-align: center;
   padding: 10px 20px 10px;
 }
 
-#google-login-response, #twitter-login-response, #facebook-login-response {
+#google-login-response, #facebook-login-response {
   padding: 15px 5px 5px 5px;
 }
 

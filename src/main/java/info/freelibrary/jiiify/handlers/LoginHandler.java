@@ -1,13 +1,14 @@
 
 package info.freelibrary.jiiify.handlers;
 
+import static info.freelibrary.jiiify.Constants.FAILURE_RESPONSE;
 import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
+import static info.freelibrary.jiiify.Constants.SUCCESS_RESPONSE;
 import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
 import static info.freelibrary.jiiify.Metadata.TEXT_MIME_TYPE;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import javax.security.auth.login.FailedLoginException;
 
 import org.javatuples.Pair;
 
@@ -35,8 +36,6 @@ public class LoginHandler extends JiiifyHandler {
 
     public static final String FACEBOOK = "facebook";
 
-    public static final String TWITTER = "twitter";
-
     private static final String GOOGLE_HOST = "www.googleapis.com";
 
     private static final String GOOGLE_PATH = "/oauth2/v3/tokeninfo?access_token={}";
@@ -44,12 +43,6 @@ public class LoginHandler extends JiiifyHandler {
     private static final String FACEBOOK_HOST = "graph.facebook.com";
 
     private static final String FACEBOOK_PATH = "/debug_token?input_token={}&access_token={}";
-
-    // TODO: Implement this locally -- the heroku app is okay for testing purposes though
-    private static final String TWITTER_HOST = "auth-server.herokuapp.com";
-
-    private static final String TWITTER_PATH =
-            "/proxy?path=https://api.twitter.com/1.1/account/verify_credentials.json&access_token={}";
 
     // TODO: check JSON service aud to make sure it matches the client ID
     private final JWTAuth myJwtAuth;
@@ -70,7 +63,6 @@ public class LoginHandler extends JiiifyHandler {
 
             jsonNode.put(HTTP_HOST_PROP.replace('.', '-'), myConfig.getServer());
             jsonNode.put(GOOGLE, myConfig.getOAuthClientID(GOOGLE));
-            jsonNode.put(TWITTER, myConfig.getOAuthClientID(TWITTER));
             jsonNode.put(FACEBOOK, myConfig.getOAuthClientID(FACEBOOK));
 
             // Put our JSON data into our context so it can be used by handlebars
@@ -111,9 +103,7 @@ public class LoginHandler extends JiiifyHandler {
 
         final HttpClientRequest request = aClient.get(443, hostPath.getValue0(), hostPath.getValue1(), handler -> {
             if (handler.statusCode() == 200) {
-                handler.bodyHandler(new JWTBodyHandler(aClient, aContext));
-            } else if (handler.statusCode() == 302) {
-                redirectOAuth1Token(aClient, aContext, aSite, aToken, handler.getHeader("Location"));
+                handler.bodyHandler(new JWTBodyHandler(aClient, aContext, myConfig));
             } else {
                 final HttpServerResponse response = aContext.response();
                 final String statusMessage = handler.statusMessage();
@@ -131,36 +121,6 @@ public class LoginHandler extends JiiifyHandler {
         request.end();
     }
 
-    private void redirectOAuth1Token(final HttpClient aClient, final RoutingContext aContext, final String aSite,
-            final String aToken, final String aRedirectURL) {
-        if (aRedirectURL != null) {
-            try {
-                final URL url = new URL(aRedirectURL);
-                final String host = url.getHost();
-                final String oauthCheck = url.getPath() + "?" + url.getQuery();
-
-                LOGGER.debug("Redirecting login... [host: {}] [path: {}]", host, oauthCheck);
-
-                final HttpClientRequest redirectRequest = aClient.get(443, host, oauthCheck, redirect -> {
-                    if (redirect.statusCode() == 200) {
-                        redirect.bodyHandler(new JWTBodyHandler(aClient, aContext));
-                    } else {
-                        fail(aContext, redirect.statusCode(), redirect.statusMessage());
-                        aClient.close();
-                    }
-                });
-
-                redirectRequest.end();
-            } catch (final MalformedURLException details) {
-                fail(aContext, details, "Malformed redirect URL location");
-                aClient.close();
-            }
-        } else {
-            fail(aContext, null, "Redirect didn't have 'Location' header");
-            aClient.close();
-        }
-    }
-
     private Pair<String, String> getHostPath(final String aService, final String aToken) {
         final String service = aService.toLowerCase(); // Should already by lower-case, but...
 
@@ -168,8 +128,6 @@ public class LoginHandler extends JiiifyHandler {
             return Pair.with(GOOGLE_HOST, StringUtils.format(GOOGLE_PATH, aToken));
         } else if (service.equals(FACEBOOK)) {
             return Pair.with(FACEBOOK_HOST, StringUtils.format(FACEBOOK_PATH, aToken, aToken));
-        } else if (service.equals(TWITTER)) {
-            return Pair.with(TWITTER_HOST, StringUtils.format(TWITTER_PATH, aToken));
         } else {
             throw new RuntimeException(StringUtils.format("Unexpected OAuth service: {}", aService));
         }
@@ -179,10 +137,13 @@ public class LoginHandler extends JiiifyHandler {
 
         private final RoutingContext myContext;
 
+        private final Configuration myConfig;
+
         private final HttpClient myClient;
 
-        private JWTBodyHandler(final HttpClient aClient, final RoutingContext aContext) {
+        private JWTBodyHandler(final HttpClient aClient, final RoutingContext aContext, final Configuration aConfig) {
             myContext = aContext;
+            myConfig = aConfig;
             myClient = aClient;
         }
 
@@ -190,47 +151,72 @@ public class LoginHandler extends JiiifyHandler {
         public void handle(final Buffer aBody) {
             LOGGER.debug("{} handling body: {}", getClass().getSimpleName(), aBody.toString());
 
-            final JsonObject jwt = extractJWT(new JsonObject(aBody.toString()));
-            final JWTOptions jwtOptions = new JWTOptions();
-            final String token = myJwtAuth.generateToken(jwt, jwtOptions);
+            try {
+                final JsonObject jwt = extractJWT(new JsonObject(aBody.toString()));
+                final JWTOptions jwtOptions = new JWTOptions();
+                final String token = myJwtAuth.generateToken(jwt, jwtOptions);
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Token's decoded JSON contents: {}", aBody.toString());
-            }
-
-            // Authenticating will give us a user which we can put into the session
-            myJwtAuth.authenticate(new JsonObject().put("jwt", token), authHandler -> {
-                final HttpServerResponse response = myContext.response();
-
-                if (authHandler.succeeded()) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("User successfully validated");
-                    }
-
-                    myContext.setUser(authHandler.result());
-                    response.putHeader(CONTENT_TYPE, TEXT_MIME_TYPE);
-                    response.end("success");
-                } else {
-                    LOGGER.error(authHandler.cause(), "Authentication did not succeed");
-                    response.putHeader(CONTENT_TYPE, TEXT_MIME_TYPE);
-                    response.end("failure");
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Token's decoded JSON contents: {}", aBody.toString());
                 }
 
+                // Authenticating will give us a user which we can put into the session
+                myJwtAuth.authenticate(new JsonObject().put("jwt", token), authHandler -> {
+                    final HttpServerResponse response = myContext.response();
+
+                    if (authHandler.succeeded()) {
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("User successfully validated");
+                        }
+
+                        myContext.setUser(authHandler.result());
+                        response.putHeader(CONTENT_TYPE, TEXT_MIME_TYPE);
+                        response.end(SUCCESS_RESPONSE);
+                    } else {
+                        LOGGER.error(authHandler.cause(), "Authentication did not succeed");
+                        response.putHeader(CONTENT_TYPE, TEXT_MIME_TYPE);
+                        response.end(FAILURE_RESPONSE);
+                    }
+
+                    myClient.close();
+                });
+            } catch (final FailedLoginException details) {
+                final HttpServerResponse response = myContext.response();
+
+                LOGGER.error(details.getMessage());
+
+                response.putHeader(CONTENT_TYPE, TEXT_MIME_TYPE);
+                response.end(FAILURE_RESPONSE);
+
                 myClient.close();
-            });
+            }
         }
 
-        private JsonObject extractJWT(final JsonObject aJsonObject) {
+        private JsonObject extractJWT(final JsonObject aJsonObject) throws FailedLoginException {
             final JsonObject jsonObject = new JsonObject();
+            final String email = aJsonObject.getString("email", "");
+            final String[] users = myConfig.getUsers();
 
-            if (aJsonObject.containsKey("email")) {
-                final String email = aJsonObject.getString("email");
+            // If we don't have any configured users, we allow all
+            if (users.length != 0) {
+                boolean found = false;
 
-                jsonObject.put("email", email);
-                jsonObject.put("username", email);
-            } else {
-                jsonObject.put("username", "screen_name");
+                for (int index = 0; index < users.length; index++) {
+                    if (users[index].equals(email)) {
+                        found = true;
+                    }
+                }
+
+                if (!found) {
+                    if (email.equals("")) {
+                        throw new FailedLoginException("No email was retrieved from OAuth");
+                    } else {
+                        throw new FailedLoginException("Not an allowed email: " + email);
+                    }
+                }
             }
+
+            jsonObject.put("email", email);
 
             if (aJsonObject.containsKey("name")) {
                 jsonObject.put("name", aJsonObject.getString("name"));

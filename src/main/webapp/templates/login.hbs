@@ -10,7 +10,6 @@
   <!-- TODO: merge these to 2 files: hello, login -->
   <script src="/admin/js/hello-min.js" defer="true"></script>
   <script src="/admin/js/google-min.js" defer="true"></script>
-  <script src="/admin/js/twitter-min.js" defer="true"></script>
   <script src="/admin/js/facebook-min.js" defer="true"></script>
   <script src="/admin/js/login.js" defer="true"></script>
   <script>
@@ -18,14 +17,12 @@
     window.onload = function() {
       hello.init({
         'google': '{{google}}',
-        'twitter': '{{twitter}}',
         'facebook': '{{facebook}}'
       }, {redirect_uri: urlParts[0] + "//" + urlParts[2] + '/login-response'});
     }
   </script>
   <div style="text-align:center" class="row">
     <div class="col-md-4" id="google-login"><button class="zocial google" onclick="login('google')">Login with Google</button></div>
-    <div class="col-md-4" id="twitter-login"><button class="zocial twitter" onclick="login('twitter')">Login with Twitter</button></div>
     <div class="col-md-4" id="facebook-login"><button class="zocial facebook" onclick="login('facebook')">Login with Facebook</button></div>
   </div>
 </div>

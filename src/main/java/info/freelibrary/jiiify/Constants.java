@@ -69,9 +69,7 @@ public interface Constants {
 
     public static final String FACEBOOK_OAUTH_CLIENT_ID = "jiiify.oauth.facebook.clientId";
 
-    public static final String TWITTER_OAUTH_CLIENT_ID = "jiiify.oauth.twitter.clientId";
-
-    public static final String TWITTER_OAUTH_SECRET_KEY = "jiiify.oauth.twitter.secretKey";
+    public static final String OAUTH_USERS = "jiiify.oauth.users";
 
     public static final String OVERWRITE_KEY = "jiiify.file.overwrite";
 
