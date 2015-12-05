@@ -8,6 +8,7 @@ import static info.freelibrary.jiiify.Constants.JKS_PROP;
 import static info.freelibrary.jiiify.Constants.KEY_PASS_PROP;
 import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -83,19 +84,28 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
         // Use https or http, but switching between them requires re-ingesting everything
         if (myConfig.usesHttps()) {
-            final InputStream inStream = getClass().getResourceAsStream("/" + JKS_PROP);
-            final String keystorePassword = System.getProperty(KEY_PASS_PROP, "");
-            final JksOptions jksOptions = new JksOptions().setPassword(keystorePassword);
+            final String jksProperty = System.getProperty(JKS_PROP, JKS_PROP);
+            final InputStream inStream = getClass().getResourceAsStream("/" + jksProperty);
+            final String ksPassword = System.getProperty(KEY_PASS_PROP, "");
+            final JksOptions jksOptions = new JksOptions().setPassword(ksPassword);
             final JsonObject jceksConfig = new JsonObject();
 
-            jceksConfig.put("path", JCEKS_PROP).put("type", "jceks").put("password", keystorePassword);
+            jceksConfig.put("path", JCEKS_PROP).put("type", "jceks").put("password", ksPassword);
             jwtAuth = JWTAuth.create(vertx, new JsonObject().put("keyStore", jceksConfig));
 
+            // Check the jar file first for it and then the file system
             if (inStream != null) {
                 jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
             } else {
-                // TODO: Make the store configurable (but keep this one around too for testing purposes)
-                jksOptions.setPath("target/classes/" + JKS_PROP);
+                final File jksFile = new File(jksProperty);
+
+                if (jksFile.exists()) {
+                    LOGGER.info("Using a system JKS configuration: {}", jksFile);
+                    jksOptions.setPath(jksFile.getAbsolutePath());
+                } else {
+                    LOGGER.debug("Using the build's default JKS: {}", jksProperty);
+                    jksOptions.setPath("target/classes/" + jksProperty);
+                }
             }
 
             options.setSsl(true).setKeyStoreOptions(jksOptions);
