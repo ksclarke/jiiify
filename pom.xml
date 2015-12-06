@@ -166,9 +166,6 @@
     <resources>
       <resource>
         <directory>src/main/resources</directory>
-        <excludes>
-          <exclude>${project.basedir}/target/letsencrypt2jks.sh</exclude>
-        </excludes>
         <filtering>true</filtering>
       </resource>
     </resources>
