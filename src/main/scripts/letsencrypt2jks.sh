@@ -13,18 +13,17 @@ if [ "$#" -ne 2 ]; then
 fi
 
 sudo openssl pkcs12 -export \
-  -in "/etc/letsencrypt/live/$1/cert.pem" \
+  -in "/etc/letsencrypt/live/$1/fullchain.pem" \
   -inkey "/etc/letsencrypt/live/$1/privkey.pem" \
   -out "/tmp/jiiify_cert_and_key.p12" \
   -name "jiiify" \
-  -CAfile "/etc/letsencrypt/live/$1/chain.pem" \
   -caname "root" \
   -password "pass:$2"
 
 sudo keytool -importkeystore \
   -deststorepass "$2" \
   -destkeypass "$2" \
-  -destkeystore "jiiify.jks" \
+  -destkeystore "le_jiiify.jks" \
   -srckeystore "/tmp/jiiify_cert_and_key.p12" \
   -srcstoretype "PKCS12" \
   -srcstorepass "$2" \
