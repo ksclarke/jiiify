@@ -113,5 +113,5 @@ public interface RoutePatterns {
      * A route pattern for serving static files.
      */
     public static final String STATIC_FILES_RE =
-            ".*(\\.js|\\.css|\\.ico|\\.png|\\.gif|\\.ttf|\\.eot|\\.svg|\\.woff)$";
+            ".*(\\.js|\\.css|\\.ico|\\.png|\\.gif|\\.ttf|\\.eot|\\.svg|\\.woff|\\.txt)$";
 }
