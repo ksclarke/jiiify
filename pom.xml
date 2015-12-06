@@ -166,6 +166,9 @@
     <resources>
       <resource>
         <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>${project.basedir}/target/letsencrypt2jks.sh</exclude>
+        </excludes>
         <filtering>true</filtering>
       </resource>
     </resources>
@@ -193,7 +196,10 @@
               <phase>generate-resources</phase>
               <configuration>
                 <perms>0775</perms>
-                <file>${project.basedir}/target/startup.sh</file>
+                <files>
+                  <file>${project.basedir}/target/startup.sh</file>
+                  <file>${project.basedir}/target/letsencrypt2jks.sh</file>
+                </files>
               </configuration>
             </execution>
           </executions>
