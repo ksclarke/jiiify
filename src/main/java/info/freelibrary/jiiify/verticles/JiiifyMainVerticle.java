@@ -85,25 +85,24 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         // Use https or http, but switching between them requires re-ingesting everything
         if (myConfig.usesHttps()) {
             final String jksProperty = System.getProperty(JKS_PROP, JKS_PROP);
-            final InputStream inStream = getClass().getResourceAsStream("/" + jksProperty);
             final String ksPassword = System.getProperty(KEY_PASS_PROP, "");
             final JksOptions jksOptions = new JksOptions().setPassword(ksPassword);
             final JsonObject jceksConfig = new JsonObject();
+            final File jksFile = new File(jksProperty);
 
             jceksConfig.put("path", JCEKS_PROP).put("type", "jceks").put("password", ksPassword);
             jwtAuth = JWTAuth.create(vertx, new JsonObject().put("keyStore", jceksConfig));
 
-            // Check the jar file first for it and then the file system
-            if (inStream != null) {
-                jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
+            if (jksFile.exists()) {
+                LOGGER.info("Using a system JKS configuration: {}", jksFile);
+                jksOptions.setPath(jksFile.getAbsolutePath());
             } else {
-                final File jksFile = new File(jksProperty);
+                final InputStream inStream = getClass().getResourceAsStream("/" + jksProperty);
 
-                if (jksFile.exists()) {
-                    LOGGER.info("Using a system JKS configuration: {}", jksFile);
-                    jksOptions.setPath(jksFile.getAbsolutePath());
+                if (inStream != null) {
+                    jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
                 } else {
-                    LOGGER.debug("Using the build's default JKS: {}", jksProperty);
+                    LOGGER.debug("Trying to use the build's default JKS: {}", jksProperty);
                     jksOptions.setPath("target/classes/" + jksProperty);
                 }
             }
