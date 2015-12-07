@@ -103,7 +103,7 @@ public class LoginHandler extends JiiifyHandler {
 
         final HttpClientRequest request = aClient.get(443, hostPath.getValue0(), hostPath.getValue1(), handler -> {
             if (handler.statusCode() == 200) {
-                handler.bodyHandler(new JWTBodyHandler(aClient, aContext, myConfig));
+                handler.bodyHandler(new JWTBodyHandler(aClient, aContext));
             } else {
                 final HttpServerResponse response = aContext.response();
                 final String statusMessage = handler.statusMessage();
@@ -137,13 +137,10 @@ public class LoginHandler extends JiiifyHandler {
 
         private final RoutingContext myContext;
 
-        private final Configuration myConfig;
-
         private final HttpClient myClient;
 
-        private JWTBodyHandler(final HttpClient aClient, final RoutingContext aContext, final Configuration aConfig) {
+        private JWTBodyHandler(final HttpClient aClient, final RoutingContext aContext) {
             myContext = aContext;
-            myConfig = aConfig;
             myClient = aClient;
         }
 
