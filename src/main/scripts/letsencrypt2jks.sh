@@ -12,6 +12,9 @@ if [ "$#" -ne 2 ]; then
   "Usage: target/letsencrypt2jks.sh [DOMAIN] [PASSWORD]"
 fi
 
+# Delete the JKS from our previous run (if it's still around)
+sudo rm -f le_jiiify.jks
+
 sudo openssl pkcs12 -export \
   -in "/etc/letsencrypt/live/$1/fullchain.pem" \
   -inkey "/etc/letsencrypt/live/$1/privkey.pem" \
