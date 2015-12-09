@@ -60,7 +60,12 @@ public class ImageHandler extends JiiifyHandler {
                     if (fsHandler.result()) {
                         serveImageFile(fileSystem, cacheFilePath, aContext);
                     } else {
-                        trySourceFile(pairtree, image, fileSystem, aContext);
+                        /* Turning this off until it's better tested */
+                        // trySourceFile(pairtree, image, fileSystem, aContext);
+
+                        /* Instead, return 404 */
+                        aContext.fail(404);
+                        aContext.put(ERROR_MESSAGE, msg("Image file not found: {}", cacheFilePath));
                     }
                 } else {
                     aContext.fail(404);
