@@ -19,16 +19,16 @@
   <logger name="ch.qos.logback" level="WARN" />
 
   <logger name="info.freelibrary.util.NativeLibraryLoader" level="INFO" />
-  <logger name="info.freelibrary.jiiify.verticles.WatchFolderVerticle" level="INFO" />
+  <logger name="info.freelibrary.jiiify.verticles.WatchFolderVerticle" level="WARN" />
 
   <logger name="info.freelibrary.jiiify.Configuration" level="INFO">
     <appender-ref ref="STDOUT" />
   </logger>
-  <logger name="info.freelibrary.jiiify.verticles.JiiifyMainVerticle" level="DEBUG">
+  <logger name="info.freelibrary.jiiify.verticles.JiiifyMainVerticle" level="INFO">
     <appender-ref ref="STDOUT" />
   </logger>
 
-  <logger name="info.freelibrary.jiiify" level="DEBUG"/>
+  <!--<logger name="info.freelibrary.jiiify" level="DEBUG"/>-->
   <logger name="info.freelibrary.jiiify.handlers.IngestHandler" level="WARN"/>
   <logger name="info.freelibrary.jiiify.verticles.ImageIngestVerticle" level="WARN"/>
 
