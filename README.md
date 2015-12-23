@@ -6,9 +6,7 @@ The Jiiify Image Server is a Java-based IIIF image server that, among its other 
 
 There are no stable Jiiify releases yet.
 
-To install a development release there are several steps.  Because Jiiify uses some libraries that are not yet stable, some project dependencies need to be pre-installed before installing Jiiify.  This will not be the case once Jiiify has reached a stable status.  At that point, all dependencies will be handled by Jiiify's Maven build.
-
-To start, download and install the [iiif-presentation-api](https://github.com/datazuul/iiif-presentation-api) software library.  To do this, you will need [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html), [git](https://git-scm.com/), and [Maven](http://maven.apache.org/) installed on your local machine (this is left as an exercise for the reader).
+To install a development release, you will need [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html), [git](https://git-scm.com/), and [Maven](http://maven.apache.org/) installed on your local machine (this is left as an exercise for the reader).
 
 Once these pre-requisites are installed, you can install a development copy of the Jiiify Image Server:
 
@@ -25,13 +23,25 @@ The server should then be available at: [https://localhost:8443](https://localho
 
 [Put something here]
 
+### Connecting a JDWP agent or JMX monitor
+
+You can build the project with support for connecting a JDWP agent by running with:
+
+    mvn clean install -Ddev.tools=JDWP_AGENTLIB
+
+Or with support for a JMX monitor:
+
+    mvn clean install -Ddev.tools=JMX_REMOTE
+
+Or with both:
+
+    mvn clean install -Ddev.tools="JDWP_AGENTLIB JMX_REMOTE"
+
+You can also supply the `dev.tools` variable in a default Maven profile. See `src/main/resources/settings.xml` for an example.
+
 ### License
 
 [BSD 3-Clause License](https://raw.githubusercontent.com/ksclarke/jiiify/master/LICENSE.txt)
-
-### Acknowledgements
-
-This project contains [IIIF Presentation API code](https://github.com/datazuul/iiif-presentation-api) written by Ralf Eichinger ([datazuul](https://github.com/datazuul)). This code is licensed by him under the [Apache License (Version 2.0)](https://raw.githubusercontent.com/datazuul/iiif-presentation-api/master/LICENSE) and included in this project according to its license.
 
 ### Contact
 

@@ -1,0 +1,3 @@
+Acknowledgments
+
+This project contains IIIF Presentation API code (https://github.com/datazuul/iiif-presentation-api) written by Ralf Eichinger. This code is licensed by him under the Apache License (Version 2.0).
