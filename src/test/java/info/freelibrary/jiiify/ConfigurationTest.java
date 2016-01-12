@@ -2,10 +2,10 @@
 package info.freelibrary.jiiify;
 
 import static info.freelibrary.jiiify.Configuration.DEFAULT_PORT;
-import static info.freelibrary.jiiify.Configuration.DEFAULT_TEMP_DIR;
+import static info.freelibrary.jiiify.Configuration.DEFAULT_UPLOADS_DIR;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_PROP;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
-import static info.freelibrary.jiiify.Constants.TEMP_DIR_PROP;
+import static info.freelibrary.jiiify.Constants.UPLOADS_DIR_PROP;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -55,10 +55,10 @@ public class ConfigurationTest {
     @Test
     public void testGetUploadsDir() throws ConfigurationException, IOException {
         final File dir = new File("/tmp/uploads-dir-" + UUID.randomUUID());
-        final JsonObject JsonCfgObj = new JsonObject().put(TEMP_DIR_PROP, dir.getAbsolutePath());
+        final JsonObject JsonCfgObj = new JsonObject().put(UPLOADS_DIR_PROP, dir.getAbsolutePath());
         final Configuration config = new Configuration(JsonCfgObj);
 
-        assertEquals(dir.getAbsolutePath(), config.getTempDir().getAbsolutePath());
+        assertEquals(dir.getAbsolutePath(), config.getUploadsDir().getAbsolutePath());
     }
 
     @Test
@@ -201,67 +201,68 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void testSetTempDir() throws ConfigurationException, IOException, NoSuchMethodException, SecurityException,
+    public void testSetUploadsDir() throws ConfigurationException, IOException, NoSuchMethodException,
+            SecurityException,
             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
         final Configuration config = new Configuration(jsonConfig);
         final File dir = new File("/tmp/uploads-dir-" + UUID.randomUUID());
-        final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
+        final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
+        final File expected = new File(dir.getAbsolutePath());
 
         method.setAccessible(true);
-        assertEquals(new File(dir.getAbsolutePath()), method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, dir
-                .getAbsolutePath())));
+        assertEquals(expected, method.invoke(config, jsonConfig.put(UPLOADS_DIR_PROP, dir.getAbsolutePath())));
         dir.delete();
     }
 
     @Test
-    public void testsetTempDirUsingTmpLoc() throws ConfigurationException, IOException, NoSuchMethodException,
+    public void testSetUploadsDirUsingTmpLoc() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
         final Configuration config = new Configuration(jsonConfig);
-        final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
+        final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
-        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "java.io.tmpdir")));
+        assertEquals(DEFAULT_UPLOADS_DIR, method.invoke(config, jsonConfig.put(UPLOADS_DIR_PROP, "java.io.tmpdir")));
     }
 
     @Test
-    public void testsetTempDirUsingEmptyLoc() throws ConfigurationException, IOException, NoSuchMethodException,
+    public void testSetUploadsDirUsingEmptyLoc() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
         final Configuration config = new Configuration(jsonConfig);
-        final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
+        final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
-        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "")));
+        assertEquals(DEFAULT_UPLOADS_DIR, method.invoke(config, jsonConfig.put(UPLOADS_DIR_PROP, "")));
     }
 
     @Test(expected = InvocationTargetException.class)
-    public void testsetTempDirCannotWrite() throws ConfigurationException, IOException, IllegalAccessException,
+    public void testSetUploadsDirCannotWrite() throws ConfigurationException, IOException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         final JsonObject jsonConfig = new JsonObject();
         final Configuration config = new Configuration(jsonConfig);
         final File file = new File("/tmp/test-file-" + UUID.randomUUID());
-        final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
+        final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
         file.createNewFile();
         file.setReadOnly();
-        method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, file.getAbsolutePath()));
+        method.invoke(config, jsonConfig.put(UPLOADS_DIR_PROP, file.getAbsolutePath()));
         file.setWritable(true);
         file.delete();
     }
 
     @Test(expected = InvocationTargetException.class)
-    public void testsetTempDirDoesnotExist() throws ConfigurationException, IOException, NoSuchMethodException,
+    public void testSetUploadsDirDoesnotExist() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
         final Configuration config = new Configuration(jsonConfig);
         final File file = new File("/this/path/does/not/exist/and/you/cannot/create/it");
-        final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
+        final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
-        method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, file.getAbsolutePath()));
+        method.invoke(config, jsonConfig.put(UPLOADS_DIR_PROP, file.getAbsolutePath()));
 
         // It doesn't but just in case
         if (file.exists()) {
@@ -271,50 +272,50 @@ public class ConfigurationTest {
     }
 
     @Test
-    public void testsetTempDirUsingSystemProperty() throws ConfigurationException, IOException,
+    public void testSetUploadsDirUsingSystemProperty() throws ConfigurationException, IOException,
             IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
             SecurityException {
         final JsonObject jsonConfig = new JsonObject();
         final Configuration config = new Configuration(jsonConfig);
-        final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
+        final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
-        System.setProperty(TEMP_DIR_PROP, "java.io.tmpdir");
-        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "/tmp/test")));
-        System.clearProperty(TEMP_DIR_PROP);
+        System.setProperty(UPLOADS_DIR_PROP, "java.io.tmpdir");
+        assertEquals(DEFAULT_UPLOADS_DIR, method.invoke(config, jsonConfig.put(UPLOADS_DIR_PROP, "/tmp/test")));
+        System.clearProperty(UPLOADS_DIR_PROP);
     }
 
     @Test
-    public void testsetTempDirUsingSystemPropertyWithoutLogging() throws ConfigurationException, IOException,
+    public void testSetUploadsDirUsingSystemPropertyWithoutLogging() throws ConfigurationException, IOException,
             IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
             SecurityException {
         final JsonObject jsonConfig = new JsonObject();
         final Configuration config = new Configuration(jsonConfig);
         final String logLevel = LoggingUtils.getLogLevel(Configuration.class);
-        final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
+        final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
         LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-        System.setProperty(TEMP_DIR_PROP, "java.io.tmpdir");
-        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "/tmp/test")));
-        System.clearProperty(TEMP_DIR_PROP);
+        System.setProperty(UPLOADS_DIR_PROP, "java.io.tmpdir");
+        assertEquals(DEFAULT_UPLOADS_DIR, method.invoke(config, jsonConfig.put(UPLOADS_DIR_PROP, "/tmp/test")));
+        System.clearProperty(UPLOADS_DIR_PROP);
         LoggingUtils.setLogLevel(Configuration.class, logLevel);
     }
 
     @Test
-    public void testsetTempDirUsingSystemPropertyWithoutLoggingButPathSupplied() throws ConfigurationException,
+    public void testSetUploadsDirUsingSystemPropertyWithoutLoggingButPathSupplied() throws ConfigurationException,
             IOException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
         final Configuration config = new Configuration(jsonConfig);
         final String logLevel = LoggingUtils.getLogLevel(Configuration.class);
-        final Method method = Configuration.class.getDeclaredMethod("setTempDir", JsonObject.class);
+        final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
         LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-        System.setProperty(TEMP_DIR_PROP, DEFAULT_TEMP_DIR.getAbsolutePath());
-        assertEquals(DEFAULT_TEMP_DIR, method.invoke(config, jsonConfig.put(TEMP_DIR_PROP, "/tmp/test")));
-        System.clearProperty(TEMP_DIR_PROP);
+        System.setProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR.getAbsolutePath());
+        assertEquals(DEFAULT_UPLOADS_DIR, method.invoke(config, jsonConfig.put(UPLOADS_DIR_PROP, "/tmp/test")));
+        System.clearProperty(UPLOADS_DIR_PROP);
         LoggingUtils.setLogLevel(Configuration.class, logLevel);
     }
 

@@ -21,7 +21,7 @@ public interface Constants {
 
     public static final String DATA_DIR_PROP = "jiiify.data.dir";
 
-    public static final String TEMP_DIR_PROP = "jiiify.temp.dir";
+    public static final String UPLOADS_DIR_PROP = "jiiify.uploads.dir";
 
     public static final String WATCH_FOLDER_PROP = "jiiify.watch.folder";
 

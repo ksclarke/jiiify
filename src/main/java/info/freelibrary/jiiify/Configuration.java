@@ -10,8 +10,8 @@ import static info.freelibrary.jiiify.Constants.HTTP_PORT_REDIRECT_PROP;
 import static info.freelibrary.jiiify.Constants.OAUTH_USERS;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.Constants.SOLR_SERVER_PROP;
-import static info.freelibrary.jiiify.Constants.TEMP_DIR_PROP;
 import static info.freelibrary.jiiify.Constants.TILE_SIZE_PROP;
+import static info.freelibrary.jiiify.Constants.UPLOADS_DIR_PROP;
 import static info.freelibrary.jiiify.Constants.URL_SCHEME_PROP;
 import static info.freelibrary.jiiify.Constants.WATCH_FOLDER_PROP;
 
@@ -38,7 +38,6 @@ import info.freelibrary.util.PairtreeRoot;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.Shareable;
-import io.vertx.ext.web.handler.BodyHandler;
 
 /**
  * A developer-friendly wrapper around the default Vertx configuration JsonObject.
@@ -59,7 +58,9 @@ public class Configuration implements Shareable {
 
     public static final long DEFAULT_SESSION_TIMEOUT = 7200000L; // two hours
 
-    public static final File DEFAULT_TEMP_DIR = new File(System.getProperty("java.io.tmpdir"), TEMP_DIR_PROP);
+    // Sets temp directory to something like /tmp/jiiify-temp-dir for a default value
+    public static final File DEFAULT_UPLOADS_DIR = new File(System.getProperty("java.io.tmpdir"),
+            "jiiify-file-uploads");
 
     public static final File DEFAULT_DATA_DIR = new File("jiiify_data");
 
@@ -81,7 +82,7 @@ public class Configuration implements Shareable {
 
     private final String myServicePrefix;
 
-    private final File myTempDir;
+    private final File myUploadsDir;
 
     private final File myWatchFolder;
 
@@ -105,7 +106,7 @@ public class Configuration implements Shareable {
      */
     public Configuration(final JsonObject aConfig) throws ConfigurationException, IOException {
         myServicePrefix = setServicePrefix(aConfig);
-        myTempDir = setTempDir(aConfig);
+        myUploadsDir = setUploadsDir(aConfig);
         myPort = setPort(aConfig);
         myRedirectPort = setRedirectPort(aConfig);
         myHost = setHost(aConfig);
@@ -292,15 +293,8 @@ public class Configuration implements Shareable {
      *
      * @return The directory into which uploads should be put
      */
-    public File getTempDir() {
-        final File defaultTempDir = new File(BodyHandler.DEFAULT_UPLOADS_DIRECTORY);
-
-        // Sadly, Vertx BodyHandler wants to create this directory on its construction
-        if (!defaultTempDir.equals(myTempDir) && defaultTempDir.exists() && !defaultTempDir.delete()) {
-            LOGGER.error("Couldn't delete the BodyHandler default uploads directory");
-        }
-
-        return myTempDir;
+    public File getUploadsDir() {
+        return myUploadsDir;
     }
 
     /**
@@ -601,27 +595,24 @@ public class Configuration implements Shareable {
         return prefix;
     }
 
-    private File setTempDir(final JsonObject aConfig) throws ConfigurationException {
+    private File setUploadsDir(final JsonObject aConfig) throws ConfigurationException {
         final Properties properties = System.getProperties();
-        final String defaultUploadDirPath = DEFAULT_TEMP_DIR.getAbsolutePath();
-        final File tempDir;
+        final String defaultUploadDirPath = DEFAULT_UPLOADS_DIR.getAbsolutePath();
+        final File uploadsDir;
 
-        // First, clean up the default uploads directory that is automatically created
-        new File(BodyHandler.DEFAULT_UPLOADS_DIRECTORY).delete();
-
-        // Then get the uploads directory we want to use
-        if (properties.containsKey(TEMP_DIR_PROP)) {
+        // Then get the uploads directory we want to use, giving preference to system properties
+        if (properties.containsKey(UPLOADS_DIR_PROP)) {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Found {} set in system properties", TEMP_DIR_PROP);
+                LOGGER.debug("Found {} set in system properties", UPLOADS_DIR_PROP);
             }
 
-            tempDir = checkTmpDir(properties.getProperty(TEMP_DIR_PROP, defaultUploadDirPath));
+            uploadsDir = confirmUploadsDir(properties.getProperty(UPLOADS_DIR_PROP, defaultUploadDirPath));
         } else {
-            tempDir = checkTmpDir(aConfig.getString(TEMP_DIR_PROP, defaultUploadDirPath));
+            uploadsDir = confirmUploadsDir(aConfig.getString(UPLOADS_DIR_PROP, defaultUploadDirPath));
         }
 
-        LOGGER.info("Setting Jiiify file uploads directory to: {}", tempDir);
-        return tempDir;
+        LOGGER.info("Setting Jiiify file uploads directory to: {}", uploadsDir);
+        return uploadsDir;
     }
 
     private Map<String, PairtreeRoot> setDataDir(final JsonObject aConfig) throws ConfigurationException,
@@ -640,7 +631,9 @@ public class Configuration implements Shareable {
             dataDirs.put(DEFAULT_DATA_DIR_NAME, makePairtreeRoot(new File(aConfig.getString(DATA_DIR_PROP, path))));
         }
 
-        LOGGER.info("Setting Jiiify data directory to: {}", dataDirs.get(DEFAULT_DATA_DIR_NAME));
+        LOGGER.info("Setting default Jiiify data directory to: {}", dataDirs.get(DEFAULT_DATA_DIR_NAME)
+                .getParentFile().getAbsolutePath());
+
         return Collections.unmodifiableMap(dataDirs);
     }
 
@@ -696,11 +689,11 @@ public class Configuration implements Shareable {
         return watchFolder;
     }
 
-    private File checkTmpDir(final String aDirPath) throws ConfigurationException {
+    private File confirmUploadsDir(final String aDirPath) throws ConfigurationException {
         File uploadsDir;
 
         if (aDirPath.equalsIgnoreCase("java.io.tmpdir") || aDirPath.trim().equals("")) {
-            uploadsDir = DEFAULT_TEMP_DIR;
+            uploadsDir = DEFAULT_UPLOADS_DIR;
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Using a temporary directory {} for file uploads", uploadsDir);
