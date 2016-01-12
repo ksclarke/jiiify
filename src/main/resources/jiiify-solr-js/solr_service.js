@@ -40,7 +40,7 @@ var SolrService = function(j_val) {
    */
   this.search = function(aJsonObject, aHandler) {
     var __args = arguments;
-    if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
+    if (__args.length === 2 && (typeof __args[0] === 'object' && __args[0] != null) && typeof __args[1] === 'function') {
       j_solrService["search(io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](utils.convParamJsonObject(aJsonObject), function(ar) {
       if (ar.succeeded()) {
         aHandler(utils.convReturnJson(ar.result()), null);
@@ -59,7 +59,7 @@ var SolrService = function(j_val) {
    */
   this.index = function(aJsonObject, aHandler) {
     var __args = arguments;
-    if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
+    if (__args.length === 2 && (typeof __args[0] === 'object' && __args[0] != null) && typeof __args[1] === 'function') {
       j_solrService["index(io.vertx.core.json.JsonObject,io.vertx.core.Handler)"](utils.convParamJsonObject(aJsonObject), function(ar) {
       if (ar.succeeded()) {
         aHandler(ar.result(), null);
