@@ -12,6 +12,10 @@ import static info.freelibrary.jiiify.util.SolrUtils.DOCS;
 import static info.freelibrary.jiiify.util.SolrUtils.RESPONSE;
 
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.javatuples.Pair;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -84,6 +88,7 @@ public class SearchHandler extends JiiifyHandler {
 
     /* FIXME: We need a better way to work with all this JSON -- a Solr object(?) */
     private ObjectNode toJsonNode(final JsonObject aJsonObject) throws URISyntaxException {
+        final List<Pair<Integer, Integer>> pairs = new ArrayList<Pair<Integer, Integer>>();
         final JsonObject emptyObject = new JsonObject();
         final JsonObject responseHeader = aJsonObject.getJsonObject("responseHeader", emptyObject);
         final JsonObject queryParams = responseHeader.getJsonObject("params", emptyObject);
@@ -173,13 +178,40 @@ public class SearchHandler extends JiiifyHandler {
             jsonNode.put("nextPageNum", start + count);
         }
 
+        int currentPage = 0;
+
         // Generate our pages list for page to page navigation
         for (int index = 0, pageNumber = 0; index < total; index += count) {
-            final ObjectNode objNode = mapper.createObjectNode();
+            if (start >= index && start < index + count) {
+                currentPage = currentPage + 1;
+                LOGGER.debug("Current page: {}", currentPage);
+            }
 
-            objNode.put("page-start", index);
-            objNode.put("page-number", ++pageNumber);
-            pageArray.add(objNode);
+            pairs.add(Pair.with(Integer.valueOf(index), Integer.valueOf(++pageNumber)));
+        }
+
+        if (pairs.size() > 200) {
+            final int listStart = currentPage - 100 <= 0 ? 0 : currentPage - 100;
+            final int listEnd = currentPage + 100 >= pairs.size() ? pairs.size() : currentPage + 100;
+            final List<Pair<Integer, Integer>> subpairs = pairs.subList(listStart, listEnd);
+
+            for (int index = 0; index < subpairs.size(); index++) {
+                final ObjectNode objNode = mapper.createObjectNode();
+                final Pair<Integer, Integer> pair = pairs.get(index);
+
+                objNode.put("page-start", pair.getValue0());
+                objNode.put("page-number", pair.getValue1());
+                pageArray.add(objNode);
+            }
+        } else {
+            for (int index = 0; index < pairs.size(); index++) {
+                final ObjectNode objNode = mapper.createObjectNode();
+                final Pair<Integer, Integer> pair = pairs.get(index);
+
+                objNode.put("page-start", pair.getValue0());
+                objNode.put("page-number", pair.getValue1());
+                pageArray.add(objNode);
+            }
         }
 
         // Put our service prefix in so we can construct URLs with it

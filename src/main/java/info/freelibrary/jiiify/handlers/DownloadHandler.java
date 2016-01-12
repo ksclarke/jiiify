@@ -150,7 +150,7 @@ public class DownloadHandler extends JiiifyHandler {
     private void startDownload(final RoutingContext aContext, final FileSystem aFileSystem, final String aID) {
         try {
             final String objPath = PathUtils.getObjectPath(aContext.vertx(), aID);
-            final File uploadsDir = myConfig.getTempDir();
+            final File uploadsDir = myConfig.getUploadsDir();
             final String encodedID = PathUtils.encodeIdentifier(aID);
             final File zipFile = new File(uploadsDir, encodedID + ".zip");
             final FilenameFilter filter = new FileExtFileFilter("jpg", "tiff", "png", "webp", "pdf", "jp2", "gif");
