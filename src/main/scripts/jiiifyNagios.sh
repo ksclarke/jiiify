@@ -9,13 +9,13 @@
 if [ $# -ne 2 ]; then
   echo "Usage: ./jiiifyNagios my.domain.edu [basic]"
 else
-  if [ ${1:0:8} != 'https://' ]; then
+  if [ ${1:0:8} != 'https://' ] && [ ${1:0:7} != 'http://' ]; then
     URL='https://'${1%/}
   else
     URL=${1%/}
   fi
 
-  STATUS=`curl -k -s "${URL}/status/${2}"`
+  STATUS=`curl -k -s -L "${URL}/status/${2}"`
   echo "$STATUS" | cut -d '_' -f 2
 
   if [[ ${STATUS:0:2} == 'OK' ]]; then
