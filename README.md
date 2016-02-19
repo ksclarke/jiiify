@@ -13,7 +13,16 @@ Once these pre-requisites are installed, you can install a development copy of t
     git clone https://github.com/ksclarke/jiiify.git
     mvn clean install -Denforcer.skip=true
 
-To start Jiiify, from the project directory, type:
+While images can be served without connecting Jiiify to Solr, parts of the administrative interface do require a Solr connection (for browsing images in the administrative interface, IIIF manifest creation, etc.) If you don't already have Solr running on your local machine (or even if you do), you can use Docker to easily bring up Solr at the place that Jiiify expects to find it. To do this, type:
+
+    docker run --name jiiify_solr -d -p 8983:8983 -t solr
+    docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify
+
+This will bring up Solr and create a core for Jiiify's use. Of course, after the first time this has been done, you only need to type the following to start the Solr container:
+
+    docker start jiiify_solr
+
+Once all that's done, you can start Jiiify. To do this, from the project directory, type:
 
     target/startup.sh
 

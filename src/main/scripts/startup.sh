@@ -1,5 +1,9 @@
 #! /bin/bash
 
+#
+# This is a startup script for devs. It's not intended for production. See the supervisor config for that.
+#
+
 # We're going to be opinionated about logging frameworks
 LOG_DELEGATE="-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.SLF4JLogDelegateFactory"
 KEY_PASS_CONFIG="-Djiiify.key.pass=${jiiify.key.pass}"
@@ -40,6 +44,58 @@ fi
 if [[ "${dev.tools}" == *"JMX_REMOTE"* ]]; then
   echo "[DEBUG] Using JMX_REMOTE for JMX connections (port 9001)"
   TOOLING="$TOOLING $JMX_REMOTE"
+fi
+
+# Start up a Solr instance automatically if we have Docker installed
+if hash docker 2>/dev/null; then
+  CONTAINER_ID=$(docker ps -q --filter "name=jiiify_solr")
+
+  # First check whether our Jiiify Solr container is active
+  if [ -z "${CONTAINER_ID}" ]; then
+    CONTAINER_ID=$(docker ps -a -q --filter "name=jiiify_solr")
+
+    # If container has never been created, create it and its Solr core
+    if [ -z "${CONTAINER_ID}" ]; then
+      CONTAINER_ID=$(docker run --name jiiify_solr -d -p 8983:8983 -t solr)
+      PING="http://localhost:8983/solr/jiiify/admin/ping"
+
+      for INDEX in $(seq 1 10); do
+    	  docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify >/dev/null 2>&1
+        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
+
+        if [ "$RESPONSE_CODE" == "200" ]; then
+          break
+        elif [ $INDEX == 10 ]; then
+          echo "[ERROR] startup.sh | Failed to start Solr server"
+          exit 1
+        else
+          sleep 6
+        fi
+      done
+
+      echo "[INFO] startup.sh | Jiiify Solr [${CONTAINER_ID:0:12}] created and started..."
+    else
+      CONTAINER_ID=$(docker start ${CONTAINER_ID})
+
+      for INDEX in $(seq 1 10); do
+        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
+
+        if [ "$RESPONSE_CODE" == "200" ]; then
+          echo "Successful start"
+          break
+        elif [ $INDEX == 10 ]; then
+          echo "[ERROR] startup.sh | Failed to start Solr server"
+          exit 1
+        else
+          sleep 6
+        fi
+      done
+
+      echo "[INFO] startup.sh | Existing Jiiify Solr [${CONTAINER_ID}] restarted..."
+    fi
+  else
+    echo "[INFO] startup.sh | Jiiify Solr [${CONTAINER_ID}] is already running..."
+  fi
 fi
 
 $AUTHBIND java -Xmx${jiiify.memory} $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR \
