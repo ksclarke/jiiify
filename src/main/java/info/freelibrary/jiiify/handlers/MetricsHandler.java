@@ -13,6 +13,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class MetricsHandler extends JiiifyHandler {
 
+    /**
+     * Creates a metrics handler.
+     *
+     * @param aConfig The application's configuration
+     */
     public MetricsHandler(final Configuration aConfig) {
         super(aConfig);
     }

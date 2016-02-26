@@ -22,60 +22,118 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 
 /**
  * <p>
- * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/annotation/{name}</p>
+ * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/annotation/{name}
+ * </p>
  *
  * @author Ralf Eichinger
  */
 public class Annotation extends AbstractIiifResource {
 
-    private String description; // optional
-    private String label; // optional
-    private List<Metadata> metadata; // optional
-    private String thumbnail; // optional
-    private String viewingHint; // optional
+    private String myDescription; // optional
 
+    private String myLabel; // optional
+
+    private List<Metadata> myMetadata; // optional
+
+    private String myThumbnail; // optional
+
+    private String myViewingHint; // optional
+
+    /**
+     * Creates IIIF annotation resource.
+     */
     public Annotation() {
-        type = "oa:Annotation";
+        myType = "oa:Annotation";
     }
 
+    /**
+     * Gets the annotation resource description.
+     *
+     * @return The annotation resource description
+     */
     public String getDescription() {
-        return description;
+        return myDescription;
     }
 
-    public void setDescription(final String description) {
-        this.description = description;
+    /**
+     * Sets the annotation resource description.
+     *
+     * @param aDescription The annotation resource description
+     */
+    public void setDescription(final String aDescription) {
+        myDescription = aDescription;
     }
 
-
+    /**
+     * Gets the annotation resource label.
+     *
+     * @return The annotation resource label
+     */
     public String getLabel() {
-        return label;
+        return myLabel;
     }
 
-    public void setLabel(final String label) {
-        this.label = label;
+    /**
+     * Sets the annotation resource label.
+     *
+     * @param aLabel The annotation resource label
+     */
+    public void setLabel(final String aLabel) {
+        myLabel = aLabel;
     }
 
+    /**
+     * Gets the annotation resource metadata.
+     *
+     * @return The annotation resource metadata
+     */
     public List<Metadata> getMetadata() {
-        return metadata;
+        return myMetadata;
     }
 
-    public void setMetadata(final List<Metadata> metadata) {
-        this.metadata = metadata;
+    /**
+     * Sets the annotation resource metadata.
+     *
+     * @param aMetadata The annotation resource metadata
+     */
+    public void setMetadata(final List<Metadata> aMetadata) {
+        myMetadata = aMetadata;
     }
 
+    /**
+     * Gets the annotation resource thumbnail.
+     *
+     * @return The annotation resource thumbnail
+     */
     public String getThumbnail() {
-        return thumbnail;
+        return myThumbnail;
     }
 
-    public void setThumbnail(final String thumbnail) {
-        this.thumbnail = thumbnail;
+    /**
+     * Sets the annotation resource thumbnail.
+     *
+     * @param aThumbnail The annotation resource thumbnail
+     */
+    public void setThumbnail(final String aThumbnail) {
+        myThumbnail = aThumbnail;
     }
 
+    /**
+     * Gets the annotation resource viewing hint.
+     *
+     * @return The annotation resource viewing hint
+     */
     public String getViewingHint() {
-        return viewingHint;
+        return myViewingHint;
     }
 
-    public void setViewingHint(final String viewingHint) {
-        this.viewingHint = viewingHint;
+    /**
+     * Sets the annotation resource viewing hint.
+     *
+     * @param aViewingHint The annotation resource viewing hint
+     */
+    public void setViewingHint(final String aViewingHint) {
+        myViewingHint = aViewingHint;
     }
+
 }

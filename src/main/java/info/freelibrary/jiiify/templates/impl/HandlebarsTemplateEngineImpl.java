@@ -48,6 +48,9 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
 
     private final Handlebars myHandlebars;
 
+    /**
+     * Creates a Handlebars template engine implementation.
+     */
     public HandlebarsTemplateEngineImpl() {
         super(HandlebarsTemplateEngine.DEFAULT_TEMPLATE_EXTENSION, HandlebarsTemplateEngine.DEFAULT_MAX_CACHE_SIZE);
         myHandlebars = new Handlebars(new ClassPathTemplateLoader("/webroot"));

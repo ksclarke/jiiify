@@ -12,6 +12,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class PageHandler extends JiiifyHandler {
 
+    /**
+     * Creates a generic page handler for Jiiify.
+     *
+     * @param aConfig A application configuration
+     */
     public PageHandler(final Configuration aConfig) {
         super(aConfig);
     }

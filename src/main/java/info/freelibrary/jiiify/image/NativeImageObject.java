@@ -21,6 +21,11 @@ public class NativeImageObject implements ImageObject {
 
     private Mat myImage;
 
+    /**
+     * Creates new image using underlying native processing libraries.
+     * 
+     * @param aSourceImage A source image file
+     */
     public NativeImageObject(final File aSourceImage) {
         myImage = Imgcodecs.imread(aSourceImage.getAbsolutePath());
     }

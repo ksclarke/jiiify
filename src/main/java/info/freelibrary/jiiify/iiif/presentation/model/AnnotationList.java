@@ -21,62 +21,122 @@ import java.util.List;
 import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 
 /**
- * <p>Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/list/{name}</p>
+ * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/list/{name}
  *
  * @author Ralf Eichinger
  */
 public class AnnotationList extends AbstractIiifResource {
 
-    private String description; // optional
-    private String label; // optional
-    private List<Metadata> metadata; // optional
-    private String thumbnail; // optional
-    private String viewingHint; // optional
+    private String myDescription; // optional
 
-    public AnnotationList(final String id) {
-        assert id != null;
-        this.id = id;
+    private String myLabel; // optional
 
-        type = "sc:AnnotationList";
+    private List<Metadata> myMetadata; // optional
+
+    private String myThumbnail; // optional
+
+    private String myViewingHint; // optional
+
+    /**
+     * Creates a new annotation list with the supplied ID.
+     *
+     * @param aID The ID for the annotation list
+     */
+    public AnnotationList(final String aID) {
+        assert aID != null;
+        myID = aID;
+
+        myType = "sc:AnnotationList";
     }
 
+    /**
+     * Gets description of the annotation list.
+     *
+     * @return The annotation list's description
+     */
     public String getDescription() {
-        return description;
+        return myDescription;
     }
 
-    public void setDescription(final String description) {
-        this.description = description;
+    /**
+     * Sets description for the annotation list.
+     *
+     * @param aDescription A description for the annotation list
+     */
+    public void setDescription(final String aDescription) {
+        myDescription = aDescription;
     }
 
+    /**
+     * Gets label of the annotation list.
+     *
+     * @return The annotation list's label
+     */
     public String getLabel() {
-        return label;
+        return myLabel;
     }
 
-    public void setLabel(final String label) {
-        this.label = label;
+    /**
+     * Sets label for the annotation list.
+     *
+     * @param aLabel A label for the annotation list
+     */
+    public void setLabel(final String aLabel) {
+        myLabel = aLabel;
     }
 
+    /**
+     * Gets metadata for the annotation list.
+     *
+     * @return The annotation list's metadata
+     */
     public List<Metadata> getMetadata() {
-        return metadata;
+        return myMetadata;
     }
 
-    public void setMetadata(final List<Metadata> metadata) {
-        this.metadata = metadata;
+    /**
+     * Sets metadata for the annotation list.
+     *
+     * @param aMetadata A metadata list for the annotation list
+     */
+    public void setMetadata(final List<Metadata> aMetadata) {
+        myMetadata = aMetadata;
     }
 
+    /**
+     * Gets a thumbnail for the annotation list.
+     *
+     * @return The annotation list's thumbnail
+     */
     public String getThumbnail() {
-        return thumbnail;
+        return myThumbnail;
     }
 
-    public void setThumbnail(final String thumbnail) {
-        this.thumbnail = thumbnail;
+    /**
+     * Sets the annotation list's thumbnail.
+     *
+     * @param aThumbnail A thumbnail for the annotation list
+     */
+    public void setThumbnail(final String aThumbnail) {
+        myThumbnail = aThumbnail;
     }
 
+    /**
+     * Gets the annotation list's viewing hint.
+     *
+     * @return The annotation list's viewing hint
+     */
     public String getViewingHint() {
-        return viewingHint;
+        return myViewingHint;
     }
 
-    public void setViewingHint(final String viewingHint) {
-        this.viewingHint = viewingHint;
+    /**
+     * Sets the annotation list's viewing hint.
+     *
+     * @param aViewingHint A viewing hint for the annotation list
+     */
+    public void setViewingHint(final String aViewingHint) {
+        myViewingHint = aViewingHint;
     }
+
 }

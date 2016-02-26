@@ -79,6 +79,9 @@ public class ImageFormat {
 
     private String myFormat;
 
+    /**
+     * Creates a new image format object.
+     */
     public ImageFormat() {
         myFormat = MIME2EXT_MAP.get(EXT2MIME_MAP.get(DEFAULT_FORMAT));
     }
@@ -96,14 +99,30 @@ public class ImageFormat {
         }
     }
 
+    /**
+     * Determines if the supplied file extension matches one of the supported image formats.
+     * 
+     * @param aFileExtension A file extension from an image file
+     * @return True if the image type represented by the extension is supported; else, false
+     */
     public static boolean isSupportedFormat(final String aFileExtension) {
         return EXT2MIME_MAP.containsKey(aFileExtension.toLowerCase());
     }
 
+    /**
+     * Gets the supported image extensions.
+     * 
+     * @return The extensions of the supported image types
+     */
     public static String[] getExtensions() {
         return EXT2MIME_MAP.keySet().toArray(new String[EXT2MIME_MAP.size()]);
     }
 
+    /**
+     * Gets the supported image MIME types.
+     * 
+     * @return The MIME types of the supported image types
+     */
     public static String[] getMimeTypes() {
         return MIME2EXT_MAP.keySet().toArray(new String[MIME2EXT_MAP.size()]);
     }
@@ -113,22 +132,50 @@ public class ImageFormat {
         return myFormat;
     }
 
+    /**
+     * Gets the file extension associated with this particular image format.
+     * 
+     * @return The file extension associated with this particular image format
+     */
     public String getExtension() {
         return myFormat;
     }
 
+    /**
+     * Gets the MIME type associated with this particular image format.
+     * 
+     * @return The MIME type associated with this particular image format
+     */
     public String getMIMEType() {
         return EXT2MIME_MAP.get(myFormat);
     }
 
+    /**
+     * Gets the preferred file extension for the supplied MIME type.
+     * 
+     * @param aMIMEType A MIME type for which to return a file extension
+     * @return A file extension for the supplied MIME type
+     */
     public final static String getExtension(final String aMIMEType) {
         return MIME2EXT_MAP.get(aMIMEType);
     }
 
+    /**
+     * Gets the MIME type for the supplied file extension.
+     * 
+     * @param aFileExt A file extension for which to return a MIME type
+     * @return A MIME type for the supplied file extension
+     */
     public final static String getMIMEType(final String aFileExt) {
         return EXT2MIME_MAP.get(aFileExt);
     }
 
+    /**
+     * Returns whether the supplied file extension is valid for the image format.
+     * 
+     * @param aFileExt A file extension to compare to the current image format
+     * @return True if the supplied file extension is valid for the image format in hand; else, false
+     */
     public boolean matches(final String aFileExt) {
         return EXT2MIME_MAP.containsKey(aFileExt) ? myFormat.equals(getExtension(getMIMEType(aFileExt))) : false;
     }

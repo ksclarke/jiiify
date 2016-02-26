@@ -17,49 +17,90 @@
 package info.freelibrary.jiiify.iiif.presentation.model.other;
 
 /**
- *
  * @author Ralf Eichinger
  */
 public class Resource {
-    protected String format;
+
+    protected String myFormat;
+
     // the URI at which the image can be obtained: "%3A" == ":"
     // {scheme}://{server}{/prefix}/{identifier}/{region}/{size}/{rotation}/{quality}.{format}
-    protected String id;
-    protected String type;
+    protected String myID;
 
-    private Service service;
+    protected String myType;
 
+    private Service myService;
+
+    /**
+     * Gets resource format.
+     *
+     * @return resource format
+     */
     public String getFormat() {
-        return format;
+        return myFormat;
     }
 
-    public void setFormat(final String format) {
-        this.format = format;
+    /**
+     * Sets resource format.
+     *
+     * @param aFormat A resource format
+     */
+    public void setFormat(final String aFormat) {
+        myFormat = aFormat;
     }
 
+    /**
+     * Gets the resource ID.
+     *
+     * @return
+     */
     public String getId() {
-        return id;
+        return myID;
     }
 
-    public void setId(final String id) {
-        this.id = id;
+    /**
+     * Sets the resource ID.
+     *
+     * @param aID A resource ID
+     */
+    public void setId(final String aID) {
+        myID = aID;
     }
 
+    /**
+     * Gets the resource type.
+     *
+     * @return The resource type
+     */
     public String getType() {
-        return type;
+        return myType;
     }
 
-    public void setType(final String type) {
-        this.type = type;
+    /**
+     * Sets the resource type
+     *
+     * @param aType A resource type
+     */
+    public void setType(final String aType) {
+        myType = aType;
     }
 
+    /**
+     * Gets the resource service.
+     *
+     * @return The resource service
+     */
     public Service getService() {
-        return service;
+        return myService;
     }
 
-    public void setService(final Service service) {
-        this.service = service;
+    /**
+     * Sets the resource service.
+     *
+     * @param aService A resource service
+     */
+    public void setService(final Service aService) {
+        myService = aService;
     }
-
 
 }

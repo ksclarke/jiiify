@@ -51,7 +51,7 @@ var HandlebarsTemplateEngine = function(j_val) {
    Set the max cache size for the engine
 
    @public
-   @param aMaxCacheSize {number} 
+   @param aMaxCacheSize {number} the aMaxCacheSize 
    @return {HandlebarsTemplateEngine} a reference to this for fluency
    */
   this.setMaxCacheSize = function(aMaxCacheSize) {

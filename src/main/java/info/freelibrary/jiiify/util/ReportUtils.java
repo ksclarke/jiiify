@@ -29,6 +29,15 @@ public class ReportUtils {
 
     private static int myNotFoundCount;
 
+    private ReportUtils() {
+    }
+
+    /**
+     * Given an input CSV file,
+     *
+     * @param args Arguments to the report script
+     * @throws IOException If there is trouble reading or writing the CSV files
+     */
     public static final void main(final String[] args) throws IOException {
         if (args.length > 1 && args[0].equals("ptcheck")) {
             checkPairtree(args[1]);

@@ -22,31 +22,61 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
  */
 public class ImageResource extends Resource {
 
-    private int height;
-    private int width;
+    private int myHeight;
 
+    private int myWidth;
+
+    /**
+     * Creates new image resource.
+     */
     public ImageResource() {
-        type = "dctypes:Image";
+        myType = "dctypes:Image";
     }
 
-    public ImageResource(final String id) {
+    /**
+     * Creates new image resource with ID.
+     *
+     * @param aID An image resource ID
+     */
+    public ImageResource(final String aID) {
         this();
-        this.id = id;
+        myID = aID;
     }
 
+    /**
+     * Gets the height of the image resource.
+     *
+     * @return The height of the image resource
+     */
     public int getHeight() {
-        return height;
+        return myHeight;
     }
 
-    public void setHeight(final int height) {
-        this.height = height;
+    /**
+     * Sets the height of the image resource.
+     *
+     * @param aHeight An image resource height
+     */
+    public void setHeight(final int aHeight) {
+        myHeight = aHeight;
     }
 
+    /**
+     * Gets the width of the image resource.
+     *
+     * @return The width of the image resource
+     */
     public int getWidth() {
-        return width;
+        return myWidth;
     }
 
-    public void setWidth(final int width) {
-        this.width = width;
+    /**
+     * Sets the width of the image resource.
+     *
+     * @param aWidth The width of the image resource
+     */
+    public void setWidth(final int aWidth) {
+        myWidth = aWidth;
     }
+
 }

@@ -17,14 +17,20 @@
 package info.freelibrary.jiiify.iiif.presentation.model.other;
 
 /**
- *
  * @author Ralf Eichinger
  */
 public class MetadataSimple extends Metadata {
-    private final String value;
 
-    public MetadataSimple(final String label, final String value) {
-        super(label);
-        this.value = value;
+    private final String myValue;
+
+    /**
+     * Creates a simple metadata element.
+     *
+     * @param aLabel A metadata label
+     * @param aValue A metadata value
+     */
+    public MetadataSimple(final String aLabel, final String aValue) {
+        super(aLabel);
+        myValue = aValue;
     }
 }

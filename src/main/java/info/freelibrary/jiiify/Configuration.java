@@ -30,7 +30,9 @@ import java.util.Properties;
 import javax.naming.ConfigurationException;
 
 import info.freelibrary.jiiify.handlers.LoginHandler;
+import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.util.PathUtils;
+import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.PairtreeRoot;
@@ -96,6 +98,9 @@ public class Configuration implements Shareable {
 
     private final String[] myUsers;
 
+    /* FIXME: hard-coded for now */
+    private final String[] mySubmasterFormats = new String[] { ImageFormat.TIFF_EXT, ImageFormat.TIF_EXT };
+
     private final Map<String, PairtreeRoot> myDataDirs;
 
     /**
@@ -134,10 +139,45 @@ public class Configuration implements Shareable {
         return users;
     }
 
+    /**
+     * Gets the users who are allowed to access the administrative side of things.
+     *
+     * @return
+     */
     public String[] getUsers() {
         return myUsers;
     }
 
+    /**
+     * Returns whether a submaster is needed for the supplied image.
+     *
+     * @param aFileName The name of the image in question
+     * @return True if a submaster is needed; else, false
+     */
+    public boolean getsSubmaster(final String aFileName) {
+        final String fileExt;
+
+        if (aFileName.contains(".")) {
+            fileExt = FileUtils.stripExt(aFileName);
+        } else {
+            fileExt = aFileName;
+        }
+
+        for (final String format : mySubmasterFormats) {
+            if (fileExt.equalsIgnoreCase(format)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Sets the Google authentication client ID.
+     *
+     * @param aConfig A configuration object
+     * @return The Google authentication client ID
+     */
     public String setGoogleClientID(final JsonObject aConfig) {
         final Properties properties = System.getProperties();
 
@@ -153,6 +193,12 @@ public class Configuration implements Shareable {
         }
     }
 
+    /**
+     * Sets the Facebook authentication client ID.
+     *
+     * @param aConfig A configuration object
+     * @return The Facebook authentication client ID
+     */
     public String setFacebookClientID(final JsonObject aConfig) {
         final Properties properties = System.getProperties();
 
@@ -168,6 +214,12 @@ public class Configuration implements Shareable {
         }
     }
 
+    /**
+     * Gets the OAuth client ID for the supplied service name.
+     *
+     * @param aService The name of the OAuth service
+     * @return The OAuth client ID for the supplied service
+     */
     public String getOAuthClientID(final String aService) {
         final String service = aService.toLowerCase();
 
@@ -181,6 +233,12 @@ public class Configuration implements Shareable {
         throw new RuntimeException("Unsupported OAuth service");
     }
 
+    /**
+     * Gets the OAuth client secret key for the supplied service name
+     *
+     * @param aService The name of the OAuth service
+     * @return The OAuth client secret key for the supplied service
+     */
     public String getOAuthClientSecretKey(final String aService) {
         final String service = aService.toLowerCase();
 
@@ -241,7 +299,7 @@ public class Configuration implements Shareable {
     }
 
     /**
-     * The scheme the server is using (e.g., http or https).
+     * The scheme the server is using (e.g., HTTP or HTTPS).
      *
      * @return The scheme the server is using
      */
@@ -250,9 +308,9 @@ public class Configuration implements Shareable {
     }
 
     /**
-     * Returns true if the server is using https; else, false.
+     * Returns true if the server is using HTTPS; else, false.
      *
-     * @return True if the server is using https; else, false
+     * @return True if the server is using HTTPS; else, false
      */
     public boolean usesHttps() {
         return myURLScheme.equals("https");
@@ -306,38 +364,41 @@ public class Configuration implements Shareable {
         return myDataDirs.get(DEFAULT_DATA_DIR_NAME);
     }
 
+    /**
+     * Gets the Pairtree data directory for the supplied ID prefix.
+     *
+     * @param aIDPrefix The ID prefix to use to locate the data directory
+     * @return The Pairtree root directory
+     */
     public PairtreeRoot getDataDir(final String aIDPrefix) {
         return myDataDirs.get(aIDPrefix);
     }
 
-    private void addDataDir(final String aIDPrefix, final File aDataDir) throws IOException, ConfigurationException {
-        if (!myDataDirs.containsKey(aIDPrefix)) {
-            myDataDirs.put(aIDPrefix, new PairtreeRoot(aDataDir, aIDPrefix));
-        } else {
-            throw new ConfigurationException("Data directory with this Pairtree prefix already exists");
-        }
-    }
-
-    private void addDataDir(final PairtreeRoot aPairtreeRoot) throws ConfigurationException {
-        final String prefix = aPairtreeRoot.getPairtreePrefix();
-
-        if (prefix == null) {
-            throw new ConfigurationException("Data directory without a Pairtree prefix already exists");
-        } else if (myDataDirs.containsKey(prefix)) {
-            throw new ConfigurationException("Data directory with this Pairtree prefix already exists");
-        } else {
-            myDataDirs.put(prefix, aPairtreeRoot);
-        }
-    }
-
+    /**
+     * Checks whether we are using more than one Pairtree data directory.
+     *
+     * @return True if we are using multiple data directories; else, false
+     */
     public boolean hasPrefixedDataDirs() {
         return myDataDirs.size() > 1;
     }
 
+    /**
+     * Checks whether there is a data directory for the supplied ID prefix.
+     *
+     * @param aIDPrefix An ID prefix to check against the existing data directories
+     * @return True if the supplied ID prefix corresponds to a data directory; else, false
+     */
     public boolean hasDataDir(final String aIDPrefix) {
         return myDataDirs.containsKey(aIDPrefix);
     }
 
+    /**
+     * Gets the ID prefix for the supplied ID.
+     *
+     * @param aID An image ID from which to get prefix
+     * @return The ID prefix for the supplied ID
+     */
     public String getIDPrefix(final String aID) {
         final Iterator<String> iterator = myDataDirs.keySet().iterator();
 
@@ -352,6 +413,12 @@ public class Configuration implements Shareable {
         return null;
     }
 
+    /**
+     * Determines if the supplied ID has an ID prefix match.
+     *
+     * @param aID An ID to check against known ID prefixes
+     * @return True if the supplied ID has a match; else, false
+     */
     public boolean hasIDPrefixMatch(final String aID) {
         final Iterator<String> iterator = myDataDirs.keySet().iterator();
 
@@ -690,7 +757,7 @@ public class Configuration implements Shareable {
     }
 
     private File confirmUploadsDir(final String aDirPath) throws ConfigurationException {
-        File uploadsDir;
+        final File uploadsDir;
 
         if (aDirPath.equalsIgnoreCase("java.io.tmpdir") || aDirPath.trim().equals("")) {
             uploadsDir = DEFAULT_UPLOADS_DIR;

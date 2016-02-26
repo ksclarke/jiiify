@@ -14,6 +14,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class ManifestHandler extends JiiifyHandler {
 
+    /**
+     * A IIIF manifest handler.
+     *
+     * @param aConfig The application's configuration
+     */
     public ManifestHandler(final Configuration aConfig) {
         super(aConfig);
     }

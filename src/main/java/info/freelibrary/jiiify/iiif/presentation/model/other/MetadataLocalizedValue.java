@@ -19,23 +19,41 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
 import java.util.Locale;
 
 /**
- *
  * @author Ralf Eichinger
  */
 public class MetadataLocalizedValue {
-    private final String value;
-    private final String language;
 
-    public MetadataLocalizedValue(final String value, final Locale locale) {
-        this.value = value;
-        this.language = locale.getLanguage();
+    private final String myValue;
+
+    private final String myLanguage;
+
+    /**
+     * Creates a localized metadata value.
+     *
+     * @param aValue A metadata value
+     * @param aLocale A metadata locale
+     */
+    public MetadataLocalizedValue(final String aValue, final Locale aLocale) {
+        myValue = aValue;
+        myLanguage = aLocale.getLanguage();
     }
 
+    /**
+     * Gets the localized value.
+     *
+     * @return The localized value
+     */
     public String getValue() {
-        return value;
+        return myValue;
     }
 
+    /**
+     * Gets the value's language
+     *
+     * @return The value's language
+     */
     public String getLanguage() {
-        return language;
+        return myLanguage;
     }
+
 }

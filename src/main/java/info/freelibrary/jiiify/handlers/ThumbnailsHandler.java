@@ -21,6 +21,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class ThumbnailsHandler extends JiiifyHandler {
 
+    /**
+     * Creates a thumbnail handler.
+     *
+     * @param aConfig The application's configuration
+     */
     public ThumbnailsHandler(final Configuration aConfig) {
         super(aConfig);
     }

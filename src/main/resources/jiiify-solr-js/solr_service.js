@@ -33,10 +33,11 @@ var SolrService = function(j_val) {
   var that = this;
 
   /**
+   Searches Solr using the supplied JSON object for search and the handler for results.
 
    @public
-   @param aJsonObject {Object} 
-   @param aHandler {function} 
+   @param aJsonObject {Object} A Solr search configured in a JSON object 
+   @param aHandler {function} A handler to handle the results of the search 
    */
   this.search = function(aJsonObject, aHandler) {
     var __args = arguments;
@@ -52,10 +53,11 @@ var SolrService = function(j_val) {
   };
 
   /**
+   Indexes content from the supplied JSON object in Solr.
 
    @public
-   @param aJsonObject {Object} 
-   @param aHandler {function} 
+   @param aJsonObject {Object} The information to be indexed in Solr 
+   @param aHandler {function} A handler to handle the result of the indexing 
    */
   this.index = function(aJsonObject, aHandler) {
     var __args = arguments;
@@ -77,10 +79,11 @@ var SolrService = function(j_val) {
 };
 
 /**
+ Creates a service object from the  implementation.
 
  @memberof module:jiiify-solr-js/solr_service
- @param aVertx {Vertx} 
- @return {SolrService}
+ @param aVertx {Vertx} A reference to the Vertx object 
+ @return {SolrService} A new Solr service object
  */
 SolrService.create = function(aVertx) {
   var __args = arguments;
@@ -90,11 +93,12 @@ SolrService.create = function(aVertx) {
 };
 
 /**
+ Creates a proxy object for the Solr service.
 
  @memberof module:jiiify-solr-js/solr_service
- @param aVertx {Vertx} 
- @param aAddress {string} 
- @return {SolrService}
+ @param aVertx {Vertx} A reference to the Vertx object 
+ @param aAddress {string} A string address at which the proxy will respond 
+ @return {SolrService} A Solr service proxy
  */
 SolrService.createProxy = function(aVertx, aAddress) {
   var __args = arguments;

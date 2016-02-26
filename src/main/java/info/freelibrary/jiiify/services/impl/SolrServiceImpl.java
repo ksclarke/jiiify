@@ -32,6 +32,12 @@ public class SolrServiceImpl implements SolrService {
 
     private final Vertx myVertx;
 
+    /**
+     * Creates a implementation of the {@see info.freelibrary.jiiify.services.SolrService}.
+     * 
+     * @param aConfig A Jiiify configuration object
+     * @param aVertx A reference to the Vertx object
+     */
     public SolrServiceImpl(final Configuration aConfig, final Vertx aVertx) {
         myConfig = aConfig;
         myVertx = aVertx;

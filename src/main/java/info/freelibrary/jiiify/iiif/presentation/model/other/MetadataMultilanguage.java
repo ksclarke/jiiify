@@ -23,15 +23,27 @@ import java.util.List;
  * @author Ralf Eichinger
  */
 public class MetadataMultilanguage extends Metadata {
-    private final List<MetadataLocalizedValue> value;
 
-    public MetadataMultilanguage(final String label, final List<MetadataLocalizedValue> value) {
-        super(label);
-        this.value = value;
+    private final List<MetadataLocalizedValue> myValue;
+
+    /**
+     * Creates a multi-language metadata element.
+     *
+     * @param aLabel A metadata label
+     * @param aValueList A list of metadata values
+     */
+    public MetadataMultilanguage(final String aLabel, final List<MetadataLocalizedValue> aValueList) {
+        super(aLabel);
+        myValue = aValueList;
     }
 
+    /**
+     * Gets the list of metadata values.
+     *
+     * @return The list of metadata values
+     */
     public List<MetadataLocalizedValue> getValue() {
-        return value;
+        return myValue;
     }
 
 }

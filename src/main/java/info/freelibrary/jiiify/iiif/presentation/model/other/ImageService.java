@@ -19,38 +19,68 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
 import java.util.List;
 
 /**
- *
  * @author Ralf Eichinger
  */
 public class ImageService extends Service {
-    private int height;
-    private int width;
 
-    private List<Tile> tiles;
+    private int myHeight;
 
+    private int myWidth;
+
+    private List<Tile> myTiles;
+
+    /**
+     * Gets the image service height.
+     *
+     * @return The image service height
+     */
     public int getHeight() {
-        return height;
+        return myHeight;
     }
 
-    public void setHeight(final int height) {
-        this.height = height;
+    /**
+     * Sets the image service height.
+     *
+     * @param aHeight An image service height
+     */
+    public void setHeight(final int aHeight) {
+        myHeight = aHeight;
     }
 
+    /**
+     * Gets the image service width.
+     *
+     * @return The image service width
+     */
     public int getWidth() {
-        return width;
+        return myWidth;
     }
 
-    public void setWidth(final int width) {
-        this.width = width;
+    /**
+     * Sets the image service width.
+     *
+     * @param aWidth An image service width
+     */
+    public void setWidth(final int aWidth) {
+        myWidth = aWidth;
     }
 
+    /**
+     * Gets the image service tiles.
+     *
+     * @return The image service tiles
+     */
     public List<Tile> getTiles() {
-        return tiles;
+        return myTiles;
     }
 
-    public void setTiles(final List<Tile> tiles) {
-        this.tiles = tiles;
+    /**
+     * Sets the image service tiles.
+     *
+     * @param aTilesList A list of tiles
+     */
+    public void setTiles(final List<Tile> aTilesList) {
+        myTiles = aTilesList;
     }
-
 
 }

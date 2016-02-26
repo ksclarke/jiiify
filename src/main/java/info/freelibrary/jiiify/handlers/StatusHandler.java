@@ -17,15 +17,17 @@ public class StatusHandler extends JiiifyHandler {
     /* The okay flag as expected by our Nagios script */
     private final String OK = "OK_";
 
-    /* The warning flag as expected by our Nagios script */
-    private final String WARNING = "WARNING_";
-
     /* The unknown flag as expected by our Nagios script */
     private final String UNKNOWN = "UNKNOWN_";
 
     /* Count is one of the out of the box metrics */
     private final String COUNT = "count";
 
+    /**
+     * Creates a status handler.
+     *
+     * @param aConfig The application's configuration
+     */
     public StatusHandler(final Configuration aConfig) {
         super(aConfig);
     }

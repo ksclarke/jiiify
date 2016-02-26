@@ -3,15 +3,9 @@ package info.freelibrary.jiiify.handlers;
 
 import static info.freelibrary.jiiify.Constants.FILE_PATH_KEY;
 import static info.freelibrary.jiiify.Constants.IIIF_PATH_KEY;
-import static info.freelibrary.jiiify.Constants.IMAGE_SOURCE_KEY;
-import static info.freelibrary.jiiify.Metadata.PROPERTIES_FILE;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.Metadata;
@@ -20,7 +14,6 @@ import info.freelibrary.jiiify.iiif.ImageRequest;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.jiiify.verticles.ImageWorkerVerticle;
 import info.freelibrary.util.FileUtils;
-import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.PairtreeRoot;
 
 import io.vertx.core.file.FileSystem;
@@ -31,6 +24,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class ImageHandler extends JiiifyHandler {
 
+    /**
+     * Creates a IIIF image handler.
+     *
+     * @param aConfig The application's configuration
+     */
     public ImageHandler(final Configuration aConfig) {
         super(aConfig);
     }
@@ -95,70 +93,6 @@ public class ImageHandler extends JiiifyHandler {
                 }
             } else {
                 fail(aContext, fileHandler.cause());
-            }
-        });
-    }
-
-    private void trySourceFile(final PairtreeRoot aPairtree, final ImageRequest aImage, final FileSystem aFileSystem,
-            final RoutingContext aContext) {
-        final File ptObjDir = aPairtree.getObject(aImage.getID());
-        final String propFilePath = new File(ptObjDir, PROPERTIES_FILE).getAbsolutePath();
-
-        aFileSystem.exists(propFilePath, propFileHandler -> {
-            if (propFileHandler.succeeded()) {
-                if (propFileHandler.result()) {
-                    aFileSystem.readFile(propFilePath, fileHandler -> {
-                        if (fileHandler.succeeded()) {
-                            final InputStream bytes = new ByteArrayInputStream(fileHandler.result().getBytes());
-                            final Properties properties = new Properties();
-
-                            try {
-                                properties.loadFromXML(bytes);
-                                bytes.close(); /* Has no effect */
-
-                                if (properties.containsKey(IMAGE_SOURCE_KEY)) {
-                                    final File source = new File(properties.getProperty(IMAGE_SOURCE_KEY));
-
-                                    aFileSystem.exists(source.getAbsolutePath(), sourceHandler -> {
-                                        if (sourceHandler.succeeded()) {
-                                            if (sourceHandler.result()) {
-                                                serveSourceFile(aContext, aFileSystem, source, aImage);
-                                            } else {
-                                                aContext.fail(404);
-                                                aContext.put(ERROR_MESSAGE, msg("{} not found", aImage.toString()));
-                                            }
-                                        } else {
-                                            fail(aContext, sourceHandler.cause());
-                                        }
-                                    });
-                                } else {
-                                    if (LOGGER.isDebugEnabled()) {
-                                        LOGGER.debug("The {} file was found but it didn't contain the '{}' key",
-                                                PROPERTIES_FILE, IMAGE_SOURCE_KEY);
-                                    }
-
-                                    aContext.fail(404);
-                                    aContext.put(ERROR_MESSAGE, msg("{} not found", aImage.toString()));
-                                }
-                            } catch (final IOException details) {
-                                fail(aContext, details);
-                            }
-
-                            IOUtils.closeQuietly(bytes);
-                        } else {
-                            fail(aContext, propFileHandler.cause());
-                        }
-                    });
-                } else {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Looked for {} file at {} but didn't find one", PROPERTIES_FILE, ptObjDir);
-                    }
-
-                    aContext.fail(404);
-                    aContext.put(ERROR_MESSAGE, msg("{} not found", aImage.toString()));
-                }
-            } else {
-                fail(aContext, propFileHandler.cause());
             }
         });
     }

@@ -22,75 +22,140 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 
 /**
  * <p>
- * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/layer/{name}</p>
+ * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/layer/{name}
+ * </p>
  *
  * @author Ralf Eichinger
  */
 public class Layer extends AbstractIiifResource {
 
-    private String description; // optional
-    private final String label; // required
-    private List<Metadata> metadata; // optional
-    private String thumbnail; // optional
-    private String viewingDirection; // optional
-    private String viewingHint; // optional
+    private String myDescription; // optional
 
+    private final String myLabel; // required
+
+    private List<Metadata> myMetadata; // optional
+
+    private String myThumbnail; // optional
+
+    private String myViewingDirection; // optional
+
+    private String myViewingHint; // optional
+
+    /**
+     * Creates a IIIF layer.
+     *
+     * @param id A layer ID
+     * @param label A layer label
+     */
     public Layer(final String id, final String label) {
         assert id != null;
         assert label != null;
 
-        this.id = id;
-        this.label = label;
+        myID = id;
+        myLabel = label;
 
-        type = "sc:Layer";
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(final String description) {
-        this.description = description;
-    }
-
-    public String getLabel() {
-        return label;
-    }
-
-    public List<Metadata> getMetadata() {
-        return metadata;
-    }
-
-    public void setMetadata(final List<Metadata> metadata) {
-        this.metadata = metadata;
-    }
-
-    public String getThumbnail() {
-        return thumbnail;
-    }
-
-    public void setThumbnail(final String thumbnail) {
-        this.thumbnail = thumbnail;
-    }
-
-    public String getViewingDirection() {
-        return viewingDirection;
+        myType = "sc:Layer";
     }
 
     /**
-     * @see ViewingDirections
-     * @param viewingDirection The direction that canvases of the resource should be presented when rendered for the
-     * user to navigate and/or read. A range or layer may have a viewing direction.
+     * Gets the layer description.
+     *
+     * @return The layer description
      */
-    public void setViewingDirection(final String viewingDirection) {
-        this.viewingDirection = viewingDirection;
+    public String getDescription() {
+        return myDescription;
     }
 
+    /**
+     * Sets the layer description
+     *
+     * @param aDescription The layer description
+     */
+    public void setDescription(final String aDescription) {
+        myDescription = aDescription;
+    }
+
+    /**
+     * Gets the layer label.
+     *
+     * @return The layer label
+     */
+    public String getLabel() {
+        return myLabel;
+    }
+
+    /**
+     * Gets the layer metadata.
+     *
+     * @return The layer metadata
+     */
+    public List<Metadata> getMetadata() {
+        return myMetadata;
+    }
+
+    /**
+     * Sets the layer metadata.
+     *
+     * @param aMetadata The layer metadata
+     */
+    public void setMetadata(final List<Metadata> aMetadata) {
+        myMetadata = aMetadata;
+    }
+
+    /**
+     * Gets the layer thumbnail.
+     *
+     * @return The layer thumbnail
+     */
+    public String getThumbnail() {
+        return myThumbnail;
+    }
+
+    /**
+     * Sets the layer thumbnail.
+     *
+     * @param aThumbnail The layer thumbnail
+     */
+    public void setThumbnail(final String aThumbnail) {
+        myThumbnail = aThumbnail;
+    }
+
+    /**
+     * Gets the viewing direction.
+     *
+     * @return The viewing direction
+     */
+    public String getViewingDirection() {
+        return myViewingDirection;
+    }
+
+    /**
+     * Sets the layer's viewing direction.
+     *
+     * @see ViewingDirections
+     * @param aViewingDirection The direction that canvases of the resource should be presented when rendered for the
+     *        user to navigate and/or read. A range or layer may have a viewing direction.
+     */
+    public void setViewingDirection(final String aViewingDirection) {
+        myViewingDirection = aViewingDirection;
+    }
+
+    /**
+     * Gets the viewing direction
+     *
+     * @return The viewing direction
+     */
     public String getViewingHint() {
-        return viewingHint;
+        return myViewingHint;
     }
 
-    public void setViewingHint(final String viewingHint) {
-        this.viewingHint = viewingHint;
+    /**
+     * Sets the layer viewing hint.
+     *
+     * @param aViewingHint The layer viewing hint
+     */
+    public void setViewingHint(final String aViewingHint) {
+        myViewingHint = aViewingHint;
     }
+
 }

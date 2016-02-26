@@ -63,7 +63,7 @@ public interface HandlebarsTemplateEngine extends TemplateEngine {
     /**
      * Set the max cache size for the engine
      *
-     * @param maxCacheSize the maxCacheSize
+     * @param aMaxCacheSize the aMaxCacheSize
      * @return a reference to this for fluency
      */
     HandlebarsTemplateEngine setMaxCacheSize(int aMaxCacheSize);
@@ -74,6 +74,6 @@ public interface HandlebarsTemplateEngine extends TemplateEngine {
      * @return a reference to the internal Handlebars instance.
      */
     @GenIgnore
-    Handlebars getHandlebars();
+            Handlebars getHandlebars();
 
 }

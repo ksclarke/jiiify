@@ -138,6 +138,13 @@ public class PathUtils {
         return new URI(sb.toString()).toASCIIString();
     }
 
+    /**
+     * Strips parts of a slash delimited string.
+     * 
+     * @param aPath A path from which parts should be stripped
+     * @param aParts The index positions of the parts to be stripped
+     * @return The path without the stripped parts
+     */
     public static String stripPathParts(final String aPath, final int... aParts) {
         final String path = aPath.startsWith("/") ? aPath.replaceFirst("\\/", "") : aPath;
         final String[] parts = path.split("\\/");

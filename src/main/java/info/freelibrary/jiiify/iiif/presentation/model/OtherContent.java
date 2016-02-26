@@ -17,8 +17,7 @@
 package info.freelibrary.jiiify.iiif.presentation.model;
 
 /**
- * <p>
- * Recommended URI pattern: {scheme}://{host}/{prefix}/{identifier}/list/{name}</p>
+ * Recommended URI pattern: {scheme}://{host}/{prefix}/{identifier}/list/{name}
  *
  * @author Ralf Eichinger
  */
@@ -26,16 +25,32 @@ public class OtherContent extends Content {
 
     private String label; // optional
 
+    /**
+     * Creates IIIF other content.
+     *
+     * @param id The other content ID
+     */
     public OtherContent(final String id) {
         super(id);
-        this.type = "oa:Annotation";
+        myType = "oa:Annotation";
     }
 
+    /**
+     * Gets the IIIF other content label.
+     *
+     * @return The other content label
+     */
     public String getLabel() {
         return label;
     }
 
+    /**
+     * Sets the IIIF other content label
+     *
+     * @param label The other content label
+     */
     public void setLabel(final String label) {
         this.label = label;
     }
+
 }

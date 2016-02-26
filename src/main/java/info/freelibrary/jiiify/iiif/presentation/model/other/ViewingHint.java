@@ -17,16 +17,20 @@
 package info.freelibrary.jiiify.iiif.presentation.model.other;
 
 /**
- * A hint to the client as to the most appropriate method of displaying the resource. Other values may be given, and if
- * they are, they must be URIs.
+ * A hint to the client as to the most appropriate method of displaying the resource. Other values may be given, and
+ * if they are, they must be URIs.
  *
  * @author Ralf Eichinger
  */
 public class ViewingHint {
 
+    private ViewingHint() {
+    }
+
     /**
-     * Valid on manifest, sequence and range. Each canvas is the complete view of one side of a long scroll or roll and
-     * an appropriate rendering might only display part of the canvas at any given time rather than the entire object.
+     * Valid on manifest, sequence and range. Each canvas is the complete view of one side of a long scroll or roll
+     * and an appropriate rendering might only display part of the canvas at any given time rather than the entire
+     * object.
      */
     public final static String CONTINUOUS = "continuous";
 
@@ -45,9 +49,9 @@ public class ViewingHint {
     public final static String NON_PAGED = "non-paged";
 
     /**
-     * Valid on manifest, sequence and range. The canvases represent pages in a bound volume, and should be presented in
-     * a page-turning interface if one is available. The first canvas is a single view (the first recto) and thus the
-     * second canvas represents the back of the object in the first canvas.
+     * Valid on manifest, sequence and range. The canvases represent pages in a bound volume, and should be presented
+     * in a page-turning interface if one is available. The first canvas is a single view (the first recto) and thus
+     * the second canvas represents the back of the object in the first canvas.
      */
     public final static String PAGED = "paged";
 
@@ -55,9 +59,9 @@ public class ViewingHint {
      * Only valid on a range. A range which has this viewingHint is the top-most node in a hierarchy of ranges that
      * represents a structure to be rendered by the client to assist in navigation. For example, a table of contents
      * within a paged object, major sections of a 3d object, the textual areas within a single scroll, and so forth.
-     * Other ranges that are descendants of the “top” range are the entries to be rendered in the navigation structure.
-     * There may be multiple ranges marked with this hint. If so, the client should display a choice of multiple
-     * structures to navigate through.
+     * Other ranges that are descendants of the “top” range are the entries to be rendered in the navigation
+     * structure. There may be multiple ranges marked with this hint. If so, the client should display a choice of
+     * multiple structures to navigate through.
      */
     public final static String TOP = "top";
 }

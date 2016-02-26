@@ -18,16 +18,33 @@ public class ImageRegion {
 
     private boolean isFullImage;
 
+    /**
+     * Creates a new image region object representing the whole image.
+     */
     public ImageRegion() {
         isFullImage = true;
         myDimensions = new float[] { 100f, 100f, 100f, 100f };
         usesPercentages = true;
     }
 
+    /**
+     * Creates a new image region object from the supplied X, Y, width and height.
+     * 
+     * @param aX A X dimension for an image region
+     * @param aY A Y dimension for an image region
+     * @param aWidth A width for an image region
+     * @param aHeight A height for an image region
+     */
     public ImageRegion(final int aX, final int aY, final int aWidth, final int aHeight) {
         myDimensions = new float[] { aX, aY, aWidth, aHeight };
     }
 
+    /**
+     * Creates a new image region object from the supplied IIIF URI image region string.
+     * 
+     * @param aRegionString A region string from a IIIF URI
+     * @throws InvalidRegionException If the supplied string isn't a valid representation of a IIIF region
+     */
     public ImageRegion(final String aRegionString) throws InvalidRegionException {
         if (aRegionString == null) {
             throw new InvalidRegionException(new NullPointerException());
@@ -51,10 +68,22 @@ public class ImageRegion {
         }
     }
 
+    /**
+     * Gets the integer value for the supplied region coordinate.
+     * 
+     * @param aRegionCoordinate A region coordinate
+     * @return An integer value for the supplied region coordinate
+     */
     public int getInt(final Region aRegionCoordinate) {
         return (int) getFloat(aRegionCoordinate);
     }
 
+    /**
+     * Gets the float value for the supplied region coordinate.
+     * 
+     * @param aRegionCoordinate A region coordinate
+     * @return A float value for the supplied region coordinate
+     */
     public float getFloat(final Region aRegionCoordinate) {
         switch (aRegionCoordinate) {
             case X:
@@ -88,10 +117,20 @@ public class ImageRegion {
         return sb.toString();
     }
 
+    /**
+     * Returns whether this image region is represented with percentages.
+     * 
+     * @return True if this image region is represented with percentages
+     */
     public boolean usesPercentages() {
         return usesPercentages;
     }
 
+    /**
+     * Returns whether this image region represents the full image.
+     * 
+     * @return True if this image region represents the full image
+     */
     public boolean isFullImage() {
         return isFullImage;
     }

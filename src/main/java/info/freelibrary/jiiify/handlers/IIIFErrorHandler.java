@@ -18,6 +18,11 @@ public class IIIFErrorHandler extends JiiifyHandler {
 
     private final Logger LOGGER = LoggerFactory.getLogger(IIIFErrorHandler.class, MESSAGES);
 
+    /**
+     * An error handler for IIIF-related exceptions.
+     *
+     * @param aConfig The application's configuration
+     */
     public IIIFErrorHandler(final Configuration aConfig) {
         super(aConfig);
     }

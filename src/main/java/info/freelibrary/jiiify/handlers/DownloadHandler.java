@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -46,6 +47,11 @@ public class DownloadHandler extends JiiifyHandler {
 
     private static final String DOWNLOAD_SERVER_PARAM = "server";
 
+    /**
+     * Creates a download handler.
+     *
+     * @param aConfig The application's configuration
+     */
     public DownloadHandler(final Configuration aConfig) {
         super(aConfig);
     }
@@ -100,12 +106,13 @@ public class DownloadHandler extends JiiifyHandler {
                 if (jsonObject.containsKey(ImageInfo.WIDTH) && jsonObject.containsKey(ImageInfo.HEIGHT)) {
                     final String servicePrefix = myConfig.getServicePrefix();
                     final int tileSize = myConfig.getTileSize();
-                    final int width = jsonObject.getInteger(ImageInfo.WIDTH);
-                    final int height = jsonObject.getInteger(ImageInfo.HEIGHT);
+                    final int w = jsonObject.getInteger(ImageInfo.WIDTH);
+                    final int h = jsonObject.getInteger(ImageInfo.HEIGHT);
+                    final List<String> tilePaths = ImageUtils.getTilePaths(servicePrefix, aID, tileSize, w, h);
+                    final Vertx vertx = aContext.vertx();
 
                     // Getting the list of images needed for OpenSeadragon so we can bundle them up
-                    if (ImageUtils.getTilePaths(servicePrefix, aID, tileSize, width, height).stream().allMatch(
-                            tilePath -> isReady(aFileSystem, tilePath, aContext.vertx(), aID))) {
+                    if (tilePaths.stream().allMatch(tilePath -> isReady(aFileSystem, tilePath, vertx, aID))) {
                         startDownload(aContext, aFileSystem, aID);
                     } else {
                         respondNotReady(aContext);

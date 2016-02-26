@@ -26,6 +26,12 @@ public class FailureHandler extends JiiifyHandler {
 
     private final TemplateEngine myTemplateEngine;
 
+    /**
+     * Creates a handler for system failures.
+     *
+     * @param aConfig The application's configuration
+     * @param aTemplateEngine The template engine used to render the failure page
+     */
     public FailureHandler(final Configuration aConfig, final TemplateEngine aTemplateEngine) {
         super(aConfig);
         myTemplateEngine = aTemplateEngine;

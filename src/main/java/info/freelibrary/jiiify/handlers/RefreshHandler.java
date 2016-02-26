@@ -13,6 +13,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class RefreshHandler extends JiiifyHandler {
 
+    /**
+     * Creates a refresh handler
+     *
+     * @param aConfig The application's configuration
+     */
     public RefreshHandler(final Configuration aConfig) {
         super(aConfig);
     }

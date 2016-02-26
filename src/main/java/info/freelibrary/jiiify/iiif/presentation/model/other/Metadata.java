@@ -32,13 +32,24 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
  */
 public abstract class Metadata {
 
-    private final String label;
+    private final String myLabel;
 
-    public Metadata(final String label) {
-        this.label = label;
+    /**
+     * Creates new metadata object from the supplied label.
+     *
+     * @param aLabel A metadata label
+     */
+    public Metadata(final String aLabel) {
+        myLabel = aLabel;
     }
 
+    /**
+     * Gets the label of the metadata.
+     *
+     * @return The metadata label
+     */
     public String getLabel() {
-        return label;
+        return myLabel;
     }
+
 }

@@ -20,6 +20,9 @@ public class ImageQuality {
 
     private String myQuality;
 
+    /**
+     * Creates an image quality object.
+     */
     public ImageQuality() {
         myQuality = DEFAULT;
     }

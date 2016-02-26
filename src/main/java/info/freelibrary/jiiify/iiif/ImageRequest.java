@@ -34,6 +34,13 @@ public class ImageRequest {
 
     private File myCacheFile;
 
+    /**
+     * Creates a IIIF image request object for a particular image region.
+     * 
+     * @param aID An ID for the image being requested
+     * @param aServicePrefix A IIIF service prefix
+     * @param aRegion An image region being requested
+     */
     public ImageRequest(final String aID, final String aServicePrefix, final ImageRegion aRegion) {
         myRegion = aRegion;
         myID = aID;
@@ -44,6 +51,14 @@ public class ImageRequest {
         myFormat = new ImageFormat();
     }
 
+    /**
+     * Creates a IIIF image request object for a particular image region and with a particular size.
+     * 
+     * @param aID An ID for the image being requested
+     * @param aServicePrefix A IIIF service prefix
+     * @param aRegion An image region being requested
+     * @param aSize A requested image size
+     */
     public ImageRequest(final String aID, final String aServicePrefix, final ImageRegion aRegion,
             final ImageSize aSize) {
         myRegion = aRegion;
@@ -55,6 +70,13 @@ public class ImageRequest {
         myFormat = new ImageFormat();
     }
 
+    /**
+     * Creates a IIIF image request object for image with a particular size.
+     * 
+     * @param aID An ID for the image being requested
+     * @param aServicePrefix A IIIF service prefix
+     * @param aSize A requested image size
+     */
     public ImageRequest(final String aID, final String aServicePrefix, final ImageSize aSize) {
         mySize = aSize;
         myID = aID;
@@ -65,6 +87,18 @@ public class ImageRequest {
         myFormat = new ImageFormat();
     }
 
+    /**
+     * Creates a IIIF image request object for a region from an image with a particular size, rotation, quality, and
+     * format.
+     * 
+     * @param aID An ID for the image being requested
+     * @param aServicePrefix A IIIF service prefix
+     * @param aRegion A region from the requested image
+     * @param aSize A requested image size
+     * @param aRotation A rotation to perform on the requested image region
+     * @param aQuality A quality of image to return
+     * @param aFormat A format of image to return
+     */
     public ImageRequest(final String aID, final String aServicePrefix, final ImageRegion aRegion,
             final ImageSize aSize, final ImageRotation aRotation, final ImageQuality aQuality,
             final ImageFormat aFormat) {
@@ -110,30 +144,65 @@ public class ImageRequest {
         myFormat = new ImageFormat(pathComponents[5].substring(dotIndex + 1));
     }
 
+    /**
+     * Gets the IIIF service prefix at which the image request was made.
+     * 
+     * @return The IIIF service prefix at which the image request was made
+     */
     public String getPrefix() {
         return myServicePrefix;
     }
 
+    /**
+     * Gets the ID of the requested image.
+     * 
+     * @return The ID of the requested image
+     */
     public String getID() {
         return myID;
     }
 
+    /**
+     * Gets the desired region of the requested image.
+     * 
+     * @return The desired region of the requested image
+     */
     public ImageRegion getRegion() {
         return myRegion;
     }
 
+    /**
+     * Gets the size of the requested image.
+     * 
+     * @return The size of the requested image
+     */
     public ImageSize getSize() {
         return mySize;
     }
 
+    /**
+     * Gets the rotation of the requested image.
+     * 
+     * @return The rotation of the requested image
+     */
     public ImageRotation getRotation() {
         return myRotation;
     }
 
+    /**
+     * Gets the quality of the requested image.
+     * 
+     * @return The quality of the requested image
+     */
     public ImageQuality getQuality() {
         return myQuality;
     }
 
+    /**
+     * Gets the format of the requested image.
+     * 
+     * @return The format of the requested image
+     */
     public ImageFormat getFormat() {
         return myFormat;
     }
@@ -154,10 +223,24 @@ public class ImageRequest {
         return sb.toString();
     }
 
+    /**
+     * Whether the image request has a previous cached version of its output file.
+     * 
+     * @param aDataDir The Pairtree root at which a cached file would be found
+     * @return True if the image request has a previously cached output; else, false
+     * @throws IOException If there is trouble reading or checking a previously cached file
+     */
     public boolean hasCachedFile(final PairtreeRoot aDataDir) throws IOException {
         return getCacheFile(aDataDir).exists() && myCacheFile.length() > 0;
     }
 
+    /**
+     * Returns a cached file for this image request.
+     * 
+     * @param aDataDir The Pairtree root at which a cached file would be found
+     * @return A file handled for a cached output file.
+     * @throws IOException If there is trouble reading from the file cache
+     */
     public File getCacheFile(final PairtreeRoot aDataDir) throws IOException {
         if (myCacheFile == null) {
             final String fileName = StringUtils.toString('.', myQuality, myFormat);
