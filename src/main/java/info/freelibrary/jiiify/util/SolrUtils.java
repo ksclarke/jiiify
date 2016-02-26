@@ -32,6 +32,12 @@ public class SolrUtils {
     private SolrUtils() {
     }
 
+    /**
+     * Returns simple indexing JSON document.
+     * 
+     * @param aKeyValues A list of key values that will be indexed
+     * @return A JSON object encoding what should be indexed
+     */
     public static JsonObject getSimpleIndexDoc(final List<KeyValue<String, ?>> aKeyValues) {
         final JsonObject update = new JsonObject();
         final JsonObject add = new JsonObject();
@@ -47,6 +53,13 @@ public class SolrUtils {
         return update;
     }
 
+    /**
+     * Add a new list of key values to an existing index update.
+     * 
+     * @param aUpdate A JSON object that encodes an index update
+     * @param aKeyValues Additional key values that should be added to the index
+     * @return An encoding of the updated indexing request
+     */
     public static JsonObject addSimpleIndexDoc(final JsonObject aUpdate, final List<KeyValue<String, ?>> aKeyValues) {
         final JsonObject add = new JsonObject();
         final JsonObject doc = new JsonObject();
@@ -61,6 +74,12 @@ public class SolrUtils {
         return aUpdate;
     }
 
+    /**
+     * Gets a simple index update document.
+     * 
+     * @param aKeyValues A list of key values to add to an index update
+     * @return A JSON object with the index update encoded
+     */
     public static JsonObject getSimpleUpdateDoc(final List<KeyValue<String, ?>> aKeyValues) {
         final JsonObject doc = new JsonObject();
 
@@ -75,6 +94,12 @@ public class SolrUtils {
         return new JsonObject().put(JIIIFY_ARRAY, new JsonArray().add(doc));
     }
 
+    /**
+     * Add a commit to a Solr index update.
+     * 
+     * @param aUpdate An update to perform against a Solr index
+     * @return The index update with the commit added
+     */
     public static JsonObject addCommit(final JsonObject aUpdate) {
         aUpdate.put(COMMIT, new JsonObject());
         return aUpdate;

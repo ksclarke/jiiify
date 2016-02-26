@@ -12,6 +12,11 @@ import io.vertx.ext.web.Session;
 
 public class LogoutHandler extends JiiifyHandler {
 
+    /**
+     * Creates a logout handler.
+     *
+     * @param aConfig The application's configuration
+     */
     public LogoutHandler(final Configuration aConfig) {
         super(aConfig);
     }

@@ -21,92 +21,162 @@ import java.util.List;
 import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 
 /**
- * <p>
  * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/range/{name}</p>
  *
  * @author Ralf Eichinger
  */
 public class Range extends AbstractIiifResource {
 
-    private String description; // optional
-    private final String label; // required
-    private List<Metadata> metadata; // optional
-    private String startCanvas; // optional
-    private String thumbnail; // optional
-    private String viewingDirection; // optional
-    private String viewingHint; // optional
+    private String myDescription; // optional
 
-    public Range(final String id, final String label) {
-        assert id != null;
-        assert label != null;
+    private final String myLabel; // required
 
-        this.id = id;
-        this.label = label;
+    private List<Metadata> myMetadata; // optional
 
-        type = "sc:Range";
+    private String myStartCanvas; // optional
+
+    private String myThumbnail; // optional
+
+    private String myViewingDirection; // optional
+
+    private String myViewingHint; // optional
+
+    /**
+     * Creates a IIIF range with an ID and label.
+     *
+     * @param aID A range resource ID
+     * @param aLabel A range resource label
+     */
+    public Range(final String aID, final String aLabel) {
+        assert aID != null;
+        assert aLabel != null;
+
+        myID = aID;
+        myLabel = aLabel;
+        myType = "sc:Range";
     }
 
+    /**
+     * Gets a range resource description.
+     *
+     * @return The range resource description
+     */
     public String getDescription() {
-        return description;
+        return myDescription;
     }
 
-    public void setDescription(final String description) {
-        this.description = description;
+    /**
+     * Sets the range resource's description.
+     *
+     * @param aDescription A description for the range resource
+     */
+    public void setDescription(final String aDescription) {
+        myDescription = aDescription;
     }
 
+    /**
+     * Gets the range resource's label.
+     *
+     * @return The range resource's label
+     */
     public String getLabel() {
-        return label;
+        return myLabel;
     }
 
+    /**
+     * Gets the range resource's metadata.
+     *
+     * @return The range resource's metadata
+     */
     public List<Metadata> getMetadata() {
-        return metadata;
+        return myMetadata;
     }
 
-    public void setMetadata(final List<Metadata> metadata) {
-        this.metadata = metadata;
+    /**
+     * Sets the range resource's metadata.
+     *
+     * @param aMetadata The range resource's metadata
+     */
+    public void setMetadata(final List<Metadata> aMetadata) {
+        myMetadata = aMetadata;
     }
 
+    /**
+     * Gets the start canvas.
+     *
+     * @return The start canvas
+     */
     public String getStartCanvas() {
-        return startCanvas;
+        return myStartCanvas;
     }
 
     /**
-     * @param startCanvas A link from a sequence or range to a canvas that is contained within the sequence. On seeing
-     * this relationship, a client should advance to the specified canvas when beginning navigation through the
-     * sequence/range. This allows the client to begin with the first canvas that contains interesting content rather
-     * than requiring the user to skip past blank or empty canvases manually. A sequence or a range may have this
-     * relationship, and the target must be a canvas.
+     * Sets the start canvas.
+     *
+     * @param aStartCanvas A link from a sequence or range to a canvas that is contained within the sequence. On
+     *        seeing this relationship, a client should advance to the specified canvas when beginning navigation
+     *        through the sequence/range. This allows the client to begin with the first canvas that contains
+     *        interesting content rather than requiring the user to skip past blank or empty canvases manually. A
+     *        sequence or a range may have this relationship, and the target must be a canvas.
      */
-    public void setStartCanvas(final String startCanvas) {
-        this.startCanvas = startCanvas;
+    public void setStartCanvas(final String aStartCanvas) {
+        myStartCanvas = aStartCanvas;
     }
 
+    /**
+     * Gets the range resource's thumbnail.
+     *
+     * @return The range resource's thumbnail
+     */
     public String getThumbnail() {
-        return thumbnail;
-    }
-
-    public void setThumbnail(final String thumbnail) {
-        this.thumbnail = thumbnail;
-    }
-
-    public String getViewingDirection() {
-        return viewingDirection;
+        return myThumbnail;
     }
 
     /**
-     * @see ViewingDirections
-     * @param viewingDirection The direction that canvases of the resource should be presented when rendered for the
-     * user to navigate and/or read. A range or layer may have a viewing direction.
+     * Sets the range resource's thumbnail.
+     *
+     * @param aThumbnail A thumbnail for the range resource
      */
-    public void setViewingDirection(final String viewingDirection) {
-        this.viewingDirection = viewingDirection;
+    public void setThumbnail(final String aThumbnail) {
+        myThumbnail = aThumbnail;
     }
 
+    /**
+     * Gets the range resource's viewing direction.
+     *
+     * @return The range resource's viewing direction
+     */
+    public String getViewingDirection() {
+        return myViewingDirection;
+    }
+
+    /**
+     * Sets the viewing direction of the range resource.
+     *
+     * @see ViewingDirections
+     * @param aViewingDirection The direction that canvases of the resource should be presented when rendered for the
+     *        user to navigate and/or read. A range or layer may have a viewing direction.
+     */
+    public void setViewingDirection(final String aViewingDirection) {
+        myViewingDirection = aViewingDirection;
+    }
+
+    /**
+     * Gets the range resource's viewing hint.
+     *
+     * @return The range resource's viewing hint
+     */
     public String getViewingHint() {
-        return viewingHint;
+        return myViewingHint;
     }
 
-    public void setViewingHint(final String viewingHint) {
-        this.viewingHint = viewingHint;
+    /**
+     * Sets the range resource's viewing hint.
+     *
+     * @param aViewingHint A viewing hint for the range resource
+     */
+    public void setViewingHint(final String aViewingHint) {
+        myViewingHint = aViewingHint;
     }
+
 }

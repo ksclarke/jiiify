@@ -17,6 +17,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class ItemHandler extends JiiifyHandler {
 
+    /**
+     * An item handler for the administrative interface.
+     *
+     * @param aConfig The application's configuration
+     */
     public ItemHandler(final Configuration aConfig) {
         super(aConfig);
     }

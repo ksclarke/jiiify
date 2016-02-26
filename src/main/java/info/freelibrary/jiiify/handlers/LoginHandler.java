@@ -47,6 +47,12 @@ public class LoginHandler extends JiiifyHandler {
     // TODO: check JSON service aud to make sure it matches the client ID
     private final JWTAuth myJwtAuth;
 
+    /**
+     * Creates a login handler.
+     *
+     * @param aConfig The application's configuration
+     * @param aJwtAuth The JWT authorization object
+     */
     public LoginHandler(final Configuration aConfig, final JWTAuth aJwtAuth) {
         super(aConfig);
         myJwtAuth = aJwtAuth;

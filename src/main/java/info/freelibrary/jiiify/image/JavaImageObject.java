@@ -32,6 +32,12 @@ public class JavaImageObject implements ImageObject {
 
     private boolean needsFormatChange;
 
+    /**
+     * Creates new image using the pure Java image processing.
+     * 
+     * @param aSourceImage A source image file
+     * @throws IOException If there is trouble reading the image file
+     */
     public JavaImageObject(final File aSourceImage) throws IOException {
         myImage = ImageIO.read(aSourceImage);
     }

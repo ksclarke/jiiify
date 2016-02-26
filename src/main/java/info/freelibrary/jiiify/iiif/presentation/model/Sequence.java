@@ -22,9 +22,8 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 import info.freelibrary.jiiify.iiif.presentation.model.other.ViewingDirection;
 
 /**
- * <p>
- * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/sequence/{name}</p>
- *
+ * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/sequence/{name}
+ * </p>
  * <ul>
  * <li>Each sequence must have at least one canvas and is likely to have more than one.</li>
  * <li>A manifest, sequence or canvas must not have a format.</li>
@@ -36,125 +35,204 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.ViewingDirection;
  */
 public class Sequence extends AbstractIiifResource {
 
-    private List<Canvas> canvases;
-    private String description; // optional
-    private String label; // optional
-    private List<Metadata> metadata; // optional
-    private String startCanvas; // optional
-    private String thumbnail; // optional
-    private String viewingDirection; // optional
-    private String viewingHint; // optional
+    private List<Canvas> myCanvases;
 
+    private String myDescription; // optional
+
+    private String myLabel; // optional
+
+    private List<Metadata> myMetadata; // optional
+
+    private String myStartCanvas; // optional
+
+    private String myThumbnail; // optional
+
+    private String myViewingDirection; // optional
+
+    private String myViewingHint; // optional
+
+    /**
+     * Creates a sequence.
+     */
     public Sequence() {
-        type = "sc:Sequence";
+        myType = "sc:Sequence";
     }
 
     /**
-     * @param label A sequence may have a label, and if there are multiple sequences in a single manifest then they must
-     * have labels. The label should briefly convey the nature of sequence, such as “Current Page Order”.
+     * Creates a sequence with a label.
+     *
+     * @param aLabel A sequence may have a label, and if there are multiple sequences in a single manifest then they
+     *        must have labels. The label should briefly convey the nature of sequence, such as “Current Page Order”.
      */
-    public Sequence(final String label) {
+    public Sequence(final String aLabel) {
         this();
-        assert label != null;
-        this.label = label;
-    }
 
-    public List<Canvas> getCanvases() {
-        return canvases;
-    }
+        assert aLabel != null;
 
-    public void setCanvases(final List<Canvas> canvases) {
-        this.canvases = canvases;
-    }
-
-    public String getDescription() {
-        return description;
+        myLabel = aLabel;
     }
 
     /**
-     * @param description A sequence may have a description to further explain how it differs from other sequences.
+     * Gets a list of canvases.
+     *
+     * @return A list of canvases
      */
-    public void setDescription(final String description) {
-        this.description = description;
+    public List<Canvas> getCanvases() {
+        return myCanvases;
     }
 
     /**
-     * @param id A sequence may have an id.
+     * Sets the sequence's canvases.
+     *
+     * @param aCanvases
+     */
+    public void setCanvases(final List<Canvas> aCanvases) {
+        myCanvases = aCanvases;
+    }
+
+    /**
+     * Gets the sequence's description.
+     *
+     * @return The sequence's description
+     */
+    public String getDescription() {
+        return myDescription;
+    }
+
+    /**
+     * Sets the sequence description.
+     *
+     * @param aDescription A sequence may have a description to further explain how it differs from other sequences.
+     */
+    public void setDescription(final String aDescription) {
+        myDescription = aDescription;
+    }
+
+    /**
+     * Sets the sequence ID.
+     *
+     * @param aID A sequence may have an id.
      */
     @Override
-    public void setId(final String id) {
-        this.id = id;
+    public void setId(final String aID) {
+        myID = aID;
     }
 
+    /**
+     * Gets the sequence label.
+     *
+     * @return The sequence label
+     */
     public String getLabel() {
-        return label;
+        return myLabel;
     }
 
-    public void setLabel(final String label) {
-        this.label = label;
+    /**
+     * Sets the sequence label.
+     *
+     * @param aLabel A label for the sequence
+     */
+    public void setLabel(final String aLabel) {
+        myLabel = aLabel;
     }
 
+    /**
+     * Gets the sequence metadata.
+     *
+     * @return The sequence metadata
+     */
     public List<Metadata> getMetadata() {
-        return metadata;
+        return myMetadata;
     }
 
     /**
-     * @param metadata A sequence may have metadata pairs associated with it to describe the difference between it and
-     * other sequences.
+     * Sets the sequence metadata.
+     *
+     * @param aMetadataList A sequence may have metadata pairs associated with it to describe the difference between
+     *        it and other sequences.
      */
-    public void setMetadata(final List<Metadata> metadata) {
-        this.metadata = metadata;
+    public void setMetadata(final List<Metadata> aMetadataList) {
+        myMetadata = aMetadataList;
     }
 
+    /**
+     * Gets the start canvas.
+     *
+     * @return The start canvas
+     */
     public String getStartCanvas() {
-        return startCanvas;
+        return myStartCanvas;
     }
 
     /**
-     * @param startCanvas A link from a sequence or range to a canvas that is contained within the sequence. On seeing
-     * this relationship, a client should advance to the specified canvas when beginning navigation through the
-     * sequence/range. This allows the client to begin with the first canvas that contains interesting content rather
-     * than requiring the user to skip past blank or empty canvases manually. A sequence or a range may have this
-     * relationship, and the target must be a canvas.
+     * Sets the start canvas.
+     *
+     * @param aStartCanvas A link from a sequence or range to a canvas that is contained within the sequence. On
+     *        seeing this relationship, a client should advance to the specified canvas when beginning navigation
+     *        through the sequence/range. This allows the client to begin with the first canvas that contains
+     *        interesting content rather than requiring the user to skip past blank or empty canvases manually. A
+     *        sequence or a range may have this relationship, and the target must be a canvas.
      */
-    public void setStartCanvas(final String startCanvas) {
-        this.startCanvas = startCanvas;
+    public void setStartCanvas(final String aStartCanvas) {
+        myStartCanvas = aStartCanvas;
     }
 
+    /**
+     * Gets the sequence thumbnail.
+     *
+     * @return The sequence thumbnail
+     */
     public String getThumbnail() {
-        return thumbnail;
+        return myThumbnail;
     }
 
     /**
-     * @param thumbnail A sequence may have a thumbnail and should have a thumbnail if there are multiple sequences in a
-     * single manifest. Each of the thumbnails should be different.
+     * Sets the sequence thumbnail.
+     *
+     * @param aThumbnail A sequence may have a thumbnail and should have a thumbnail if there are multiple sequences
+     *        in a single manifest. Each of the thumbnails should be different.
      */
-    public void setThumbnail(final String thumbnail) {
-        this.thumbnail = thumbnail;
+    public void setThumbnail(final String aThumbnail) {
+        myThumbnail = aThumbnail;
     }
 
+    /**
+     * Gets the sequence's viewing direction.
+     *
+     * @return The sequence's viewing direction
+     */
     public String getViewingDirection() {
-        return viewingDirection;
+        return myViewingDirection;
     }
 
     /**
+     * Sets the sequence's viewing direction.
+     *
      * @see ViewingDirection
-     * @param viewingDirection The direction that canvases of the resource should be presented when rendered for the
-     * user to navigate and/or read. A sequence may have a viewing direction, and it MAY be different to that of the
-     * manifest.
+     * @param aViewingDirection The direction that canvases of the resource should be presented when rendered for the
+     *        user to navigate and/or read. A sequence may have a viewing direction, and it MAY be different to that
+     *        of the manifest.
      */
-    public void setViewingDirection(final String viewingDirection) {
-        this.viewingDirection = viewingDirection;
-    }
-
-    public String getViewingHint() {
-        return viewingHint;
+    public void setViewingDirection(final String aViewingDirection) {
+        myViewingDirection = aViewingDirection;
     }
 
     /**
-     * @param viewingHint A manifest, sequence or range may have a viewing hint, with scope as per viewingDirection.
+     * Gets the sequence's viewing hint.
+     *
+     * @return The sequence's viewing hint
      */
-    public void setViewingHint(final String viewingHint) {
-        this.viewingHint = viewingHint;
+    public String getViewingHint() {
+        return myViewingHint;
     }
+
+    /**
+     * Sets the sequence's viewing hint.
+     *
+     * @param aViewingHint A manifest, sequence or range may have a viewing hint, with scope as per viewingDirection.
+     */
+    public void setViewingHint(final String aViewingHint) {
+        myViewingHint = aViewingHint;
+    }
+
 }

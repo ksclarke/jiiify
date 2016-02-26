@@ -17,26 +17,48 @@
 package info.freelibrary.jiiify.iiif.presentation.model.other;
 
 /**
- *
  * @author Ralf Eichinger
  */
 public class Tile {
-    private int width;
-    private int[] scaleFactors;
 
+    private int myWidth;
+
+    private int[] myScaleFactors;
+
+    /**
+     * Gets the tile width.
+     *
+     * @return The width of the tile
+     */
     public int getWidth() {
-        return width;
+        return myWidth;
     }
 
-    public void setWidth(final int width) {
-        this.width = width;
+    /**
+     * Sets the tile width.
+     *
+     * @param aWidth A tile width
+     */
+    public void setWidth(final int aWidth) {
+        myWidth = aWidth;
     }
 
+    /**
+     * Gets the tile's scale factors.
+     *
+     * @return The tile's scale factors
+     */
     public int[] getScaleFactors() {
-        return scaleFactors;
+        return myScaleFactors;
     }
 
-    public void setScaleFactors(final int[] scaleFactors) {
-        this.scaleFactors = scaleFactors;
+    /**
+     * Sets the tile's scale factors
+     *
+     * @param aScaleFactors
+     */
+    public void setScaleFactors(final int[] aScaleFactors) {
+        myScaleFactors = aScaleFactors;
     }
+
 }

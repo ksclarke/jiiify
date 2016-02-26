@@ -22,21 +22,41 @@ public class ImageSize {
 
     private int myWidth;
 
+    /**
+     * Creates a new image size object.
+     */
     public ImageSize() {
         isPercentage = true;
         myPercentage = 100;
     }
 
+    /**
+     * Creates a new image size object from the supplied width and height.
+     * 
+     * @param aWidthHeight An integer value that is both height and width
+     */
     public ImageSize(final int aWidthHeight) {
         myWidth = aWidthHeight;
         myHeight = aWidthHeight;
     }
 
+    /**
+     * Creates a new image size object from the supplied width and height.
+     * 
+     * @param aWidth An image width
+     * @param aHeight An image height
+     */
     public ImageSize(final int aWidth, final int aHeight) {
         myWidth = aWidth;
         myHeight = aHeight;
     }
 
+    /**
+     * Creates a new image size object from the supplied IIIF URI width and height string.
+     * 
+     * @param aSizeString A IIIF URI string with width and height
+     * @throws InvalidSizeException If the supplied string isn't a valid height and width representation
+     */
     public ImageSize(final String aSizeString) throws InvalidSizeException {
         if (aSizeString == null) {
             throw new InvalidSizeException(new NullPointerException(), MessageCodes.EXC_014, "null");

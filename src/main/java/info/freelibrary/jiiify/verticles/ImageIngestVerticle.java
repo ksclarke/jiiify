@@ -37,7 +37,8 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         getJsonConsumer().handler(message -> {
             final JsonObject json = message.body();
             final File file = new File(json.getString(FILE_PATH_KEY));
-            final String configPath = new File(file.getParentFile(), file.getName() + ".cfg").getAbsolutePath();
+            final File configFile = new File(file.getParentFile(), FileUtils.stripExt(file.getName()) + ".cfg");
+            final String configPath = configFile.getAbsolutePath();
 
             fileSystem.exists(configPath, fsHandler -> {
                 if (fsHandler.succeeded()) {

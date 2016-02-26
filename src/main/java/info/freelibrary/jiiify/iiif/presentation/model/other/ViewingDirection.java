@@ -24,6 +24,9 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
  */
 public class ViewingDirection {
 
+    private ViewingDirection() {
+    }
+
     /**
      * The object is read from left to right, and is the default if not specified.
      */

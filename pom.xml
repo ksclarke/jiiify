@@ -13,6 +13,7 @@
     <jiffy.service.prefix>/iiif</jiffy.service.prefix>
     <jiiify.port>8443</jiiify.port>
     <jiiify.redirect.port>8000</jiiify.redirect.port>
+    <!-- FIXME: Could memory be an empty value too? -->
     <jiiify.memory>4096m</jiiify.memory>
     <jiiify.jks>jiiify.jks</jiiify.jks>
     <!-- A default value that can be overridden via Maven profile -->
@@ -364,8 +365,9 @@
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>sonar-maven-plugin</artifactId>
       </plugin>
-      <!-- Indenting inner lambdas are a problem for checkstyle - https://github.com/checkstyle/checkstyle/issues/577 -->
-      <!-- <plugin> <artifactId>maven-checkstyle-plugin</artifactId> </plugin> -->
+      <plugin>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+      </plugin>
       <plugin>
         <artifactId>maven-enforcer-plugin</artifactId>
       </plugin>
@@ -631,7 +633,7 @@
   <parent>
     <groupId>info.freelibrary</groupId>
     <artifactId>freelib-parent</artifactId>
-    <version>0.1.0</version>
+    <version>0.1.2-SNAPSHOT</version>
   </parent>
 
 </project>

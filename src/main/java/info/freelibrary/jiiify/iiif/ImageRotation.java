@@ -9,10 +9,19 @@ public class ImageRotation {
 
     public float myRotation;
 
+    /**
+     * Creates an image rotation object.
+     */
     public ImageRotation() {
         myRotation = 0;
     }
 
+    /**
+     * Creates an image rotation object from the supplied IIIF URI rotation string.
+     * 
+     * @param aRotationString A IIIF URI rotation string
+     * @throws InvalidRotationException If the supplied string isn't a valid IIIF URI rotation string
+     */
     public ImageRotation(final String aRotationString) throws InvalidRotationException {
         if (aRotationString.startsWith("!")) {
             isMirrored = true;

@@ -25,6 +25,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class PropertiesHandler extends JiiifyHandler {
 
+    /**
+     * Creates a properties file handler.
+     *
+     * @param aConfig The application's configuration
+     */
     public PropertiesHandler(final Configuration aConfig) {
         super(aConfig);
     }

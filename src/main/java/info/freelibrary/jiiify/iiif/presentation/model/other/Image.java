@@ -22,46 +22,92 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
  */
 public class Image {
 
-    private String id;
-    private final String motivation = "sc:painting";
-    private final String type = "oa:Annotation";
-    private String on;
+    private String myID;
 
-    private Resource resource;
+    private static final String MOTIVATION = "sc:painting";
 
+    private static final String TYPE = "oa:Annotation";
+
+    private String myOn;
+
+    private Resource myResource;
+
+    /**
+     * Creates image.
+     */
     public Image() {
     }
 
-    public Image(final String id) {
-        this.id = id;
+    /**
+     * Creates images with ID.
+     *
+     * @param aID An image ID
+     */
+    public Image(final String aID) {
+        myID = aID;
     }
 
+    /**
+     * Gets the image ID.
+     *
+     * @return The image ID
+     */
     public String getId() {
-        return id;
+        return myID;
     }
 
+    /**
+     * Gets image's resource.
+     *
+     * @return The image's resource
+     */
     public Resource getResource() {
-        return resource;
+        return myResource;
     }
 
-    public void setResource(final Resource resource) {
-        this.resource = resource;
+    /**
+     * Sets the image's resource.
+     *
+     * @param aResource An image resource
+     */
+    public void setResource(final Resource aResource) {
+        myResource = aResource;
     }
 
+    /**
+     * Gets image motivation.
+     *
+     * @return The image motivation
+     */
     public String getMotivation() {
-        return motivation;
+        return MOTIVATION;
     }
 
+    /**
+     * Gets image type.
+     *
+     * @return The image type
+     */
     public String getType() {
-        return type;
+        return TYPE;
     }
 
+    /**
+     * Gets the image's "on".
+     *
+     * @return The image's "on"
+     */
     public String getOn() {
-        return on;
+        return myOn;
     }
 
-    public void setOn(final String on) {
-        this.on = on;
+    /**
+     * Sets the image's "on".
+     *
+     * @param aOn An "on" for the image
+     */
+    public void setOn(final String aOn) {
+        myOn = aOn;
     }
 
 }

@@ -19,12 +19,13 @@ package info.freelibrary.jiiify.iiif.presentation.model;
 import java.util.List;
 
 import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
+import info.freelibrary.jiiify.iiif.presentation.model.other.ViewingHint;
 
 /**
  * IIIF Presentation API Manifest.
  * <p>
- * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/manifest</p>
- *
+ * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/manifest
+ * </p>
  * <ul>
  * <li>Each manifest must, and is very likely to, have one sequence, but may have more than one.</li>
  * <li>A manifest, sequence or canvas must not have a format.</li>
@@ -32,17 +33,14 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
  * <li>A manifest or sequence must not have a width.</li>
  * <li>Other resources must not have a startCanvas relationship.</li>
  * </ul>
- *
  * <p>
- * Other properties are possible, either via custom extensions or endorsed by the IIIF. If a client discovers properties
- * that it does not understand, then it must ignore them. Other properties should consist of a prefix and a name in the
- * form “prefix:name” to ensure it does not collide with a property defined by IIIF specifications. Services should be
- * used for extensions if at all possible.</p>
- *
+ * Other properties are possible, either via custom extensions or endorsed by the IIIF. If a client discovers
+ * properties that it does not understand, then it must ignore them. Other properties should consist of a prefix and a
+ * name in the form “prefix:name” to ensure it does not collide with a property defined by IIIF specifications.
+ * Services should be used for extensions if at all possible.
+ * </p>
  * <p>
- * A complete example rsponse, e.g. at URL http://www.example.org/iiif/book1/manifest:
- *
- * <pre>
+ * A complete example rsponse, e.g. at URL http://www.example.org/iiif/book1/manifest: <pre>
  *
  *
  * {
@@ -204,131 +202,209 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
  */
 public class Manifest extends AbstractIiifResource {
 
-    private final String context = "http://iiif.io/api/presentation/2/context.json";
-    private String description; // recommended
-    private final String label; // required
-    private List<Metadata> metadata; // recommended
-    private List<Sequence> sequences;
-    private String thumbnail; // recommended
-    private String viewingDirection; // optional
-    private String viewingHint; // optional
+    private static final String CONTEXT = "http://iiif.io/api/presentation/2/context.json";
 
-    public Manifest(final String id, final String label) {
-        assert id != null;
-        assert label != null;
+    private String myDescription; // recommended
 
-        this.id = id;
-        this.label = label;
+    private final String myLabel; // required
 
-        this.type = "sc:Manifest";
+    private List<Metadata> myMetadata; // recommended
+
+    private List<Sequence> mySequences;
+
+    private String myThumbnail; // recommended
+
+    private String myViewingDirection; // optional
+
+    private String myViewingHint; // optional
+
+    /**
+     * Creates manifest with ID and label.
+     *
+     * @param aID
+     * @param aLabel
+     */
+    public Manifest(final String aID, final String aLabel) {
+        assert aID != null;
+        assert aLabel != null;
+
+        myID = aID;
+        myLabel = aLabel;
+        myType = "sc:Manifest";
     }
 
     /**
+     * Creates a manifest with ID, label, description, thumbnail, and metadata.
      *
-     * @param id The URI that identifies the resource. It is recommended that an HTTP URI be used for all resources.
-     * Recommended HTTP URI patterns for the different classes of resource are given below. URIs from any registered
-     * scheme may be used, and implementers may find it convenient to use a UUID URN of the form:
-     * "urn:uuid:uuid-goes-here-1234". Resources that do not require URIs may be assigned blank node identifiers; this
-     * is the same as omitting @id. A manifest must have an id, and it must be the http(s) URI at which the manifest is
-     * published.
-     * @param label A human readable label, name or title for the resource. This property is intended to be displayed as
-     * a short, textual surrogate for the resource if a human needs to make a distinction between it and similar
-     * resources, for example between pages or between a choice of images to display. A manifest must have a label, and
-     * it should be the name of the object or title of the intellectual work that it embodies.
-     * @param description A longer-form prose description of the object or resource that the property is attached to,
-     * intended to be conveyed to the user as a full text description, rather than a simple label and value. It may be
-     * in simple HTML or plain text. It can duplicate any of the information from the metadata fields, along with
-     * additional information required to understand what is being displayed. Clients should have a way to display the
-     * descriptions of manifests and canvases, and may have a way to view the information about other resources. A
-     * manifest should have a description that describes the object or work.
-     * @param metadata A list of short descriptive entries, given as pairs of human readable label and value to be
-     * displayed to the user. The value should be either simple HTML, including links and text markup, or plain text,
-     * and the label should be plain text. There are no semantics conveyed by this information, and clients should not
-     * use it for discovery or other purposes. This list of descriptive pairs should be able to be displayed in a
-     * tabular form in the user interface. Clients should have a way to display the information about manifests and
-     * canvases, and may have a way to view the information about other resources. The client should display the pairs
-     * in the order provided by the description. A pair might be used to convey the author of the work, information
-     * about its creation, a brief physical description, or ownership information, amongst other use cases. The client
-     * is not expected to take any action on this information beyond displaying the label and value. An example pair of
-     * label and value might be a label of “Author” and a value of "Jehan Froissart". A manifest should have metadata
-     * pairs associated with it describing the object or work.
-     * @param thumbnail A small image that depicts or pictorially represents the resource that the property is attached
-     * to, such as the title page, a significant image or rendering of a canvas with multiple content resources
-     * associated with it. It is recommended that a IIIF Image API service be available for this image for manipulations
-     * such as resizing. A manifest should have a thumbnail image that represents the entire object or work.
+     * @param aID The URI that identifies the resource. It is recommended that an HTTP URI be used for all resources.
+     *        Recommended HTTP URI patterns for the different classes of resource are given below. URIs from any
+     *        registered scheme may be used, and implementers may find it convenient to use a UUID URN of the form:
+     *        "urn:uuid:uuid-goes-here-1234". Resources that do not require URIs may be assigned blank node
+     *        identifiers; this is the same as omitting @id. A manifest must have an id, and it must be the http(s)
+     *        URI at which the manifest is published.
+     * @param aLabel A human readable label, name or title for the resource. This property is intended to be displayed
+     *        as a short, textual surrogate for the resource if a human needs to make a distinction between it and
+     *        similar resources, for example between pages or between a choice of images to display. A manifest must
+     *        have a label, and it should be the name of the object or title of the intellectual work that it
+     *        embodies.
+     * @param aDescription A longer-form prose description of the object or resource that the property is attached to,
+     *        intended to be conveyed to the user as a full text description, rather than a simple label and value. It
+     *        may be in simple HTML or plain text. It can duplicate any of the information from the metadata fields,
+     *        along with additional information required to understand what is being displayed. Clients should have a
+     *        way to display the descriptions of manifests and canvases, and may have a way to view the information
+     *        about other resources. A manifest should have a description that describes the object or work.
+     * @param aMetadata A list of short descriptive entries, given as pairs of human readable label and value to be
+     *        displayed to the user. The value should be either simple HTML, including links and text markup, or plain
+     *        text, and the label should be plain text. There are no semantics conveyed by this information, and
+     *        clients should not use it for discovery or other purposes. This list of descriptive pairs should be able
+     *        to be displayed in a tabular form in the user interface. Clients should have a way to display the
+     *        information about manifests and canvases, and may have a way to view the information about other
+     *        resources. The client should display the pairs in the order provided by the description. A pair might be
+     *        used to convey the author of the work, information about its creation, a brief physical description, or
+     *        ownership information, amongst other use cases. The client is not expected to take any action on this
+     *        information beyond displaying the label and value. An example pair of label and value might be a label
+     *        of “Author” and a value of "Jehan Froissart". A manifest should have metadata pairs associated with it
+     *        describing the object or work.
+     * @param aThumbnail A small image that depicts or pictorially represents the resource that the property is
+     *        attached to, such as the title page, a significant image or rendering of a canvas with multiple content
+     *        resources associated with it. It is recommended that a IIIF Image API service be available for this
+     *        image for manipulations such as resizing. A manifest should have a thumbnail image that represents the
+     *        entire object or work.
      */
-    public Manifest(final String id, final String label, final String description, final List<Metadata> metadata, final String thumbnail) {
-        this(id, label);
+    public Manifest(final String aID, final String aLabel, final String aDescription, final List<Metadata> aMetadata,
+            final String aThumbnail) {
+        this(aID, aLabel);
 
-        this.description = description;
-        this.metadata = metadata;
-        this.thumbnail = thumbnail;
+        myDescription = aDescription;
+        myMetadata = aMetadata;
+        myThumbnail = aThumbnail;
     }
 
+    /**
+     * Gets manifest context.
+     *
+     * @return The manifest context
+     */
     public String getContext() {
-        return context;
+        return CONTEXT;
     }
 
+    /**
+     * Gets the manifest description.
+     *
+     * @return The manifest description
+     */
     public String getDescription() {
-        return description;
+        return myDescription;
     }
 
-    public void setDescription(final String description) {
-        this.description = description;
+    /**
+     * Sets the manifest description.
+     *
+     * @param aDescription
+     */
+    public void setDescription(final String aDescription) {
+        myDescription = aDescription;
     }
 
+    /**
+     * Gets the manifest label.
+     *
+     * @return The manifest label
+     */
     public String getLabel() {
-        return label;
+        return myLabel;
     }
 
+    /**
+     * Gets the manifest metadata.
+     *
+     * @return The manifest metadata
+     */
     public List<Metadata> getMetadata() {
-        return metadata;
+        return myMetadata;
     }
 
-    public void setMetadata(final List<Metadata> metadata) {
-        this.metadata = metadata;
+    /**
+     * Sets manifest metadata.
+     *
+     * @param aMetadata Manifest metadata
+     */
+    public void setMetadata(final List<Metadata> aMetadata) {
+        myMetadata = aMetadata;
     }
 
+    /**
+     * Gets manifest sequences.
+     *
+     * @return Manifest sequences
+     */
     public List<Sequence> getSequences() {
-        return sequences;
+        return mySequences;
     }
 
-    public void setSequences(final List<Sequence> sequences) {
-        this.sequences = sequences;
+    /**
+     * Sets the manifest's sequences.
+     *
+     * @param aSequencesList A list of sequences
+     */
+    public void setSequences(final List<Sequence> aSequencesList) {
+        mySequences = aSequencesList;
     }
 
+    /**
+     * Gets the manifest thumbnail.
+     *
+     * @return The manifest's thumbnail
+     */
     public String getThumbnail() {
-        return thumbnail;
+        return myThumbnail;
     }
 
-    public void setThumbnail(final String thumbnail) {
-        this.thumbnail = thumbnail;
+    /**
+     * Sets the manifest thumbnail.
+     *
+     * @param aThumbnail A thumbnail for the manifest
+     */
+    public void setThumbnail(final String aThumbnail) {
+        myThumbnail = aThumbnail;
     }
 
+    /**
+     * Gets the manifest's viewing direction.
+     *
+     * @return The manifest's viewing direction
+     */
     public String getViewingDirection() {
-        return viewingDirection;
+        return myViewingDirection;
     }
 
     /**
      * @see ViewingDirections
-     * @param viewingDirection The direction that canvases of the resource should be presented when rendered for the
-     * user to navigate and/or read. A manifest may have a viewing direction, and if so, it applies to all of its
-     * sequences unless the sequence specifies its own viewing direction.
+     * @param aViewingDirection The direction that canvases of the resource should be presented when rendered for the
+     *        user to navigate and/or read. A manifest may have a viewing direction, and if so, it applies to all of
+     *        its sequences unless the sequence specifies its own viewing direction.
      */
-    public void setViewingDirection(final String viewingDirection) {
-        this.viewingDirection = viewingDirection;
+    public void setViewingDirection(final String aViewingDirection) {
+        myViewingDirection = aViewingDirection;
     }
 
+    /**
+     * Get manifest's viewing hint.
+     *
+     * @return The manifest's viewing hint
+     */
     public String getViewingHint() {
-        return viewingHint;
+        return myViewingHint;
     }
 
     /**
      * @see ViewingHint
-     * @param viewingHint A hint to the client as to the most appropriate method of displaying the resource. A manifest,
-     * sequence or range may have a viewing hint, with scope as per viewingDirection.
+     * @param aViewingHint A hint to the client as to the most appropriate method of displaying the resource. A
+     *        manifest, sequence or range may have a viewing hint, with scope as per viewingDirection.
      */
-    public void setViewingHint(final String viewingHint) {
-        this.viewingHint = viewingHint;
+    public void setViewingHint(final String aViewingHint) {
+        myViewingHint = aViewingHint;
     }
+
 }

@@ -47,6 +47,11 @@ public class ImageInfo {
 
     private String[] myQualities;
 
+    /**
+     * Creates an image info object from the supplied image ID.
+     * 
+     * @param aID The image ID of the image info object
+     */
     public ImageInfo(final String aID) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Constructing image info from ID: {}", aID);
@@ -55,6 +60,12 @@ public class ImageInfo {
         setID(aID);
     }
 
+    /**
+     * Creates an image info object from a supplied JSON representation.
+     * 
+     * @param aJsonObject A JSON representation of the image info object
+     * @throws InvalidInfoException If the JSON object isn't a valid image info object
+     */
     public ImageInfo(final JsonObject aJsonObject) throws InvalidInfoException {
         final JsonArray profileArray = aJsonObject.getJsonArray("profile");
         final JsonArray tileArray = aJsonObject.getJsonArray("tiles");
@@ -111,38 +122,82 @@ public class ImageInfo {
         }
     }
 
+    /**
+     * Sets the ID of the image info object.
+     * 
+     * @param aID The ID of the image info object
+     * @return The image info object with the set ID
+     */
     public ImageInfo setID(final String aID) {
         myID = aID;
         return this;
     }
 
+    /**
+     * Gets the ID of the image info object.
+     * 
+     * @return The ID of the image info object
+     */
     public String getID() {
         return myID;
     }
 
+    /**
+     * Sets the width of the image info object.
+     * 
+     * @param aWidth The width of the image info object
+     * @return The image info object with width set
+     */
     public ImageInfo setWidth(final int aWidth) {
         myWidth = aWidth;
         return this;
     }
 
+    /**
+     * Gets the width of the image info object.
+     * 
+     * @return The image info object's width
+     */
     public int getWidth() {
         return myWidth;
     }
 
+    /**
+     * Sets the height of the image info object.
+     * 
+     * @param aHeight The height of the image info object
+     * @return The image info object with height set
+     */
     public ImageInfo setHeight(final int aHeight) {
         myHeight = aHeight;
         return this;
     }
 
+    /**
+     * Gets the height of the image info object.
+     * 
+     * @return The image info object's height
+     */
     public int getHeight() {
         return myHeight;
     }
 
+    /**
+     * Sets the tile size of the image info object.
+     * 
+     * @param aTileSize The tile size of the image info object
+     * @return The image info object with the tile size set
+     */
     public ImageInfo setTileSize(final int aTileSize) {
         myTileSize = aTileSize;
         return this;
     }
 
+    /**
+     * Gets the tile size of the image info object
+     * 
+     * @return The image info object's tile size
+     */
     public int getTileSize() {
         return myTileSize;
     }

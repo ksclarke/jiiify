@@ -35,6 +35,11 @@ import io.vertx.ext.web.RoutingContext;
 
 public class IngestHandler extends JiiifyHandler {
 
+    /**
+     * Creates an ingest handler.
+     *
+     * @param aConfig The application's configuration
+     */
     public IngestHandler(final Configuration aConfig) {
         super(aConfig);
     }

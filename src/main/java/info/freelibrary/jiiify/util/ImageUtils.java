@@ -58,6 +58,9 @@ public class ImageUtils {
     /* All out-of-the-box tiles are not rotated */
     private static final String LABEL = "0/default.jpg";
 
+    private ImageUtils() {
+    }
+
     /**
      * Return a list of derivative images to be pre-generated so that the OpenSeadragon viewer can use them.
      *
@@ -157,17 +160,36 @@ public class ImageUtils {
         return Collections.unmodifiableList(list);
     }
 
+    /**
+     * Returns whether native image libraries or pure Java ones are being used.
+     * 
+     * @return True if native image libraries are being used; else, false
+     */
     public static boolean useNativeLibs() {
         return useNativeLibs;
     }
 
+    /**
+     * Sets whether to use native image libraries or to use the standard Java ones.
+     * 
+     * @param aFlagToUseNativeLibs
+     */
     public static void useNativeLibs(final boolean aFlagToUseNativeLibs) {
         useNativeLibs = aFlagToUseNativeLibs;
     }
 
+    /**
+     * Transforms a source image into a cached image file using the supplied
+     * {@see info.freelibrary.jiiify.iiif.ImageRequest}
+     * 
+     * @param aImageFile A source image file
+     * @param aImageRequest A IIIF image request
+     * @param aCacheFile An output cached image file
+     * @throws IOException If there is a problem reading or writing the image files
+     */
     public static void transform(final File aImageFile, final ImageRequest aImageRequest, final File aCacheFile)
             throws IOException {
-        ImageObject image;
+        final ImageObject image;
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Transforming '{}' into '{}'", aImageFile, aCacheFile);
@@ -228,11 +250,26 @@ public class ImageUtils {
         throw new RuntimeException(LOGGER.getMessage(MessageCodes.EXC_026, mimeType));
     }
 
+    /**
+     * Gets the center of an image.
+     * 
+     * @param aImageFile A source image file
+     * @return An image region representing the center of the image
+     * @throws ConfigurationException If there is a configuration error
+     * @throws IOException If there is trouble reading the source image file
+     */
     public static ImageRegion getCenter(final File aImageFile) throws ConfigurationException, IOException {
         return getCenter(getImageDimension(aImageFile));
     }
 
-    public static ImageRegion getCenter(final Dimension aDimension) throws ConfigurationException, IOException {
+    /**
+     * Gets the center of an image, represented by a {@see java.awt.Dimension} object.
+     * 
+     * @param aDimension Dimensions to use as the source for the calculation of center
+     * @return An image region representing the center of the dimensions
+     * @throws ConfigurationException If there is a configuration error
+     */
+    public static ImageRegion getCenter(final Dimension aDimension) throws ConfigurationException {
         final int smallSide = Math.min(aDimension.height, aDimension.width);
         final ImageRegion region;
 
@@ -245,15 +282,24 @@ public class ImageUtils {
         return region;
     }
 
-    private static String getSize(final double aMultiplier, final int aXTileSize, final int aYTileSize) {
-        return (int) Math.ceil(aXTileSize / aMultiplier) + "," + (int) Math.ceil(aYTileSize / aMultiplier);
-    }
-
+    /**
+     * Gets the ratio of the supplied width and height.
+     * 
+     * @param aWidth Width to use in getting the ratio
+     * @param aHeight Height to use in getting the ratio
+     * @return A string representation of the ratio
+     */
     public static String ratio(final int aWidth, final int aHeight) {
         final int gcd = gcd(aWidth, aHeight);
         return aHeight / gcd + ":" + aHeight / gcd;
     }
 
+    /**
+     * Gets the ratio from the supplied IIIF size string.
+     * 
+     * @param aSize A IIIF image size string
+     * @return A string representation of the ratio
+     */
     public static String ratio(final String aSize) {
         final String[] widthHeight = aSize.split("\\,");
 
@@ -262,6 +308,10 @@ public class ImageUtils {
         }
 
         return ratio(Integer.parseInt(widthHeight[0]), Integer.parseInt(widthHeight[1]));
+    }
+
+    private static String getSize(final double aMultiplier, final int aXTileSize, final int aYTileSize) {
+        return (int) Math.ceil(aXTileSize / aMultiplier) + "," + (int) Math.ceil(aYTileSize / aMultiplier);
     }
 
     private static int gcd(final int aWidth, final int aHeight) {

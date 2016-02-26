@@ -41,6 +41,11 @@ public class SearchHandler extends JiiifyHandler {
     /* Default Solr rows */
     private final int COUNT = 10;
 
+    /**
+     * Creates a search handler for the administrative interface.
+     *
+     * @param aConfig The application's configuration
+     */
     public SearchHandler(final Configuration aConfig) {
         super(aConfig);
     }

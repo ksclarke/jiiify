@@ -17,31 +17,42 @@
 package info.freelibrary.jiiify.iiif.presentation.model;
 
 /**
- * <p>
  * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/annotation/{name}
- * </p>
  *
  * @author Ralf Eichinger
  */
 public class ImageContent extends Content {
 
-    private String label; // optional
+    private String myLabel; // optional
 
-    public ImageContent(final String id) {
-        super(id);
-        this.type = "oa:Annotation"; // required
-    }
-
-    public String getLabel() {
-        return label;
+    /**
+     * Creates a new image content with the supplied ID.
+     *
+     * @param aID An ID for the image content
+     */
+    public ImageContent(final String aID) {
+        super(aID);
+        myType = "oa:Annotation"; // required
     }
 
     /**
-     * @param label A content resource may have a label, and if there is a choice of content resource for the same
-     * canvas, then they must have labels. The label should be a brief description of the resource, such as “black and
-     * white” versus “color photograph”.
+     * Gets the image content label.
+     *
+     * @return The image content label
      */
-    public void setLabel(final String label) {
-        this.label = label;
+    public String getLabel() {
+        return myLabel;
     }
+
+    /**
+     * Sets the image content label.
+     *
+     * @param aLabel A content resource may have a label, and if there is a choice of content resource for the same
+     *        canvas, then they must have labels. The label should be a brief description of the resource, such as
+     *        “black and white” versus “color photograph”.
+     */
+    public void setLabel(final String aLabel) {
+        myLabel = aLabel;
+    }
+
 }

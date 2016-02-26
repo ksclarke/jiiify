@@ -21,60 +21,105 @@ import java.util.List;
 import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 
 /**
- * <p>
  * Recommended URI Pattern: {scheme}://{host}/{prefix}/collection/{name}</p>
  *
  * @author Ralf Eichinger
  */
 public class Collection extends AbstractIiifResource {
 
-    private String description; // recommended
-    private final String label; // required
-    private final List<Metadata> metadata; // recommended
-    private String thumbnail; // recommended
-    private String viewingHint; // optional
+    private String myDescription; // recommended
+    private final String myLabel; // required
+    private final List<Metadata> myMetadata; // recommended
+    private String myThumbnail; // recommended
+    private String myViewingHint; // optional
 
-    public Collection(final String id, final String label, final List<Metadata> metadata) {
-        assert id != null;
-        assert label != null;
+    /**
+     * Creates IIIF collection with ID, label, and metadata.
+     *
+     * @param aID A collection ID
+     * @param aLabel A collection label
+     * @param aMetadata A metadata
+     */
+    public Collection(final String aID, final String aLabel, final List<Metadata> aMetadata) {
+        assert aID != null;
+        assert aLabel != null;
 
-        this.id = id;
-        this.label = label;
-
-        this.metadata = metadata;
-
-        type = "sc:Collection";
+        myID = aID;
+        myLabel = aLabel;
+        myMetadata = aMetadata;
+        myType = "sc:Collection";
     }
 
+    /**
+     * Gets the collection's description.
+     *
+     * @return The collection's description
+     */
     public String getDescription() {
-        return description;
+        return myDescription;
     }
 
-    public void setDescription(final String description) {
-        this.description = description;
+    /**
+     * Sets the collection's description.
+     *
+     * @param aDescription A description for collection
+     */
+    public void setDescription(final String aDescription) {
+        myDescription = aDescription;
     }
 
+    /**
+     * Gets the collection label.
+     *
+     * @return The collection label
+     */
     public String getLabel() {
-        return label;
+        return myLabel;
     }
 
+    /**
+     * Gets the collection metadata
+     *
+     * @return The collection's metadata
+     */
     public List<Metadata> getMetadata() {
-        return metadata;
+        return myMetadata;
     }
 
+    /**
+     * Gets the collection thumbnail.
+     *
+     * @return The collection thumbnail
+     */
     public String getThumbnail() {
-        return thumbnail;
+        return myThumbnail;
     }
 
-    public void setThumbnail(final String thumbnail) {
-        this.thumbnail = thumbnail;
+    /**
+     * Sets the collection thumbnail.
+     *
+     * @param aThumbnail A thumbnail for the collection
+     */
+    public void setThumbnail(final String aThumbnail) {
+        myThumbnail = aThumbnail;
     }
 
+    /**
+     * Gets the collection's viewing hint.
+     *
+     * @return The collection's viewing hint
+     */
     public String getViewingHint() {
-        return viewingHint;
+        return myViewingHint;
     }
 
-    public void setViewingHint(final String viewingHint) {
-        this.viewingHint = viewingHint;
+    /**
+     * Sets the collection's viewing hint.
+     *
+     * @param aViewingHint A viewing hint for the collection
+     */
+    public void setViewingHint(final String aViewingHint) {
+        myViewingHint = aViewingHint;
     }
+
 }

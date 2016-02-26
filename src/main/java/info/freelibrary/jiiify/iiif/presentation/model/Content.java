@@ -21,9 +21,7 @@ import java.util.List;
 import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 
 /**
- * <p>
- * Content resources such as images or texts that are associated with a canvas.</p>
- *
+ * Content resources such as images or texts that are associated with a canvas.
  * <ul>
  * <li>A canvas or content resource must not have a viewing direction.</li>
  * </ul>
@@ -32,108 +30,166 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
  */
 public class Content extends AbstractIiifResource {
 
-    protected List<Metadata> metadata; // optional
-    protected String description; // optional
-    protected String thumbnail; // optional
-    protected String format; // optional
-    protected int height; // optional
-    protected int width; // optional
-    protected String viewingHint; // optional
+    protected List<Metadata> myMetadata; // optional
+
+    protected String myDescription; // optional
+
+    protected String myThumbnail; // optional
+
+    protected String myFormat; // optional
+
+    protected int myHeight; // optional
+
+    protected int myWidth; // optional
+
+    protected String myViewingHint; // optional
 
     /**
-     * @param id A content resource must have an id unless it is embedded in the response, and it must be the http(s)
-     * URI at which the resource is published.
+     * Creates IIIF content resource.
+     *
+     * @param aID A content resource must have an ID unless it is embedded in the response, and it must be the HTTP(S)
+     *        URI at which the resource is published.
      */
-    public Content(final String id) {
-        assert id != null;
-        this.id = id;
+    public Content(final String aID) {
+        assert aID != null;
+        myID = aID;
     }
 
+    /**
+     * Gets content resource's metadata.
+     *
+     * @return The content's metadata
+     */
     public List<Metadata> getMetadata() {
-        return metadata;
+        return myMetadata;
     }
 
     /**
-     * @param metadata A content resource may have metadata pairs associated with it.
+     * Sets the content resource metadata.
+     *
+     * @param aMetadata A content resource may have metadata pairs associated with it.
      */
-    public void setMetadata(final List<Metadata> metadata) {
-        this.metadata = metadata;
+    public void setMetadata(final List<Metadata> aMetadata) {
+        myMetadata = aMetadata;
     }
 
+    /**
+     * Gets content description.
+     *
+     * @return The content description
+     */
     public String getDescription() {
-        return description;
+        return myDescription;
     }
 
     /**
-     * @param description A content resource may have a description.
+     * Sets content description.
+     *
+     * @param aDescription A content resource may have a description.
      */
-    public void setDescription(final String description) {
-        this.description = description;
+    public void setDescription(final String aDescription) {
+        myDescription = aDescription;
     }
 
+    /**
+     * Gets the content thumbnail.
+     *
+     * @return The content thumbnail
+     */
     public String getThumbnail() {
-        return thumbnail;
+        return myThumbnail;
     }
 
     /**
-     * @param thumbnail A content resource may have a thumbnail and should have a thumbnail if it is an option in a
-     * choice of resources.
+     * Sets the content format.
+     *
+     * @param aThumbnail A content resource may have a thumbnail and should have a thumbnail if it is an option in a
+     *        choice of resources.
      */
-    public void setThumbnail(final String thumbnail) {
-        this.thumbnail = thumbnail;
+    public void setThumbnail(final String aThumbnail) {
+        myThumbnail = aThumbnail;
     }
 
+    /**
+     * Gets the content format.
+     *
+     * @return The content's format
+     */
     public String getFormat() {
-        return format;
+        return myFormat;
     }
 
     /**
-     * @param format The specific media type (often called a MIME type) of a content resource, for example “image/jpeg”.
-     * This is important for distinguishing text in XML from plain text, for example. A content resource may have a
-     * format, and if so, it must be the value of the Content-Type header returned when the resource is dereferenced.
-     * N.B. This is different to the formats property in the Image API, which gives the extension to use within that
-     * API. It would be inappropriate to use in this case, as format can be used with any content resource, not just
-     * images.
+     * Sets the content format.
+     *
+     * @param aFormat The specific media type (often called a MIME type) of a content resource, for example
+     *        “image/jpeg”. This is important for distinguishing text in XML from plain text, for example. A content
+     *        resource may have a format, and if so, it must be the value of the Content-Type header returned when the
+     *        resource is dereferenced. N.B. This is different to the formats property in the Image API, which gives
+     *        the extension to use within that API. It would be inappropriate to use in this case, as format can be
+     *        used with any content resource, not just images.
      */
-    public void setFormat(final String format) {
-        this.format = format;
+    public void setFormat(final String aFormat) {
+        myFormat = aFormat;
     }
 
+    /**
+     * Gets the content height.
+     *
+     * @return The content's height
+     */
     public int getHeight() {
-        return height;
+        return myHeight;
     }
 
     /**
-     * @param height The height of a canvas or image resource. For images, this is in pixels. No particular units are
-     * required for canvases, as the dimensions provide an aspect ratio for the resources to be located within rather
-     * than measuring any physical property of the object. Content resources may have a height, given in pixels, if
-     * appropriate.
+     * Sets the content height.
+     *
+     * @param aHeight The height of a canvas or image resource. For images, this is in pixels. No particular units are
+     *        required for canvases, as the dimensions provide an aspect ratio for the resources to be located within
+     *        rather than measuring any physical property of the object. Content resources may have a height, given in
+     *        pixels, if appropriate.
      */
-    public void setHeight(final int height) {
-        this.height = height;
+    public void setHeight(final int aHeight) {
+        myHeight = aHeight;
     }
 
+    /**
+     * Gets the content width.
+     *
+     * @return The content width
+     */
     public int getWidth() {
-        return width;
+        return myWidth;
     }
 
     /**
-     * @param width The width of a canvas or image resource. For images, this is in pixels. No particular units are
-     * required for canvases. Content resources may have a height, given in pixels, if appropriate.
+     * Sets the content width.
+     *
+     * @param aWidth The width of a canvas or image resource. For images, this is in pixels. No particular units are
+     *        required for canvases. Content resources may have a height, given in pixels, if appropriate.
      */
-    public void setWidth(final int width) {
-        this.width = width;
+    public void setWidth(final int aWidth) {
+        myWidth = aWidth;
     }
 
+    /**
+     * Gets the content viewing hint.
+     *
+     * @return The content viewing hint
+     */
     public String getViewingHint() {
-        return viewingHint;
+        return myViewingHint;
     }
 
     /**
-     * @param viewingHint A content resource may have a viewing hint but there are no defined values in this
-     * specification.
+     * Sets the content viewing hint.
+     *
+     * @param aViewingHint A content resource may have a viewing hint but there are no defined values in this
+     *        specification.
      */
-    public void setViewingHint(final String viewingHint) {
-        this.viewingHint = viewingHint;
+    public void setViewingHint(final String aViewingHint) {
+        myViewingHint = aViewingHint;
     }
+
 }

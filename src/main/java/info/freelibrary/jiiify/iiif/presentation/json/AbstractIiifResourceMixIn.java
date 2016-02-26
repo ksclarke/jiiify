@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @author Ralf Eichinger
  */
 public abstract class AbstractIiifResourceMixIn {
+
     @JsonProperty("@id")
     abstract String getId();
 
