@@ -25,7 +25,7 @@
     <vertx.version>3.2.0</vertx.version>
     <opencsv.version>2.3</opencsv.version>
     <javatuples.version>1.2</javatuples.version>
-    <freelib.utils.version>0.6.0-SNAPSHOT</freelib.utils.version>
+    <freelib.utils.version>0.6.0</freelib.utils.version>
     <opencv.version>3.0.0-SNAPSHOT</opencv.version>
     <imgscalr.version>4.2</imgscalr.version>
     <twelvemonkeys.version>3.2.1</twelvemonkeys.version>
