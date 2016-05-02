@@ -53,14 +53,14 @@ if hash docker 2>/dev/null; then
   # First check whether our Jiiify Solr container is active
   if [ -z "${CONTAINER_ID}" ]; then
     CONTAINER_ID=$(docker ps -a -q --filter "name=jiiify_solr")
+    PING="http://localhost:8983/solr/jiiify/admin/ping"
 
     # If container has never been created, create it and its Solr core
     if [ -z "${CONTAINER_ID}" ]; then
       CONTAINER_ID=$(docker run --name jiiify_solr -d -p 8983:8983 -t solr)
-      PING="http://localhost:8983/solr/jiiify/admin/ping"
 
       for INDEX in $(seq 1 10); do
-    	  docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify >/dev/null 2>&1
+        docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify >/dev/null 2>&1
         RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
 
         if [ "$RESPONSE_CODE" == "200" ]; then
