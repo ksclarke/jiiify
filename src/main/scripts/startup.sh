@@ -9,6 +9,7 @@ LOG_DELEGATE="-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.S
 KEY_PASS_CONFIG="-Djiiify.key.pass=${jiiify.key.pass}"
 WATCH_FOLDER_DIR="-Djiiify.watch.folder=${jiiify.watch.folder}"
 JIIIFY_PORT="-Djiiify.port=${jiiify.port}"
+VERTX_OPTS="-Dvertx.options.workerPoolSize=2"
 DROPWIZARD_METRICS="-Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.registryName=jiiify.metrics"
 JMX_METRICS="-Dcom.sun.management.jmxremote -Dvertx.metrics.options.jmxEnabled=true"
 # For tools like Eclipse's Debugging
@@ -20,6 +21,7 @@ TOOLING="$DROPWIZARD_METRICS $JMX_METRICS"
 AUTHBIND=""
 JIIIFY_CONFIG=""
 JKS_CONFIG=""
+JMX_CONFIG="${jiiify.memory}"
 
 # If we have authbind and it's configured to run our port, let's use it
 if hash authbind 2>/dev/null; then
@@ -44,6 +46,12 @@ fi
 if [[ "${dev.tools}" == *"JMX_REMOTE"* ]]; then
   echo "[DEBUG] Using JMX_REMOTE for JMX connections (port 9001)"
   TOOLING="$TOOLING $JMX_REMOTE"
+fi
+
+if [[ ! -z "$JMX_CONFIG" ]]; then
+  JMX_CONFIG="-Xmx${jiiify.memory} -Xms${jiiify.memory}"
+else
+  JMX_CONFIG="-Xmx${system.free.memory} -Xms${system.free.memory}"
 fi
 
 # Start up a Solr instance automatically if we have Docker installed
@@ -98,5 +106,5 @@ if hash docker 2>/dev/null; then
   fi
 fi
 
-$AUTHBIND java -Xmx${jiiify.memory} $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR \
+$AUTHBIND java $VERTX_OPTS $JMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR \
   $JKS_CONFIG $JIIIFY_PORT $TOOLING $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG

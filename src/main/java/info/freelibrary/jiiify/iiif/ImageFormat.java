@@ -9,8 +9,6 @@ import info.freelibrary.util.StringUtils;
 
 public class ImageFormat {
 
-    public static final String DEFAULT_FORMAT = "jpg";
-
     /* Image extensions */
 
     public static final String JPG_EXT = "jpg";
@@ -44,6 +42,14 @@ public class ImageFormat {
     public static final String PDF_MIME_TYPE = "application/pdf";
 
     public static final String WEBP_MIME_TYPE = "image/webp";
+
+    /* Preconfigured format values */
+
+    public static final String DEFAULT_FORMAT = JPG_EXT;
+
+    public static final String MASTER_FORMAT = TIF_EXT;
+
+    public static final String SUBMASTER_FORMAT = JP2_EXT;
 
     /* Extension to MIME type maps */
 
@@ -101,7 +107,7 @@ public class ImageFormat {
 
     /**
      * Determines if the supplied file extension matches one of the supported image formats.
-     * 
+     *
      * @param aFileExtension A file extension from an image file
      * @return True if the image type represented by the extension is supported; else, false
      */
@@ -111,7 +117,7 @@ public class ImageFormat {
 
     /**
      * Gets the supported image extensions.
-     * 
+     *
      * @return The extensions of the supported image types
      */
     public static String[] getExtensions() {
@@ -120,7 +126,7 @@ public class ImageFormat {
 
     /**
      * Gets the supported image MIME types.
-     * 
+     *
      * @return The MIME types of the supported image types
      */
     public static String[] getMimeTypes() {
@@ -134,7 +140,7 @@ public class ImageFormat {
 
     /**
      * Gets the file extension associated with this particular image format.
-     * 
+     *
      * @return The file extension associated with this particular image format
      */
     public String getExtension() {
@@ -143,7 +149,7 @@ public class ImageFormat {
 
     /**
      * Gets the MIME type associated with this particular image format.
-     * 
+     *
      * @return The MIME type associated with this particular image format
      */
     public String getMIMEType() {
@@ -152,7 +158,7 @@ public class ImageFormat {
 
     /**
      * Gets the preferred file extension for the supplied MIME type.
-     * 
+     *
      * @param aMIMEType A MIME type for which to return a file extension
      * @return A file extension for the supplied MIME type
      */
@@ -162,7 +168,7 @@ public class ImageFormat {
 
     /**
      * Gets the MIME type for the supplied file extension.
-     * 
+     *
      * @param aFileExt A file extension for which to return a MIME type
      * @return A MIME type for the supplied file extension
      */
@@ -172,12 +178,13 @@ public class ImageFormat {
 
     /**
      * Returns whether the supplied file extension is valid for the image format.
-     * 
+     *
      * @param aFileExt A file extension to compare to the current image format
      * @return True if the supplied file extension is valid for the image format in hand; else, false
      */
     public boolean matches(final String aFileExt) {
-        return EXT2MIME_MAP.containsKey(aFileExt) ? myFormat.equals(getExtension(getMIMEType(aFileExt))) : false;
+        final String ext = aFileExt.replaceAll("\\.", "");
+        return EXT2MIME_MAP.containsKey(ext) ? myFormat.equals(getExtension(getMIMEType(ext))) : false;
     }
 
 }

@@ -16,13 +16,13 @@ import java.util.Arrays;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.opencsv.CSVReader;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.jiiify.verticles.ImageIngestVerticle;
 
-import au.com.bytecode.opencsv.CSVReader;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
