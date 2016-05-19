@@ -13,21 +13,22 @@
     <jiffy.service.prefix>/iiif</jiffy.service.prefix>
     <jiiify.port>8443</jiiify.port>
     <jiiify.redirect.port>8000</jiiify.redirect.port>
-    <!-- FIXME: Could memory be an empty value too? -->
-    <jiiify.memory>4096m</jiiify.memory>
     <jiiify.jks>jiiify.jks</jiiify.jks>
-    <!-- A default value that can be overridden via Maven profile -->
+    <!-- A default value that can be overridden via Maven profile or on the command line -->
     <dev.tools/>
+    <jiiify.memory/>
     <!-- These are samples for testing purposes only ... DO NOT USE THEM IN PRODUCTION!!! -->
     <jiiify.json.config.path>${basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
 
     <!-- Versions of dependencies managed in this POM -->
-    <vertx.version>3.2.0</vertx.version>
-    <opencsv.version>2.3</opencsv.version>
+    <vertx.version>3.2.1</vertx.version>
+    <opencsv.version>3.7</opencsv.version>
     <javatuples.version>1.2</javatuples.version>
-    <freelib.utils.version>0.6.0</freelib.utils.version>
+    <commons.cli.version>1.3.1</commons.cli.version>
+    <freelib.utils.version>0.7.0-SNAPSHOT</freelib.utils.version>
     <opencv.version>3.0.0-SNAPSHOT</opencv.version>
     <imgscalr.version>4.2</imgscalr.version>
+    <kakadu.version>7.8-SNAPSHOT</kakadu.version>
     <twelvemonkeys.version>3.2.1</twelvemonkeys.version>
     <handlebars.version>2.2.3</handlebars.version>
     <scribe.version>1.3.7</scribe.version>
@@ -100,11 +101,16 @@
       <version>${handlebars.version}</version>
     </dependency>
     <dependency>
-      <groupId>net.sf.opencsv</groupId>
+      <groupId>com.opencsv</groupId>
       <artifactId>opencsv</artifactId>
       <version>${opencsv.version}</version>
     </dependency>
     <!-- Just some general utilities -->
+    <dependency>
+      <groupId>commons-cli</groupId>
+      <artifactId>commons-cli</artifactId>
+      <version>${commons.cli.version}</version>
+    </dependency>
     <dependency>
       <groupId>info.freelibrary</groupId>
       <artifactId>freelib-utils</artifactId>
@@ -145,6 +151,11 @@
       <groupId>com.twelvemonkeys.imageio</groupId>
       <artifactId>imageio-tiff</artifactId>
       <version>${twelvemonkeys.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>kdu_jni</groupId>
+      <artifactId>freelib-kakadu</artifactId>
+      <version>${kakadu.version}</version>
     </dependency>
     <!-- Below here are our testing dependencies -->
     <dependency>
@@ -194,6 +205,12 @@
               <configuration>
                 <name>jiiify.key.pass</name>
               </configuration>
+            </execution>
+            <execution>
+              <id>set-system-properties</id>
+              <goals>
+                <goal>set-cpumem-properties</goal>
+              </goals>
             </execution>
             <execution>
               <id>set-file-perms</id>
@@ -537,6 +554,12 @@
           <groupId>info.freelibrary</groupId>
           <artifactId>opencv</artifactId>
           <version>${opencv.version}</version>
+          <classifier>linux64</classifier>
+        </dependency>
+        <dependency>
+          <groupId>kdu_jni</groupId>
+          <artifactId>freelib-kakadu</artifactId>
+          <version>${kakadu.version}</version>
           <classifier>linux64</classifier>
         </dependency>
       </dependencies>
