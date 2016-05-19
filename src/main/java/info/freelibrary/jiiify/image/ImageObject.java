@@ -4,7 +4,6 @@ package info.freelibrary.jiiify.image;
 import java.io.File;
 import java.io.IOException;
 
-import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.ImageQuality;
 import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.iiif.ImageRotation;
@@ -36,11 +35,6 @@ public interface ImageObject {
      * Changes the image object by adjusting its quality.
      */
     public void adjustQuality(ImageQuality aQuality) throws IOException;
-
-    /**
-     * Changes the image object by changing its format.
-     */
-    public void changeFormat(ImageFormat aFormat) throws IOException;
 
     /**
      * Writes the image object to the supplied file.

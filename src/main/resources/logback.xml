@@ -29,10 +29,12 @@
   </logger>
 
   <!--<logger name="info.freelibrary.jiiify" level="DEBUG"/>-->
-  <logger name="info.freelibrary.jiiify.handlers.IngestHandler" level="WARN"/>
+  <logger name="info.freelibrary.jiiify.handlers.IngestHandler" level="DEBUG"/>
   <logger name="info.freelibrary.jiiify.verticles.ImageIngestVerticle" level="WARN"/>
 
-  <root level="WARN">
+  <logger name="info.freelibrary.jiiify.util.KakaduCmdLineUtils" level="DEBUG"/>
+
+  <root level="DEBUG">
     <appender-ref ref="FILE" />
   </root>
 

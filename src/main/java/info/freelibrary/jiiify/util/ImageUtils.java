@@ -24,6 +24,7 @@ import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.ImageQuality;
 import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.iiif.ImageRequest;
+import info.freelibrary.jiiify.iiif.UnsupportedFormatException;
 import info.freelibrary.jiiify.image.ImageObject;
 import info.freelibrary.jiiify.image.JavaImageObject;
 import info.freelibrary.jiiify.image.NativeImageObject;
@@ -42,7 +43,6 @@ public class ImageUtils {
     static {
         try {
             NativeLibraryLoader.load(Core.NATIVE_LIBRARY_NAME);
-            // useNativeLibs = true;
 
             if (LOGGER.isDebugEnabled() && useNativeLibs) {
                 LOGGER.debug("Using native image processing libraries");
@@ -156,13 +156,12 @@ public class ImageUtils {
         }
 
         // FIXME: tiles that are requested first should be at the top of the list
-
         return Collections.unmodifiableList(list);
     }
 
     /**
      * Returns whether native image libraries or pure Java ones are being used.
-     * 
+     *
      * @return True if native image libraries are being used; else, false
      */
     public static boolean useNativeLibs() {
@@ -171,7 +170,7 @@ public class ImageUtils {
 
     /**
      * Sets whether to use native image libraries or to use the standard Java ones.
-     * 
+     *
      * @param aFlagToUseNativeLibs
      */
     public static void useNativeLibs(final boolean aFlagToUseNativeLibs) {
@@ -179,9 +178,34 @@ public class ImageUtils {
     }
 
     /**
+     * Converts a source image into a destination image of a different format.
+     *
+     * @param aSrcImageFile The input image
+     * @param aDestImageFile The output image
+     * @throws IOException If there is trouble converting the image
+     * @throws UnsupportedFormatException If one of the images' formats is not supported
+     */
+    public static void convert(final File aSrcImageFile, final File aDestImageFile) throws IOException,
+            UnsupportedFormatException {
+        final ImageObject image;
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Converting '{}' into '{}'", aSrcImageFile, aDestImageFile);
+        }
+
+        if (useNativeLibs) {
+            image = new NativeImageObject(aSrcImageFile);
+        } else {
+            image = new JavaImageObject(aSrcImageFile);
+        }
+
+        image.write(aDestImageFile);
+    }
+
+    /**
      * Transforms a source image into a cached image file using the supplied
      * {@see info.freelibrary.jiiify.iiif.ImageRequest}
-     * 
+     *
      * @param aImageFile A source image file
      * @param aImageRequest A IIIF image request
      * @param aCacheFile An output cached image file
@@ -217,10 +241,6 @@ public class ImageUtils {
             image.adjustQuality(aImageRequest.getQuality());
         }
 
-        if (!aImageRequest.getFormat().matches(FileUtils.getExt(aCacheFile.getName()))) {
-            image.changeFormat(aImageRequest.getFormat());
-        }
-
         image.write(aCacheFile);
     }
 
@@ -252,7 +272,7 @@ public class ImageUtils {
 
     /**
      * Gets the center of an image.
-     * 
+     *
      * @param aImageFile A source image file
      * @return An image region representing the center of the image
      * @throws ConfigurationException If there is a configuration error
@@ -264,7 +284,7 @@ public class ImageUtils {
 
     /**
      * Gets the center of an image, represented by a {@see java.awt.Dimension} object.
-     * 
+     *
      * @param aDimension Dimensions to use as the source for the calculation of center
      * @return An image region representing the center of the dimensions
      * @throws ConfigurationException If there is a configuration error
@@ -284,7 +304,7 @@ public class ImageUtils {
 
     /**
      * Gets the ratio of the supplied width and height.
-     * 
+     *
      * @param aWidth Width to use in getting the ratio
      * @param aHeight Height to use in getting the ratio
      * @return A string representation of the ratio
@@ -296,7 +316,7 @@ public class ImageUtils {
 
     /**
      * Gets the ratio from the supplied IIIF size string.
-     * 
+     *
      * @param aSize A IIIF image size string
      * @return A string representation of the ratio
      */

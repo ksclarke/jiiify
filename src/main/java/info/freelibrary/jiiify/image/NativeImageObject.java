@@ -10,7 +10,6 @@ import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
-import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.ImageQuality;
 import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.iiif.ImageRegion.Region;
@@ -23,7 +22,7 @@ public class NativeImageObject implements ImageObject {
 
     /**
      * Creates new image using underlying native processing libraries.
-     * 
+     *
      * @param aSourceImage A source image file
      */
     public NativeImageObject(final File aSourceImage) {
@@ -73,11 +72,6 @@ public class NativeImageObject implements ImageObject {
 
     @Override
     public void adjustQuality(final ImageQuality aQuality) throws IOException {
-
-    }
-
-    @Override
-    public void changeFormat(final ImageFormat aFormat) throws IOException {
 
     }
 

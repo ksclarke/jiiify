@@ -34,7 +34,7 @@ public class JavaImageObject implements ImageObject {
 
     /**
      * Creates new image using the pure Java image processing.
-     * 
+     *
      * @param aSourceImage A source image file
      * @throws IOException If there is trouble reading the image file
      */
@@ -77,11 +77,6 @@ public class JavaImageObject implements ImageObject {
 
     @Override
     public void adjustQuality(final ImageQuality aQuality) throws IOException {
-
-    }
-
-    @Override
-    public void changeFormat(final ImageFormat aFormat) throws IOException {
 
     }
 

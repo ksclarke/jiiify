@@ -9,6 +9,7 @@ LOG_DELEGATE="-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.S
 KEY_PASS_CONFIG="-Djiiify.key.pass=${jiiify.key.pass}"
 WATCH_FOLDER_DIR="-Djiiify.watch.folder=${jiiify.watch.folder}"
 JIIIFY_PORT="-Djiiify.port=${jiiify.port}"
+VERTX_OPTS="-Dvertx.options.workerPoolSize=2"
 DROPWIZARD_METRICS="-Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.registryName=jiiify.metrics"
 JMX_METRICS="-Dcom.sun.management.jmxremote -Dvertx.metrics.options.jmxEnabled=true"
 # For tools like Eclipse's Debugging
@@ -20,6 +21,7 @@ TOOLING="$DROPWIZARD_METRICS $JMX_METRICS"
 AUTHBIND=""
 JIIIFY_CONFIG=""
 JKS_CONFIG=""
+JMX_CONFIG="${jiiify.memory}"
 
 # If we have authbind and it's configured to run our port, let's use it
 if hash authbind 2>/dev/null; then
@@ -46,6 +48,12 @@ if [[ "${dev.tools}" == *"JMX_REMOTE"* ]]; then
   TOOLING="$TOOLING $JMX_REMOTE"
 fi
 
+if [[ ! -z "$JMX_CONFIG" ]]; then
+  JMX_CONFIG="-Xmx${jiiify.memory} -Xms${jiiify.memory}"
+else
+  JMX_CONFIG="-Xmx${system.free.memory} -Xms${system.free.memory}"
+fi
+
 # Start up a Solr instance automatically if we have Docker installed
 if hash docker 2>/dev/null; then
   CONTAINER_ID=$(docker ps -q --filter "name=jiiify_solr")
@@ -53,14 +61,14 @@ if hash docker 2>/dev/null; then
   # First check whether our Jiiify Solr container is active
   if [ -z "${CONTAINER_ID}" ]; then
     CONTAINER_ID=$(docker ps -a -q --filter "name=jiiify_solr")
+    PING="http://localhost:8983/solr/jiiify/admin/ping"
 
     # If container has never been created, create it and its Solr core
     if [ -z "${CONTAINER_ID}" ]; then
       CONTAINER_ID=$(docker run --name jiiify_solr -d -p 8983:8983 -t solr)
-      PING="http://localhost:8983/solr/jiiify/admin/ping"
 
       for INDEX in $(seq 1 10); do
-    	  docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify >/dev/null 2>&1
+        docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify >/dev/null 2>&1
         RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
 
         if [ "$RESPONSE_CODE" == "200" ]; then
@@ -98,5 +106,5 @@ if hash docker 2>/dev/null; then
   fi
 fi
 
-$AUTHBIND java -Xmx${jiiify.memory} $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR \
+$AUTHBIND java $VERTX_OPTS $JMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR \
   $JKS_CONFIG $JIIIFY_PORT $TOOLING $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG
