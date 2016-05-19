@@ -18,7 +18,7 @@ public class ImageRotation {
 
     /**
      * Creates an image rotation object from the supplied IIIF URI rotation string.
-     * 
+     *
      * @param aRotationString A IIIF URI rotation string
      * @throws InvalidRotationException If the supplied string isn't a valid IIIF URI rotation string
      */
@@ -31,16 +31,12 @@ public class ImageRotation {
         }
     }
 
-    private void parseRotation(final String aRotationString) throws InvalidRotationException {
-        try {
-            myRotation = Float.parseFloat(aRotationString);
-
-            if (myRotation < 0 || myRotation > 360) {
-                throw new InvalidRotationException(MessageCodes.EXC_013, myRotation);
-            }
-        } catch (final NumberFormatException details) {
-            throw new InvalidRotationException(MessageCodes.EXC_013, aRotationString);
-        }
+    /**
+     * Creates an image rotation object from a supplied float.
+     */
+    public ImageRotation(final float aRotation) throws InvalidRotationException {
+        myRotation = aRotation;
+        validate();
     }
 
     /**
@@ -84,4 +80,20 @@ public class ImageRotation {
     public boolean isRotated() {
         return myRotation != 0;
     }
+
+    private void parseRotation(final String aRotationString) throws InvalidRotationException {
+        try {
+            myRotation = Float.parseFloat(aRotationString);
+            validate();
+        } catch (final NumberFormatException details) {
+            throw new InvalidRotationException(MessageCodes.EXC_013, aRotationString);
+        }
+    }
+
+    private void validate() throws InvalidRotationException {
+        if (myRotation < 0 || myRotation > 360) {
+            throw new InvalidRotationException(MessageCodes.EXC_013, myRotation);
+        }
+    }
+
 }

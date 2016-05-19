@@ -5,6 +5,8 @@ public interface Metadata {
 
     public static final String CONTENT_TYPE = "Content-Type";
 
+    public static final String CONTENT_LENGTH = "Content-Length";
+
     public static final String JSON_MIME_TYPE = "application/json";
 
     public static final String TEXT_MIME_TYPE = "text/plain";
