@@ -30,7 +30,7 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
         aFuture.complete();
     }
 
-    protected Configuration getConfiguration() {
+    protected Configuration getConfig() {
         return (Configuration) vertx.sharedData().getLocalMap(SHARED_DATA_KEY).get(CONFIG_KEY);
     }
 
@@ -51,7 +51,7 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
      */
     protected void sendMessage(final JsonObject aJsonObject, final String aVerticleName, final int aCount) {
         final long sendTimeout = DeliveryOptions.DEFAULT_TIMEOUT * aCount;
-        final int retryCount = getConfiguration().getRetryCount();
+        final int retryCount = getConfig().getRetryCount();
         final DeliveryOptions options = new DeliveryOptions();
         final EventBus eventBus = vertx.eventBus();
 

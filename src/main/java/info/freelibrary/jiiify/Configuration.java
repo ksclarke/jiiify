@@ -7,6 +7,7 @@ import static info.freelibrary.jiiify.Constants.GOOGLE_OAUTH_CLIENT_ID;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_REDIRECT_PROP;
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.OAUTH_USERS;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.Constants.SOLR_SERVER_PROP;
@@ -32,11 +33,14 @@ import javax.naming.ConfigurationException;
 import info.freelibrary.jiiify.handlers.LoginHandler;
 import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.util.PathUtils;
+import info.freelibrary.pairtree.PairtreeFactory;
+import info.freelibrary.pairtree.PairtreeRoot;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
-import info.freelibrary.util.PairtreeRoot;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.Shareable;
@@ -44,7 +48,7 @@ import io.vertx.core.shareddata.Shareable;
 /**
  * A developer-friendly wrapper around the default Vertx configuration JsonObject.
  *
- * @author Kevin S. Clarke <a href="mailto:ksclarke@gmail.com">ksclarke@gmail.com</a>
+ * @author Kevin S. Clarke <a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>
  */
 public class Configuration implements Shareable {
 
@@ -72,7 +76,7 @@ public class Configuration implements Shareable {
 
     private static final String DEFAULT_SOLR_SERVER = "http://localhost:8983/solr/jiiify";
 
-    private final Logger LOGGER = LoggerFactory.getLogger(Configuration.class, Constants.MESSAGES);
+    private final Logger LOGGER = LoggerFactory.getLogger(Configuration.class, MESSAGES);
 
     private final int myPort;
 
@@ -98,6 +102,8 @@ public class Configuration implements Shareable {
 
     private final String[] myUsers;
 
+    private final Vertx myVertx;
+
     /* FIXME: hard-coded for now */
     private final String[] mySubmasterFormats = new String[] { ImageFormat.TIFF_EXT, ImageFormat.TIF_EXT };
 
@@ -109,7 +115,8 @@ public class Configuration implements Shareable {
      * @param aConfig A JSON configuration
      * @throws ConfigurationException If there is trouble reading or setting a configuration option
      */
-    public Configuration(final JsonObject aConfig) throws ConfigurationException, IOException {
+    public Configuration(final JsonObject aConfig, final Vertx aVertx) throws ConfigurationException, IOException {
+        myVertx = aVertx;
         myServicePrefix = setServicePrefix(aConfig);
         myUploadsDir = setUploadsDir(aConfig);
         myPort = setPort(aConfig);
@@ -365,13 +372,35 @@ public class Configuration implements Shareable {
     }
 
     /**
-     * Gets the Pairtree data directory for the supplied ID prefix.
+     * Gets the Pairtree data directory for the supplied ID, which may or may not be using a Pairtree prefix.
      *
-     * @param aIDPrefix The ID prefix to use to locate the data directory
-     * @return The Pairtree root directory
+     * @param aID An ID for which to get a Pairtree data directory
+     * @return The Pairtree root directory for the supplied ID
      */
-    public PairtreeRoot getDataDir(final String aIDPrefix) {
-        return myDataDirs.get(aIDPrefix);
+    public PairtreeRoot getDataDir(final String aID) {
+        if (hasPrefixedDataDirs() && hasIDPrefixMatch(aID)) {
+            return myDataDirs.get(getIDPrefix(aID));
+        } else {
+            return myDataDirs.get(DEFAULT_DATA_DIR_NAME);
+        }
+    }
+
+    /**
+     * Returns the ingest watch folder.
+     *
+     * @return The ingest watch folder
+     */
+    public File getWatchFolder() {
+        return myWatchFolder;
+    }
+
+    /**
+     * Returns true if the ingest watch folder is configured.
+     *
+     * @return True if the ingest watch folder is configured
+     */
+    public boolean hasWatchFolder() {
+        return myWatchFolder != null;
     }
 
     /**
@@ -379,18 +408,8 @@ public class Configuration implements Shareable {
      *
      * @return True if we are using multiple data directories; else, false
      */
-    public boolean hasPrefixedDataDirs() {
+    private boolean hasPrefixedDataDirs() {
         return myDataDirs.size() > 1;
-    }
-
-    /**
-     * Checks whether there is a data directory for the supplied ID prefix.
-     *
-     * @param aIDPrefix An ID prefix to check against the existing data directories
-     * @return True if the supplied ID prefix corresponds to a data directory; else, false
-     */
-    public boolean hasDataDir(final String aIDPrefix) {
-        return myDataDirs.containsKey(aIDPrefix);
     }
 
     /**
@@ -399,7 +418,7 @@ public class Configuration implements Shareable {
      * @param aID An image ID from which to get prefix
      * @return The ID prefix for the supplied ID
      */
-    public String getIDPrefix(final String aID) {
+    private String getIDPrefix(final String aID) {
         final Iterator<String> iterator = myDataDirs.keySet().iterator();
 
         while (iterator.hasNext()) {
@@ -419,7 +438,7 @@ public class Configuration implements Shareable {
      * @param aID An ID to check against known ID prefixes
      * @return True if the supplied ID has a match; else, false
      */
-    public boolean hasIDPrefixMatch(final String aID) {
+    private boolean hasIDPrefixMatch(final String aID) {
         final Iterator<String> iterator = myDataDirs.keySet().iterator();
 
         while (iterator.hasNext()) {
@@ -429,24 +448,6 @@ public class Configuration implements Shareable {
         }
 
         return false;
-    }
-
-    /**
-     * Returns the ingest watch folder.
-     *
-     * @return The ingest watch folder
-     */
-    public File getWatchFolder() {
-        return myWatchFolder;
-    }
-
-    /**
-     * Returns true if the ingest watch folder is configured.
-     *
-     * @return True if the ingest watch folder is configured
-     */
-    public boolean hasWatchFolder() {
-        return myWatchFolder != null;
     }
 
     private void addAdditionalDataDirs(final JsonObject aConfig) {
@@ -682,38 +683,38 @@ public class Configuration implements Shareable {
         return uploadsDir;
     }
 
-    private Map<String, PairtreeRoot> setDataDir(final JsonObject aConfig) throws ConfigurationException,
-            IOException {
+    private Map<String, PairtreeRoot> setDataDir(final JsonObject aConfig) throws IOException {
         final Properties props = System.getProperties();
         final String path = DEFAULT_DATA_DIR.getAbsolutePath();
         final Map<String, PairtreeRoot> dataDirs = new HashMap<String, PairtreeRoot>();
+        final PairtreeRoot pairtree;
+        final String location;
 
         if (props.containsKey(DATA_DIR_PROP)) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug("Found {} set in system properties", DATA_DIR_PROP);
             }
 
-            dataDirs.put(DEFAULT_DATA_DIR_NAME, makePairtreeRoot(new File(props.getProperty(DATA_DIR_PROP, path))));
+            location = props.getProperty(DATA_DIR_PROP, path);
         } else {
-            dataDirs.put(DEFAULT_DATA_DIR_NAME, makePairtreeRoot(new File(aConfig.getString(DATA_DIR_PROP, path))));
+            location = aConfig.getString(DATA_DIR_PROP, path);
         }
 
-        LOGGER.info("Setting default Jiiify data directory to: {}", dataDirs.get(DEFAULT_DATA_DIR_NAME)
-                .getParentFile().getAbsolutePath());
+        pairtree = PairtreeFactory.getFactory(myVertx).getPairtree(location);
+
+        try {
+            pairtree.createBlocking();
+        } catch (final VertxException details) {
+            throw new IOException(details);
+        }
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Setting default Jiiify data directory to: {}", pairtree.getPath());
+        }
+
+        dataDirs.put(DEFAULT_DATA_DIR_NAME, pairtree);
 
         return Collections.unmodifiableMap(dataDirs);
-    }
-
-    private PairtreeRoot makePairtreeRoot(final File aDataDir) throws ConfigurationException, IOException {
-        if (aDataDir.exists()) {
-            if (!aDataDir.canWrite()) {
-                throw new ConfigurationException(LOGGER.getMessage(MessageCodes.EXC_035, myDataDirs.get(0)));
-            }
-        } else if (!aDataDir.mkdirs()) {
-            throw new ConfigurationException(LOGGER.getMessage(MessageCodes.EXC_036, myDataDirs.get(0)));
-        }
-
-        return new PairtreeRoot(aDataDir);
     }
 
     /**

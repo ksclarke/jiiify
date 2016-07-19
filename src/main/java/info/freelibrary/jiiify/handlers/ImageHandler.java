@@ -1,17 +1,15 @@
 
 package info.freelibrary.jiiify.handlers;
 
-import static info.freelibrary.jiiify.Constants.FILE_PATH_KEY;
-import static info.freelibrary.jiiify.Constants.IIIF_PATH_KEY;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.BufferedImageOp;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.imageio.stream.MemoryCacheImageInputStream;
 
 import org.imgscalr.Scalr;
 
@@ -21,16 +19,12 @@ import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.ImageRequest;
 import info.freelibrary.jiiify.iiif.ImageRotation;
 import info.freelibrary.jiiify.iiif.InvalidRotationException;
-import info.freelibrary.jiiify.util.PathUtils;
-import info.freelibrary.jiiify.verticles.ImageWorkerVerticle;
+import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.util.FileUtils;
-import info.freelibrary.util.PairtreeRoot;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 public class ImageHandler extends JiiifyHandler {
@@ -55,27 +49,25 @@ public class ImageHandler extends JiiifyHandler {
 
         try {
             final ImageRequest imageRequest = new ImageRequest(request.path());
-            final String imageID = imageRequest.getID();
-            final PairtreeRoot pairtree = PathUtils.getPairtreeRoot(aContext.vertx(), imageID);
-            final String cacheFilePath = imageRequest.getCacheFile(pairtree).getAbsolutePath();
-            final FileSystem fileSystem = aContext.vertx().fileSystem();
+            final String id = imageRequest.getID();
+            final PairtreeObject ptObj = myConfig.getDataDir(id).getObject(id);
+            final String requestPath = ptObj.getPath(imageRequest.getPath());
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Checking whether cached image file '{}' exists", cacheFilePath);
+                LOGGER.debug("Checking whether cached image file '{}' exists", requestPath);
             }
 
-            fileSystem.exists(cacheFilePath, fsHandler -> {
-                if (fsHandler.succeeded()) {
-                    /* fsHandler's result is the whether file exists or not */
-                    if (fsHandler.result()) {
-                        serveCachedImageFile(fileSystem, cacheFilePath, aContext);
+            ptObj.find(imageRequest.getPath(), findHandler -> {
+                if (findHandler.succeeded()) {
+                    if (findHandler.result()) {
+                        serveCachedImageFile(ptObj, imageRequest.getPath(), aContext);
                     } else if (imageRequest.getRotation().isRotated()) {
-                        checkUnrotatedSource(fileSystem, imageRequest, pairtree, aContext);
+                        checkUnrotatedSource(ptObj, imageRequest, aContext);
                     }
                 } else {
-                    LOGGER.error("File not found (2): {}", cacheFilePath);
+                    LOGGER.info("Requested image file not found: {}", requestPath);
                     aContext.fail(404);
-                    aContext.put(ERROR_MESSAGE, msg("Image file not found: {}", cacheFilePath));
+                    aContext.put(ERROR_MESSAGE, msg("Image file not found: {}", requestPath));
                 }
             });
         } catch (final Exception details) {
@@ -84,127 +76,120 @@ public class ImageHandler extends JiiifyHandler {
         }
     }
 
-    private void serveRotatedImage(final ImageRequest aImageRequest, final Scalr.Rotation aRotation,
-            final PairtreeRoot aPairtree, final RoutingContext aContext) {
+    private void serveRotatedImage(final PairtreeObject aPtObj, final ImageRequest aImageRequest,
+            final Scalr.Rotation aRotation, final RoutingContext aContext) {
         final HttpServerRequest request = aContext.request();
         final HttpServerResponse response = aContext.response();
-        final BufferedImageOp[] ops = null;
 
-        try {
-            final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(request.uri()));
-            final BufferedImage image = ImageIO.read(aImageRequest.getCacheFile(aPairtree));
-            final BufferedImage rotatedImage = Scalr.rotate(image, aRotation, ops);
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            final byte[] bytes;
+        // Options: FileCacheImageInputStream or MemoryCacheImageInputStream or ?
 
-            // Clean up the old image buffer
-            image.flush();
+        aPtObj.get(aImageRequest.getPath(), getHandler -> {
+            if (getHandler.succeeded()) {
+                try {
+                    final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(request.uri()));
+                    final ByteArrayInputStream inStream = new ByteArrayInputStream(getHandler.result().getBytes());
+                    final MemoryCacheImageInputStream cacheStream = new MemoryCacheImageInputStream(inStream);
+                    final BufferedImage image = ImageIO.read(cacheStream);
+                    final BufferedImage rotatedImage = Scalr.rotate(image, aRotation, (BufferedImageOp[]) null);
+                    final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-            // Write buffered image to byte array
-            ImageIO.write(rotatedImage, aImageRequest.getFormat().getExtension(), baos);
-            baos.flush();
-            bytes = baos.toByteArray();
-            rotatedImage.flush();
+                    image.flush();
+                    ImageIO.write(rotatedImage, aImageRequest.getFormat().getExtension(), baos);
+                    baos.flush();
 
-            response.putHeader(Metadata.CONTENT_TYPE, mimeType);
-            response.putHeader(Metadata.CONTENT_LENGTH, Integer.toString(bytes.length));
-            response.end(Buffer.buffer(bytes));
-            response.close();
+                    final byte[] bytes = baos.toByteArray();
+                    rotatedImage.flush();
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Served image file: {}", request.uri());
+                    response.putHeader(Metadata.CONTENT_TYPE, mimeType);
+                    response.putHeader(Metadata.CONTENT_LENGTH, Integer.toString(bytes.length));
+                    response.end(Buffer.buffer(bytes));
+                    response.close();
+
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Served image file: {}", request.uri());
+                    }
+                } catch (final Exception details) {
+                    LOGGER.error(details.getMessage(), details);
+                    aContext.fail(500);
+                    aContext.put(ERROR_MESSAGE, details.getMessage());
+                }
+            } else {
+                LOGGER.error(getHandler.cause().getMessage(), getHandler.cause());
+                aContext.fail(500);
+                aContext.put(ERROR_MESSAGE, getHandler.cause().getMessage());
             }
-        } catch (final IOException details) {
-            LOGGER.error(details.getMessage(), details);
-            aContext.fail(500);
-        }
+        });
     }
 
-    private void checkUnrotatedSource(final FileSystem aFileSystem, final ImageRequest aImageRequest,
-            final PairtreeRoot aPairtree, final RoutingContext aContext) {
+    private void checkUnrotatedSource(final PairtreeObject aPtObj, final ImageRequest aImageRequest,
+            final RoutingContext aContext) {
         final ImageRequest imageRequest = aImageRequest.clone();
 
         try {
             imageRequest.setRotation(new ImageRotation(0f));
             LOGGER.debug("Checking for default rotation: {}", imageRequest.toString());
         } catch (final InvalidRotationException details) {
-            // 90 degrees should not throw an exception
-            throw new RuntimeException(details);
+            throw new RuntimeException(details); // This should never happen
         }
 
-        try {
-            final String cacheFilePath = imageRequest.getCacheFile(aPairtree).getAbsolutePath();
+        aPtObj.find(imageRequest.getPath(), findHandler -> {
+            if (findHandler.succeeded()) {
+                if (findHandler.result()) {
+                    final float degrees = aImageRequest.getRotation().getValue();
+                    final Scalr.Rotation rotation;
 
-            aFileSystem.exists(cacheFilePath, fsHandler -> {
-                if (fsHandler.succeeded()) {
-                    if (fsHandler.result()) {
-                        final float degrees = aImageRequest.getRotation().getValue();
-                        final Scalr.Rotation rotation;
-
-                        if (degrees == 90f) {
-                            rotation = Scalr.Rotation.CW_90;
-                            serveRotatedImage(imageRequest, rotation, aPairtree, aContext);
-                        } else if (degrees == 180f) {
-                            rotation = Scalr.Rotation.CW_180;
-                            serveRotatedImage(imageRequest, rotation, aPairtree, aContext);
-                        } else if (degrees == 270f) {
-                            rotation = Scalr.Rotation.CW_270;
-                            serveRotatedImage(imageRequest, rotation, aPairtree, aContext);
-                        } else {
-                            LOGGER.debug("Got an unexpected rotation value: {}", degrees);
-                            aContext.fail(404);
-                        }
+                    if (degrees == 90f) {
+                        rotation = Scalr.Rotation.CW_90;
+                        serveRotatedImage(aPtObj, imageRequest, rotation, aContext);
+                    } else if (degrees == 180f) {
+                        rotation = Scalr.Rotation.CW_180;
+                        serveRotatedImage(aPtObj, imageRequest, rotation, aContext);
+                    } else if (degrees == 270f) {
+                        rotation = Scalr.Rotation.CW_270;
+                        serveRotatedImage(aPtObj, imageRequest, rotation, aContext);
                     } else {
-                        LOGGER.debug("Didn't find unrotated cache file: {}", cacheFilePath);
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Got an unexpected rotation value: {}", degrees);
+                        }
+
                         aContext.fail(404);
                     }
                 } else {
-                    LOGGER.debug("Filesystem check for unrotated cache file failed: {}", cacheFilePath);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug("Didn't find unrotated cache file: {}", aPtObj.getPath(imageRequest.getPath()));
+                    }
+
                     aContext.fail(404);
                 }
-            });
-        } catch (final IOException details) {
-            aContext.fail(500);
-            aContext.put(ERROR_MESSAGE, msg("IO error while processing request: {}", imageRequest));
-        }
+            } else {
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Filesystem check for unrotated cache file failed: {}", aPtObj.getPath(imageRequest
+                            .getPath()));
+                }
+
+                aContext.fail(404);
+            }
+        });
     }
 
-    private void serveCachedImageFile(final FileSystem aFileSystem, final String aFilePath,
+    private void serveCachedImageFile(final PairtreeObject aPtObj, final String aResourcePath,
             final RoutingContext aContext) {
         final HttpServerRequest request = aContext.request();
         final HttpServerResponse response = aContext.response();
 
-        aFileSystem.readFile(aFilePath, fileHandler -> {
-            if (fileHandler.succeeded()) {
+        aPtObj.get(aResourcePath, getHandler -> {
+            if (getHandler.succeeded()) {
                 final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(request.uri()));
 
                 response.putHeader(Metadata.CONTENT_TYPE, mimeType);
-                response.end(fileHandler.result());
+                response.end(getHandler.result());
                 response.close();
 
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Served image file: {}", request.uri());
                 }
             } else {
-                fail(aContext, fileHandler.cause());
-            }
-        });
-    }
-
-    private void serveNewImageFile(final FileSystem aFileSystem, final File aSource, final ImageRequest aImageRequest,
-            final RoutingContext aContext) {
-        final JsonObject message = new JsonObject();
-
-        message.put(IIIF_PATH_KEY, aImageRequest.toString());
-        message.put(FILE_PATH_KEY, aSource.getAbsolutePath());
-
-        aContext.vertx().eventBus().send(ImageWorkerVerticle.class.getName(), message, handler -> {
-            if (handler.succeeded()) {
-                // FIXME: does this block? is file created after handler returns
-                serveCachedImageFile(aFileSystem, aSource.getAbsolutePath(), aContext);
-            } else {
-                aContext.fail(404);
-                aContext.put(ERROR_MESSAGE, msg("{} not found", aImageRequest.toString()));
+                fail(aContext, getHandler.cause());
             }
         });
     }

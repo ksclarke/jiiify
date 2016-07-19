@@ -3,8 +3,8 @@ package info.freelibrary.jiiify.image;
 
 import static info.freelibrary.jiiify.iiif.ImageFormat.JP2_EXT;
 import static info.freelibrary.jiiify.image.PhotometricInterpretation.XPATH;
+import static info.freelibrary.pairtree.PairtreeUtils.encodeID;
 import static info.freelibrary.util.FileUtils.convertToPermissionsSet;
-import static info.freelibrary.util.PairtreeUtils.encodeID;
 import static java.nio.file.Files.setPosixFilePermissions;
 import static java.util.UUID.randomUUID;
 import static javax.xml.xpath.XPathConstants.NODESET;
@@ -49,6 +49,10 @@ import info.freelibrary.util.PairtreeObject;
 import info.freelibrary.util.PairtreeRoot;
 import info.freelibrary.util.ProcessListener;
 import info.freelibrary.util.ProcessWatcher;
+
+import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileSystem;
 
 /**
  * A workaround until the JNI layer is finished.
@@ -220,7 +224,12 @@ public class KakaduCmdLine {
                         }
 
                         // This will, at this point, convert from CIELab to sRGB
-                        ImageUtils.convert(aSrcFile, file);
+                        final FileSystem fileSystem = Vertx.vertx().fileSystem();
+                        Buffer imageBuffer = fileSystem.readFileBlocking(aSrcFile.getAbsolutePath());
+                        final ImageObject image = ImageUtils.getImage(imageBuffer);
+
+                        imageBuffer = image.toBuffer(FileUtils.getExt(aSrcFile.getAbsolutePath()));
+                        fileSystem.writeFileBlocking(file.getAbsolutePath(), imageBuffer);
 
                         // Keep a record of this temporary file so we can clean it up
                         aTempFileList.add(file);

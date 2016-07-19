@@ -21,10 +21,7 @@ import org.opencv.core.Core;
 import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageFormat;
-import info.freelibrary.jiiify.iiif.ImageQuality;
 import info.freelibrary.jiiify.iiif.ImageRegion;
-import info.freelibrary.jiiify.iiif.ImageRequest;
-import info.freelibrary.jiiify.iiif.UnsupportedFormatException;
 import info.freelibrary.jiiify.image.ImageObject;
 import info.freelibrary.jiiify.image.JavaImageObject;
 import info.freelibrary.jiiify.image.NativeImageObject;
@@ -33,6 +30,8 @@ import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.NativeLibraryLoader;
 import info.freelibrary.util.StringUtils;
+
+import io.vertx.core.buffer.Buffer;
 
 public class ImageUtils {
 
@@ -178,73 +177,6 @@ public class ImageUtils {
     }
 
     /**
-     * Converts a source image into a destination image of a different format.
-     *
-     * @param aSrcImageFile The input image
-     * @param aDestImageFile The output image
-     * @throws IOException If there is trouble converting the image
-     * @throws UnsupportedFormatException If one of the images' formats is not supported
-     */
-    public static void convert(final File aSrcImageFile, final File aDestImageFile) throws IOException,
-            UnsupportedFormatException {
-        final ImageObject image;
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Converting '{}' into '{}'", aSrcImageFile, aDestImageFile);
-        }
-
-        if (useNativeLibs) {
-            image = new NativeImageObject(aSrcImageFile);
-        } else {
-            image = new JavaImageObject(aSrcImageFile);
-        }
-
-        image.write(aDestImageFile);
-    }
-
-    /**
-     * Transforms a source image into a cached image file using the supplied
-     * {@see info.freelibrary.jiiify.iiif.ImageRequest}
-     *
-     * @param aImageFile A source image file
-     * @param aImageRequest A IIIF image request
-     * @param aCacheFile An output cached image file
-     * @throws IOException If there is a problem reading or writing the image files
-     */
-    public static void transform(final File aImageFile, final ImageRequest aImageRequest, final File aCacheFile)
-            throws IOException {
-        final ImageObject image;
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Transforming '{}' into '{}'", aImageFile, aCacheFile);
-        }
-
-        if (useNativeLibs) {
-            image = new NativeImageObject(aImageFile);
-        } else {
-            image = new JavaImageObject(aImageFile);
-        }
-
-        if (!aImageRequest.getRegion().isFullImage()) {
-            image.extractRegion(aImageRequest.getRegion());
-        }
-
-        if (!aImageRequest.getSize().isFullSize()) {
-            image.resize(aImageRequest.getSize());
-        }
-
-        if (aImageRequest.getRotation().isRotated()) {
-            image.rotate(aImageRequest.getRotation());
-        }
-
-        if (!aImageRequest.getQuality().equals(ImageQuality.DEFAULT)) {
-            image.adjustQuality(aImageRequest.getQuality());
-        }
-
-        image.write(aCacheFile);
-    }
-
-    /**
      * This gets the image dimension without reading the whole file into memory.
      *
      * @param aImageFile A file from which to pull dimension
@@ -332,6 +264,25 @@ public class ImageUtils {
 
     private static String getSize(final double aMultiplier, final int aXTileSize, final int aYTileSize) {
         return (int) Math.ceil(aXTileSize / aMultiplier) + "," + (int) Math.ceil(aYTileSize / aMultiplier);
+    }
+
+    /**
+     * Gets an <code>ImageObject</code> for the supplied image {@link io.vertx.core.buffer.Buffer}.
+     *
+     * @param aImageBuffer An <code>ImageBuffer</code> to convert into an <code>ImageObject</code>
+     * @return An <code>ImageBuffer</code> for the supplied <code>Buffer</code>
+     * @throws IOException If there is trouble reading the supplied <code>Buffer</code>
+     */
+    public static ImageObject getImage(final Buffer aImageBuffer) throws IOException {
+        final ImageObject image;
+
+        if (useNativeLibs) {
+            image = new NativeImageObject(aImageBuffer);
+        } else {
+            image = new JavaImageObject(aImageBuffer);
+        }
+
+        return image;
     }
 
     private static int gcd(final int aWidth, final int aHeight) {

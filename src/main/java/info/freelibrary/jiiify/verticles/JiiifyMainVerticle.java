@@ -71,7 +71,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         final JWTAuth jwtAuth;
 
         // Store our parsed configuration so we can access it when needed
-        myConfig = new Configuration(config());
+        myConfig = new Configuration(config(), vertx);
         vertx.sharedData().getLocalMap(SHARED_DATA_KEY).put(CONFIG_KEY, myConfig);
 
         // Start up Jiiify's other verticles

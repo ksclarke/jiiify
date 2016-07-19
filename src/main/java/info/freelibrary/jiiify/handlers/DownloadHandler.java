@@ -14,10 +14,12 @@ import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_HEADER;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.io.File;
-import java.io.FilenameFilter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -29,14 +31,10 @@ import info.freelibrary.jiiify.iiif.ImageRequest;
 import info.freelibrary.jiiify.iiif.InvalidInfoException;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.jiiify.util.PathUtils;
-import info.freelibrary.util.FileExtFileFilter;
-import info.freelibrary.util.PairtreeRoot;
-import info.freelibrary.util.ZipUtils;
+import info.freelibrary.pairtree.PairtreeObject;
 
 import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -90,18 +88,17 @@ public class DownloadHandler extends JiiifyHandler {
                 response.headers().add(LOCATION_HEADER, request.absoluteURI());
                 response.end();
             } else {
-                downloadObject(aContext, aContext.vertx().fileSystem(), id);
+                downloadObject(aContext, id);
             }
         }
     }
 
-    private void downloadObject(final RoutingContext aContext, final FileSystem aFileSystem, final String aID) {
-        final String objPath = PathUtils.getObjectPath(aContext.vertx(), aID);
-        final String filePath = new File(objPath, ImageInfo.FILE_NAME).getAbsolutePath();
+    private void downloadObject(final RoutingContext aContext, final String aID) {
+        final PairtreeObject ptObj = myConfig.getDataDir(aID).getObject(aID);
 
-        aFileSystem.readFile(filePath, fileHandler -> {
-            if (fileHandler.succeeded()) {
-                final JsonObject jsonObject = new JsonObject(fileHandler.result().toString());
+        ptObj.get(ImageInfo.FILE_NAME, handler -> {
+            if (handler.succeeded()) {
+                final JsonObject jsonObject = new JsonObject(handler.result().toString());
 
                 if (jsonObject.containsKey(ImageInfo.WIDTH) && jsonObject.containsKey(ImageInfo.HEIGHT)) {
                     final String servicePrefix = myConfig.getServicePrefix();
@@ -109,11 +106,10 @@ public class DownloadHandler extends JiiifyHandler {
                     final int w = jsonObject.getInteger(ImageInfo.WIDTH);
                     final int h = jsonObject.getInteger(ImageInfo.HEIGHT);
                     final List<String> tilePaths = ImageUtils.getTilePaths(servicePrefix, aID, tileSize, w, h);
-                    final Vertx vertx = aContext.vertx();
 
-                    // Getting the list of images needed for OpenSeadragon so we can bundle them up
-                    if (tilePaths.stream().allMatch(tilePath -> isReady(aFileSystem, tilePath, vertx, aID))) {
-                        startDownload(aContext, aFileSystem, aID);
+                    // FIXME: Works fine for local file system but doubtful for s3 backed pairtree
+                    if (tilePaths.stream().allMatch(tilePath -> isReady(tilePath, aID))) {
+                        startDownload(aContext, ptObj, tilePaths);
                     } else {
                         respondNotReady(aContext);
                     }
@@ -125,17 +121,24 @@ public class DownloadHandler extends JiiifyHandler {
                     aContext.put(ERROR_MESSAGE, message);
                 }
             } else {
-                fail(aContext, fileHandler.cause());
+                fail(aContext, handler.cause());
                 aContext.put(ERROR_HEADER, "Failed to read image info file");
             }
         });
     }
 
-    private boolean isReady(final FileSystem aFileSystem, final String aPath, final Vertx aVertx, final String aID) {
+    /**
+     * FIXME to do something else when working with S3.
+     *
+     * @param aPath A path of a tile in the Pairtree object
+     * @param aID A Pairtree object ID
+     * @return True if the file at the supplied path exists
+     */
+    private boolean isReady(final String aPath, final String aID) {
         try {
-            final PairtreeRoot pairtreeRoot = PathUtils.getPairtreeRoot(aVertx, aID);
+            final PairtreeObject ptObj = myConfig.getDataDir(aID).getObject(aID);
             final ImageRequest request = new ImageRequest(aPath);
-            final boolean isReady = aFileSystem.existsBlocking(request.getCacheFile(pairtreeRoot).getAbsolutePath());
+            final boolean isReady = ptObj.findBlocking(request.getPath());
 
             if (LOGGER.isDebugEnabled() && !isReady) {
                 LOGGER.debug("Derivative tile is not yet ready for download: {}", aPath);
@@ -144,9 +147,6 @@ public class DownloadHandler extends JiiifyHandler {
             return isReady;
         } catch (final IIIFException details) {
             throw new RuntimeException(details);
-        } catch (final IOException details) {
-            LOGGER.error(details, details.getMessage());
-            return false;
         }
     }
 
@@ -154,40 +154,63 @@ public class DownloadHandler extends JiiifyHandler {
         aContext.response().putHeader(CONTENT_TYPE, HTML_MIME_TYPE).end("Not ready for download");
     }
 
-    private void startDownload(final RoutingContext aContext, final FileSystem aFileSystem, final String aID) {
+    /**
+     * Currently all blocking code. This won't be used much, but still... FIXME.
+     *
+     * @param aContext A routing context
+     * @param aPtObj A Pairtree object
+     * @param aPathsList A list of tile paths for the supplied Pairtree object
+     */
+    private void startDownload(final RoutingContext aContext, final PairtreeObject aPtObj,
+            final List<String> aPathsList) {
         try {
-            final String objPath = PathUtils.getObjectPath(aContext.vertx(), aID);
             final File uploadsDir = myConfig.getUploadsDir();
-            final String encodedID = PathUtils.encodeIdentifier(aID);
+            final String encodedID = PathUtils.encodeIdentifier(aPtObj.getID());
             final File zipFile = new File(uploadsDir, encodedID + ".zip");
-            final FilenameFilter filter = new FileExtFileFilter("jpg", "tiff", "png", "webp", "pdf", "jp2", "gif");
-            final String imageInfoPath = new File(objPath, ImageInfo.FILE_NAME).getAbsolutePath();
-            final Buffer infoBuffer = aFileSystem.readFileBlocking(imageInfoPath);
+            final ZipOutputStream zipFileStream = new ZipOutputStream(new FileOutputStream(zipFile));
+            final Buffer infoBuffer = aPtObj.getBlocking(ImageInfo.FILE_NAME);
             final ImageInfo imageInfo = new ImageInfo(new JsonObject(infoBuffer.toString()));
-            final File tmpImageInfoFile = new File(new File(uploadsDir, encodedID), ImageInfo.FILE_NAME);
-            final String tmpImageInfoPath = tmpImageInfoFile.getAbsolutePath();
             final String server = aContext.request().getParam(DOWNLOAD_SERVER_PARAM);
-            final String tmpObjPath = tmpImageInfoFile.getParentFile().getAbsolutePath();
             final HttpServerResponse response = aContext.response();
-            final MultiMap headers;
 
-            if (!aFileSystem.existsBlocking(tmpObjPath)) {
-                aFileSystem.mkdirBlocking(tmpObjPath);
-            }
-
-            imageInfo.setID(server + (server.endsWith("/") ? "" : File.separator) + aID);
-            aFileSystem.writeFileBlocking(tmpImageInfoPath, Buffer.buffer(imageInfo.toString()));
+            // Set the server in the info JSON file with information supplied via download form
+            imageInfo.setID(server + (server.endsWith("/") ? "" : File.separator) + aPtObj.getID());
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Zipping up an object for download: {}", objPath);
+                LOGGER.debug("Zipping up an object for download: {}", aPtObj.getID());
             }
 
-            ZipUtils.zip(new File(objPath), zipFile, filter, tmpImageInfoFile);
+            // Write our new image info JSON file into our nascent zip file
+            final ZipEntry infoEntry = new ZipEntry(ImageInfo.FILE_NAME);
+            final byte[] infoBytes = imageInfo.toString().getBytes();
 
-            headers = response.headers();
+            infoEntry.setSize(infoBytes.length);
+            zipFileStream.putNextEntry(infoEntry);
+            zipFileStream.write(infoBytes);
+            zipFileStream.closeEntry();
+
+            // Cycle through all our tile paths and add them to the zip file
+            for (final String path : aPathsList) {
+                final byte[] imageBytes = aPtObj.getBlocking(path).getBytes();
+                final ZipEntry imageEntry = new ZipEntry(path);
+
+                imageEntry.setSize(imageBytes.length);
+                zipFileStream.putNextEntry(imageEntry);
+                zipFileStream.write(imageBytes);
+                zipFileStream.closeEntry();
+            }
+
+            // Wrap up our new zip file so it can be delivered to the downloader
+            zipFileStream.close();
+
+            // Set download headers so zip file will be named with the object ID
+            final MultiMap headers = response.headers();
+
             headers.add(CONTENT_TYPE, ZIP_MIME_TYPE);
             headers.add("Content-Disposition", "attachment; filename=" + encodedID + ".zip");
             headers.add("Content-Length", Long.toString(zipFile.length()));
+
+            // And, lastly, send the zip file to our downloader
             response.sendFile(zipFile.getAbsolutePath(), handler -> {
                 if (handler.failed()) {
                     LOGGER.error(handler.cause(), handler.cause().getMessage());

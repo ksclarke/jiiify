@@ -1,10 +1,10 @@
 
 package info.freelibrary.jiiify.image;
 
-import java.io.File;
 import java.io.IOException;
 
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfByte;
 import org.opencv.core.Rect;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -16,6 +16,8 @@ import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 import info.freelibrary.jiiify.iiif.ImageRotation;
 import info.freelibrary.jiiify.iiif.ImageSize;
 
+import io.vertx.core.buffer.Buffer;
+
 public class NativeImageObject implements ImageObject {
 
     private Mat myImage;
@@ -23,10 +25,10 @@ public class NativeImageObject implements ImageObject {
     /**
      * Creates new image using underlying native processing libraries.
      *
-     * @param aSourceImage A source image file
+     * @param aImgBuffer A source image wrapped in a Vertx {@link io.vertx.core.buffer.Buffer}
      */
-    public NativeImageObject(final File aSourceImage) {
-        myImage = Imgcodecs.imread(aSourceImage.getAbsolutePath());
+    public NativeImageObject(final Buffer aImgBuffer) {
+        myImage = Imgcodecs.imdecode(new MatOfByte(aImgBuffer.getBytes()), Imgcodecs.CV_LOAD_IMAGE_UNCHANGED);
     }
 
     @Override
@@ -76,19 +78,17 @@ public class NativeImageObject implements ImageObject {
     }
 
     @Override
-    public void write(final File aImageFile) throws IOException {
-        final File parent = aImageFile.getParentFile();
-        final boolean written;
+    public Buffer toBuffer(final String aFileExt) throws IOException {
+        final int cols = myImage.cols();
+        final int rows = myImage.rows();
+        final int elemSize = (int) myImage.elemSize();
+        final byte[] bytes = new byte[cols * rows * elemSize];
 
-        if (!parent.exists() && !parent.mkdirs()) {
-            throw new IOException("Unable to create directory structure: " + parent);
-        }
-
-        written = Imgcodecs.imwrite(aImageFile.getAbsolutePath(), myImage);
-        myImage.free();
-
-        if (!written) {
-            throw new IOException("Unable to write image with native libraries");
+        try {
+            myImage.get(0, 0, bytes);
+            return Buffer.buffer(bytes);
+        } finally {
+            myImage.free();
         }
     }
 

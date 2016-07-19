@@ -17,10 +17,9 @@ import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.iiif.ImageRequest;
 import info.freelibrary.jiiify.iiif.ImageSize;
 import info.freelibrary.jiiify.util.ImageUtils;
-import info.freelibrary.jiiify.util.PathUtils;
+import info.freelibrary.pairtree.PairtreeObject;
 
 import io.vertx.core.Future;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 
 public class ThumbnailVerticle extends AbstractJiiifyVerticle {
@@ -32,17 +31,15 @@ public class ThumbnailVerticle extends AbstractJiiifyVerticle {
             final String id = ingestMessage.getString(ID_KEY);
             final File file = new File(ingestMessage.getString(FILE_PATH_KEY));
             final String filePath = file.getAbsolutePath();
-            final FileSystem fileSystem = vertx.fileSystem();
-            final String fsPath = PathUtils.getObjectPath(vertx, id);
-            final String prefix = getConfiguration().getServicePrefix();
+            final PairtreeObject ptObj = getConfig().getDataDir(id).getObject(id);
 
-            fileSystem.mkdirs(fsPath, mkdirsHandler -> {
-                if (mkdirsHandler.succeeded()) {
-                    // FIXME: Pull thumbnail size from config rather than hard-coded
+            ptObj.create(handler -> {
+                if (handler.succeeded()) {
                     try {
-                        final int thumbnailSize = 150;
+                        final int thumbnailSize = 150; // FIXME: Pull size from config instead of hard coding
                         final ImageRegion region = ImageUtils.getCenter(file);
                         final ImageSize size = new ImageSize(thumbnailSize);
+                        final String prefix = getConfig().getServicePrefix();
                         final ImageRequest request = new ImageRequest(id, prefix, region, size);
                         final JsonObject infoMessage = new JsonObject().put(ID_KEY, id);
 
@@ -59,7 +56,7 @@ public class ThumbnailVerticle extends AbstractJiiifyVerticle {
                         messageHandler.reply(FAILURE_RESPONSE);
                     }
                 } else {
-                    LOGGER.error("Unable to create object directory: {}", fsPath);
+                    LOGGER.error("Unable to create object directory: {}", ptObj.getPath());
                     messageHandler.reply(FAILURE_RESPONSE);
                 }
             });

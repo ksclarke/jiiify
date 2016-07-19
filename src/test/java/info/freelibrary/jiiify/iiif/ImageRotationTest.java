@@ -8,7 +8,7 @@ import org.junit.Test;
 /**
  * Tests <code>ImageRotation</code>.
  *
- * @author <a href="mailto:ksclarke@gmail.com">Kevin S. Clarke</a>
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImageRotationTest {
 

@@ -33,6 +33,7 @@
     <handlebars.version>2.2.3</handlebars.version>
     <scribe.version>1.3.7</scribe.version>
     <json.path.version>2.1.0</json.path.version>
+    <vertx.pairtree.version>0.0.1-SNAPSHOT</vertx.pairtree.version>
 
     <!-- Versions of plugins managed in this POM -->
     <maven.shade.plugin.version>2.4.1</maven.shade.plugin.version>
@@ -115,6 +116,11 @@
       <groupId>info.freelibrary</groupId>
       <artifactId>freelib-utils</artifactId>
       <version>${freelib.utils.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>info.freelibrary</groupId>
+      <artifactId>vertx-pairtree</artifactId>
+      <version>${vertx.pairtree.version}</version>
     </dependency>
     <dependency>
       <groupId>org.javatuples</groupId>
