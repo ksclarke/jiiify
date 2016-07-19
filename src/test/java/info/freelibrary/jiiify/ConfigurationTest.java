@@ -17,29 +17,48 @@ import java.util.UUID;
 
 import javax.naming.ConfigurationException;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import info.freelibrary.jiiify.util.LoggingUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
 import ch.qos.logback.classic.Level;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
+@RunWith(VertxUnitRunner.class)
 public class ConfigurationTest {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ConfigurationTest.class, Constants.MESSAGES);
 
+    private static Vertx myVertx;
+
+    @BeforeClass
+    public static void before(final TestContext aContext) {
+        myVertx = Vertx.vertx();
+    }
+
+    @AfterClass
+    public static void after(final TestContext aContext) {
+        myVertx.close(aContext.asyncAssertSuccess());
+    }
+
     @Test
-    public void testConfiguration() throws ConfigurationException, IOException {
+    public void testConfiguration(final TestContext aContext) throws ConfigurationException, IOException {
         final JsonObject config = new JsonObject();
-        new Configuration(config);
+        new Configuration(config, myVertx);
     }
 
     @Test
     public void testGetPort() throws ConfigurationException, IOException {
         final JsonObject JsonCfgObj = new JsonObject().put(HTTP_PORT_PROP, 9999);
-        final Configuration config = new Configuration(JsonCfgObj);
+        final Configuration config = new Configuration(JsonCfgObj, myVertx);
 
         assertEquals(9999, config.getPort());
     }
@@ -47,7 +66,7 @@ public class ConfigurationTest {
     @Test
     public void testGetServicePrefix() throws ConfigurationException, IOException {
         final JsonObject JsonCfgObj = new JsonObject().put(SERVICE_PREFIX_PROP, "/prefix");
-        final Configuration config = new Configuration(JsonCfgObj);
+        final Configuration config = new Configuration(JsonCfgObj, myVertx);
 
         assertEquals("/prefix", config.getServicePrefix());
     }
@@ -56,7 +75,7 @@ public class ConfigurationTest {
     public void testGetUploadsDir() throws ConfigurationException, IOException {
         final File dir = new File("/tmp/uploads-dir-" + UUID.randomUUID());
         final JsonObject JsonCfgObj = new JsonObject().put(UPLOADS_DIR_PROP, dir.getAbsolutePath());
-        final Configuration config = new Configuration(JsonCfgObj);
+        final Configuration config = new Configuration(JsonCfgObj, myVertx);
 
         assertEquals(dir.getAbsolutePath(), config.getUploadsDir().getAbsolutePath());
     }
@@ -65,7 +84,7 @@ public class ConfigurationTest {
     public void testSetPortInJsonConfig() throws ConfigurationException, IOException, NoSuchMethodException,
             IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final Method method = Configuration.class.getDeclaredMethod("setPort", JsonObject.class);
 
         method.setAccessible(true);
@@ -77,7 +96,7 @@ public class ConfigurationTest {
     public void testSetPortInSystemProperty() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final Method method = Configuration.class.getDeclaredMethod("setPort", JsonObject.class);
 
         method.setAccessible(true);
@@ -91,7 +110,7 @@ public class ConfigurationTest {
             IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
             SecurityException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final String logLevel = LoggingUtils.getLogLevel(Configuration.class);
         final Method method = Configuration.class.getDeclaredMethod("setPort", JsonObject.class);
 
@@ -107,7 +126,7 @@ public class ConfigurationTest {
     public void testSetBadPortInSystemProperty() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final Method method = Configuration.class.getDeclaredMethod("setPort", JsonObject.class);
 
         method.setAccessible(true);
@@ -120,7 +139,7 @@ public class ConfigurationTest {
             NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final String logLevel = LoggingUtils.getLogLevel(Configuration.class);
         final Method method = Configuration.class.getDeclaredMethod("setPort", JsonObject.class);
 
@@ -136,7 +155,7 @@ public class ConfigurationTest {
     public void testSetServicePrefix() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final Method method = Configuration.class.getDeclaredMethod("setServicePrefix", JsonObject.class);
 
         method.setAccessible(true);
@@ -147,7 +166,7 @@ public class ConfigurationTest {
     public void testSetBadServicePrefix() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final Method method = Configuration.class.getDeclaredMethod("setServicePrefix", JsonObject.class);
 
         method.setAccessible(true);
@@ -159,7 +178,7 @@ public class ConfigurationTest {
             NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final String logLevel = LoggingUtils.getLogLevel(Configuration.class);
         final Method method = Configuration.class.getDeclaredMethod("setServicePrefix", JsonObject.class);
 
@@ -174,7 +193,7 @@ public class ConfigurationTest {
             IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
             SecurityException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final Method method = Configuration.class.getDeclaredMethod("setServicePrefix", JsonObject.class);
 
         method.setAccessible(true);
@@ -188,7 +207,7 @@ public class ConfigurationTest {
             NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final String logLevel = LoggingUtils.getLogLevel(Configuration.class);
         final Method method = Configuration.class.getDeclaredMethod("setServicePrefix", JsonObject.class);
 
@@ -202,10 +221,9 @@ public class ConfigurationTest {
 
     @Test
     public void testSetUploadsDir() throws ConfigurationException, IOException, NoSuchMethodException,
-            SecurityException,
-            IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+            SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final File dir = new File("/tmp/uploads-dir-" + UUID.randomUUID());
         final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
         final File expected = new File(dir.getAbsolutePath());
@@ -219,7 +237,7 @@ public class ConfigurationTest {
     public void testSetUploadsDirUsingTmpLoc() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
@@ -230,7 +248,7 @@ public class ConfigurationTest {
     public void testSetUploadsDirUsingEmptyLoc() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
@@ -241,7 +259,7 @@ public class ConfigurationTest {
     public void testSetUploadsDirCannotWrite() throws ConfigurationException, IOException, IllegalAccessException,
             IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final File file = new File("/tmp/test-file-" + UUID.randomUUID());
         final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
@@ -257,7 +275,7 @@ public class ConfigurationTest {
     public void testSetUploadsDirDoesnotExist() throws ConfigurationException, IOException, NoSuchMethodException,
             SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final File file = new File("/this/path/does/not/exist/and/you/cannot/create/it");
         final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
@@ -276,7 +294,7 @@ public class ConfigurationTest {
             IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
             SecurityException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
         method.setAccessible(true);
@@ -290,7 +308,7 @@ public class ConfigurationTest {
             IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException,
             SecurityException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final String logLevel = LoggingUtils.getLogLevel(Configuration.class);
         final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 
@@ -307,7 +325,7 @@ public class ConfigurationTest {
             IOException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException,
             InvocationTargetException {
         final JsonObject jsonConfig = new JsonObject();
-        final Configuration config = new Configuration(jsonConfig);
+        final Configuration config = new Configuration(jsonConfig, myVertx);
         final String logLevel = LoggingUtils.getLogLevel(Configuration.class);
         final Method method = Configuration.class.getDeclaredMethod("setUploadsDir", JsonObject.class);
 

@@ -36,7 +36,7 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
 
             try {
                 final Dimension dimension = ImageUtils.getImageDimension(file);
-                final String prefix = getConfiguration().getServicePrefix();
+                final String prefix = getConfig().getServicePrefix();
                 final JsonObject jsonMessage = new JsonObject();
 
                 /* Metadata needed for tile generation */

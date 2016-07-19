@@ -17,7 +17,7 @@ import java.util.Properties;
 import javax.naming.ConfigurationException;
 
 import info.freelibrary.jiiify.MessageCodes;
-import info.freelibrary.jiiify.util.PathUtils;
+import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.util.FileUtils;
 
 import io.vertx.core.Future;
@@ -55,7 +55,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
                             id = FileUtils.stripExt(file.getName());
                         }
 
-                        ingest(fileSystem, file, id, new Properties(), message);
+                        ingest(file, id, new Properties(), message);
                     }
                 } else {
                     // FIXME: EXC_032 is wrong exception -- fix ALL its occurrences everywhere!
@@ -90,7 +90,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
                         }
 
                         id = props.getProperty(ID_KEY, FileUtils.stripExt(aImageFile.getName()));
-                        ingest(aFileSystem, aImageFile, id, props, aMessage);
+                        ingest(aImageFile, id, props, aMessage);
                     } catch (final IOException details) {
                         LOGGER.error(details, MessageCodes.EXC_032, aImageFile);
                         aMessage.reply(FAILURE_RESPONSE);
@@ -103,23 +103,24 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         });
     }
 
-    private void ingest(final FileSystem aFileSystem, final File aImageFile, final String aID,
-            final Properties aProps, final Message<JsonObject> aMessage) {
+    private void ingest(final File aImageFile, final String aID, final Properties aProperties,
+            final Message<JsonObject> aMessage) {
+        final PairtreeObject ptObj = getConfig().getDataDir(aID).getObject(aID);
         final JsonObject json = aMessage.body();
 
         if (json.getBoolean(OVERWRITE_KEY, false)) {
-            messageIngestListeners(aProps, aImageFile, aID, json);
+            messageIngestListeners(aProperties, aImageFile, aID, json);
             aMessage.reply(SUCCESS_RESPONSE);
         } else {
-            aFileSystem.exists(PathUtils.getObjectPath(vertx, aID), fsHandler -> {
-                if (fsHandler.succeeded()) {
-                    if (!fsHandler.result()) {
-                        messageIngestListeners(aProps, aImageFile, aID, json);
-                    } // else it exists and we don't want to overwrite it
+            ptObj.exists(handler -> {
+                if (handler.succeeded()) {
+                    if (!handler.result()) {
+                        messageIngestListeners(aProperties, aImageFile, aID, json);
+                    }
 
                     aMessage.reply(SUCCESS_RESPONSE);
                 } else {
-                    LOGGER.error(fsHandler.cause(), "{}", fsHandler.cause().getMessage());
+                    LOGGER.error(handler.cause(), "{}", handler.cause().getMessage());
                     aMessage.reply(FAILURE_RESPONSE);
                 }
             });
@@ -128,7 +129,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
 
     private void messageIngestListeners(final Properties aProperties, final File aImageFile, final String aID,
             final JsonObject aJsonObject) {
-        final Object ts = aProperties.getOrDefault(TILE_SIZE_PROP, getConfiguration().getTileSize());
+        final Object ts = aProperties.getOrDefault(TILE_SIZE_PROP, getConfig().getTileSize());
         final JsonObject jsonMessage = new JsonObject();
 
         // Pass along some metadata about the image being ingested

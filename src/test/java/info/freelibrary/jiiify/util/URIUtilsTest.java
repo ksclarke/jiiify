@@ -13,7 +13,7 @@ import org.junit.Test;
 /**
  * Tests for <code>PathUtils</code>.
  *
- * @author <a href="mailto:ksclarke@gmail.com">Kevin S. Clarke</a>
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class URIUtilsTest {
 

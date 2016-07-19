@@ -46,7 +46,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * A verticle that watches a folder for image file changes and then fires off messages about them to the image tiler.
  *
- * @author Kevin S. Clarke (<a href="mailto:ksclarke@gmail.com">ksclarke@gmail.com</a>)
+ * @author Kevin S. Clarke (<a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>)
  */
 public class WatchFolderVerticle extends AbstractJiiifyVerticle {
 

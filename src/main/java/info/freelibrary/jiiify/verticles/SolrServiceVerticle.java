@@ -24,7 +24,7 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
 
     @Override
     public void start(final Future<Void> aFuture) throws Exception {
-        final String solr = getConfiguration().getSolrServer().toExternalForm() + "/admin/ping?wt=json";
+        final String solr = getConfig().getSolrServer().toExternalForm() + "/admin/ping?wt=json";
         final HttpClient client = vertx.createHttpClient();
         final HttpClientRequest request;
 
@@ -51,7 +51,7 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
                 final String status = new JsonObject(body.toString()).getString(SOLR_STATUS);
 
                 if (status != null && status.equals(SOLR_OK_STATUS)) {
-                    myService = new SolrServiceImpl(getConfiguration(), vertx);
+                    myService = new SolrServiceImpl(getConfig(), vertx);
                     ProxyHelper.registerService(SolrService.class, vertx, myService, SOLR_SERVICE_KEY);
 
                     aClient.close();

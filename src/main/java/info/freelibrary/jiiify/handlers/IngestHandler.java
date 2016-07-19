@@ -6,8 +6,8 @@ import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
 import static info.freelibrary.jiiify.Constants.OVERWRITE_KEY;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
+import static info.freelibrary.jiiify.Metadata.MANIFEST_FILE;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -19,14 +19,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.opencsv.CSVReader;
 
 import info.freelibrary.jiiify.Configuration;
-import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.jiiify.verticles.ImageIngestVerticle;
+import info.freelibrary.pairtree.PairtreeObject;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -93,66 +91,38 @@ public class IngestHandler extends JiiifyHandler {
 
     private void processManifestUpload(final String aID, final String aFilename, final String aFilePath,
             final RoutingContext aContext, final ObjectNode aJsonNode) {
-        final Vertx vertx = aContext.vertx();
-        final String manifestPath = PathUtils.getFilePath(vertx, aID, Metadata.MANIFEST_FILE);
-        final FileSystem fileSystem = aContext.vertx().fileSystem();
-        final File manifest = new File(manifestPath);
-        final String parentPath = manifest.getParentFile().getAbsolutePath();
+        final PairtreeObject ptObj = myConfig.getDataDir(aID).getObject(aID);
 
-        fileSystem.mkdirs(parentPath, fsHandler -> {
-            if (fsHandler.succeeded()) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Creating {} directory for uploaded manifest succeeded", parentPath);
-                }
+        ptObj.create(existsHandler -> {
+            if (existsHandler.succeeded()) {
+                final String overwrite = aContext.request().getParam("overwrite");
+                final boolean shouldOverwrite = overwrite != null && overwrite.equals("overwrite");
 
-                writeManifest(fileSystem, manifestPath, aFilePath, aContext, aJsonNode);
-            } else {
-                fileSystem.exists(parentPath, existsHandler -> {
-                    if (existsHandler.succeeded()) {
-                        if (existsHandler.result()) {
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("Directory for uploaded manifest already exists: {}", parentPath);
+                // We want to see if a manifest already exists before writing a new one
+                ptObj.find(MANIFEST_FILE, findHandler -> {
+                    if (findHandler.succeeded()) {
+                        if (findHandler.result()) {
+                            if (shouldOverwrite) {
+                                writeManifestFile(aFilePath, ptObj, aContext, aJsonNode);
+                            } else {
+                                aJsonNode.put("upload-message",
+                                        "Manifest already exists and overwrite was not specified");
+
+                                if (LOGGER.isWarnEnabled()) {
+                                    LOGGER.warn("Didn't write manifest because it already existed: {}", ptObj.getPath(
+                                            MANIFEST_FILE));
+                                }
+
+                                toTemplate(aContext, aJsonNode);
                             }
-
-                            writeManifest(fileSystem, manifestPath, aFilePath, aContext, aJsonNode);
                         } else {
-                            fail(aContext, new IOException("Parent dir couldn't be created and doesn't exist"));
-                            toTemplate(aContext, aJsonNode);
+                            writeManifestFile(aFilePath, ptObj, aContext, aJsonNode);
                         }
                     } else {
                         fail(aContext, existsHandler.cause());
                         toTemplate(aContext, aJsonNode);
                     }
                 });
-            }
-        });
-    }
-
-    private void writeManifest(final FileSystem aFileSystem, final String aManifestPath, final String aFilePath,
-            final RoutingContext aContext, final ObjectNode aJsonNode) {
-        final String overwrite = aContext.request().getParam("overwrite");
-        final boolean shouldOverwrite = overwrite != null && overwrite.equals("overwrite");
-
-        aFileSystem.exists(aManifestPath, existsHandler -> {
-            if (existsHandler.succeeded()) {
-                if (existsHandler.result()) {
-                    if (shouldOverwrite) {
-                        aFileSystem.delete(aManifestPath, deleteHandler -> {
-                            if (deleteHandler.succeeded()) {
-                                copyUpload(aFileSystem, aManifestPath, aFilePath, aContext, aJsonNode);
-                            } else {
-                                fail(aContext, deleteHandler.cause());
-                                toTemplate(aContext, aJsonNode);
-                            }
-                        });
-                    } else {
-                        aJsonNode.put("upload-message", "Manifest already exists and overwrite was not specified");
-                        LOGGER.warn("Didn't write manifest because it already existed: {}", aManifestPath);
-                        toTemplate(aContext, aJsonNode);
-                    }
-                } else {
-                    copyUpload(aFileSystem, aManifestPath, aFilePath, aContext, aJsonNode);
-                }
             } else {
                 fail(aContext, existsHandler.cause());
                 toTemplate(aContext, aJsonNode);
@@ -160,18 +130,26 @@ public class IngestHandler extends JiiifyHandler {
         });
     }
 
-    private void copyUpload(final FileSystem aFileSystem, final String aManifestPath, final String aFilePath,
-            final RoutingContext aContext, final ObjectNode aJsonNode) {
-        aFileSystem.copy(aFilePath, aManifestPath, copyHandler -> {
-            if (copyHandler.succeeded()) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Successfully uploaded manifest: {}", aManifestPath);
-                }
-            } else {
-                fail(aContext, copyHandler.cause());
-            }
+    private void writeManifestFile(final String aFilePath, final PairtreeObject aPtObj, final RoutingContext aContext,
+            final ObjectNode aJsonNode) {
+        aContext.vertx().fileSystem().readFile(aFilePath, readHandler -> {
+            if (readHandler.succeeded()) {
+                // This overwrites by default if the file exists
+                aPtObj.put(MANIFEST_FILE, readHandler.result(), putHandler -> {
+                    if (putHandler.succeeded()) {
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Successfully uploaded manifest: {}", aPtObj.getPath(MANIFEST_FILE));
+                        }
+                    } else {
+                        fail(aContext, putHandler.cause());
+                    }
 
-            toTemplate(aContext, aJsonNode);
+                    toTemplate(aContext, aJsonNode);
+                });
+            } else {
+                fail(aContext, readHandler.cause());
+                toTemplate(aContext, aJsonNode);
+            }
         });
     }
 

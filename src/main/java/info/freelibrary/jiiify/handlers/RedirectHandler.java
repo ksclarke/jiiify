@@ -15,7 +15,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * A redirect handler that handles all the redirects for the Jiiify application.
  *
- * @author Kevin S. Clarke <a href="mailto:ksclarke@gmail.com">ksclarke@gmail.com</a>
+ * @author Kevin S. Clarke <a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>
  */
 public class RedirectHandler implements Handler<RoutingContext> {
 

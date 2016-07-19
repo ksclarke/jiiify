@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,8 +16,13 @@ import com.opencsv.CSVWriter;
 
 import info.freelibrary.jiiify.iiif.IIIFException;
 import info.freelibrary.jiiify.iiif.ImageRequest;
-import info.freelibrary.util.PairtreeRoot;
 
+/**
+ * A temporary hack that only works with file system based Pairtrees.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
+@Deprecated
 public class ReportUtils {
 
     private static final File CSV_FILE = new File("input.csv");
@@ -47,9 +53,8 @@ public class ReportUtils {
         }
     }
 
-    private static final void checkPairtree(final String aFilePath) throws IOException {
+    private static final void checkPairtree(final String aPairtreeRootPath) throws IOException {
         final CSVReader csvReader = new CSVReader(new FileReader(CSV_FILE));
-        final PairtreeRoot ptRoot = new PairtreeRoot(new File(aFilePath));
         final CSVWriter csvWriter = new CSVWriter(new FileWriter(CSV_OUT));
 
         csvReader.readAll().forEach(image -> {
@@ -63,13 +68,14 @@ public class ReportUtils {
                 ImageUtils.getTilePaths("/iiif", image[0], 1024, dim.width, dim.height).forEach(path -> {
                     try {
                         final ImageRequest request = new ImageRequest(path);
+                        final String filePath = Paths.get(aPairtreeRootPath, request.getPath()).toString();
 
-                        if (request.hasCachedFile(ptRoot)) {
+                        if (new File(filePath).exists()) {
                             myFoundCount++;
                         } else {
                             myNotFoundCount++;
                         }
-                    } catch (final IIIFException | IOException details) {
+                    } catch (final IIIFException details) {
                         try {
                             csvWriter.close();
                             csvReader.close();
