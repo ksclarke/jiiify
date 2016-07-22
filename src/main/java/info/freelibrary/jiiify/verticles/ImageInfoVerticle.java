@@ -56,6 +56,8 @@ public class ImageInfoVerticle extends AbstractJiiifyVerticle {
                 }
             });
         });
+
+        aFuture.complete();
     }
 
     // This is pretty simple now but perhaps it needs more complexity in the near future

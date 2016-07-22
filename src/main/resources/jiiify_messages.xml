@@ -18,7 +18,6 @@
   <entry key="EXC-022">Cannot create the file uploads directory: {}</entry>
   <entry key="EXC-023">Cannot write to the ingest watch folder: {}</entry>
   <entry key="EXC-024">Cannot create the ingest watch folder: {}</entry>
-  <entry key="EXC-025">The ingest watch folder is not configured</entry>
   <entry key="EXC-026">No supported image reader available for {}</entry>
   <entry key="EXC-027">Unable to send image path '{}' to tile master [{} attempts]: {}</entry>
   <entry key="EXC-029">Failed to add new image file '{}' to watch list</entry>

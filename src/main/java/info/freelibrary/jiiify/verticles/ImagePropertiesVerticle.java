@@ -39,6 +39,8 @@ public class ImagePropertiesVerticle extends AbstractJiiifyVerticle {
                 }
             });
         });
+
+        aFuture.complete();
     }
 
     private void writePropertiesFile(final PairtreeObject aPtObj, final String aID, final String aImageFilePath,
