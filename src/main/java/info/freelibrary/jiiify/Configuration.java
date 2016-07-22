@@ -1,6 +1,7 @@
 
 package info.freelibrary.jiiify;
 
+import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.DATA_DIR_PROP;
 import static info.freelibrary.jiiify.Constants.FACEBOOK_OAUTH_CLIENT_ID;
 import static info.freelibrary.jiiify.Constants.GOOGLE_OAUTH_CLIENT_ID;
@@ -10,18 +11,25 @@ import static info.freelibrary.jiiify.Constants.HTTP_PORT_REDIRECT_PROP;
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.OAUTH_USERS;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
+import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.SOLR_SERVER_PROP;
 import static info.freelibrary.jiiify.Constants.TILE_SIZE_PROP;
 import static info.freelibrary.jiiify.Constants.UPLOADS_DIR_PROP;
 import static info.freelibrary.jiiify.Constants.URL_SCHEME_PROP;
 import static info.freelibrary.jiiify.Constants.WATCH_FOLDER_PROP;
+import static info.freelibrary.jiiify.MessageCodes.EXC_021;
+import static info.freelibrary.jiiify.MessageCodes.EXC_022;
+import static info.freelibrary.jiiify.MessageCodes.EXC_023;
+import static info.freelibrary.jiiify.MessageCodes.EXC_024;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collections;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -39,8 +47,10 @@ import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.Shareable;
@@ -64,9 +74,11 @@ public class Configuration implements Shareable {
 
     public static final long DEFAULT_SESSION_TIMEOUT = 7200000L; // two hours
 
-    // Sets temp directory to something like /tmp/jiiify-temp-dir for a default value
     public static final File DEFAULT_UPLOADS_DIR = new File(System.getProperty("java.io.tmpdir"),
             "jiiify-file-uploads");
+
+    public static final File DEFAULT_WATCH_FOLDER = new File(System.getProperty("java.io.tmpdir"),
+            "jiiify-watch-folder");
 
     public static final File DEFAULT_DATA_DIR = new File("jiiify_data");
 
@@ -88,11 +100,11 @@ public class Configuration implements Shareable {
 
     private final String myServicePrefix;
 
-    private final File myUploadsDir;
+    private File myUploadsDir;
 
-    private final File myWatchFolder;
+    private File myWatchFolder;
 
-    private final URL mySolrServer;
+    private URL mySolrServer;
 
     private final String myURLScheme;
 
@@ -107,7 +119,7 @@ public class Configuration implements Shareable {
     /* FIXME: hard-coded for now */
     private final String[] mySubmasterFormats = new String[] { ImageFormat.TIFF_EXT, ImageFormat.TIF_EXT };
 
-    private final Map<String, PairtreeRoot> myDataDirs;
+    private final Map<String, PairtreeRoot> myDataDirs = new HashMap<String, PairtreeRoot>();
 
     /**
      * Creates a new Jiiify configuration object, which simplifies accessing configuration information.
@@ -115,24 +127,52 @@ public class Configuration implements Shareable {
      * @param aConfig A JSON configuration
      * @throws ConfigurationException If there is trouble reading or setting a configuration option
      */
-    public Configuration(final JsonObject aConfig, final Vertx aVertx) throws ConfigurationException, IOException {
+    public Configuration(final JsonObject aConfig, final Vertx aVertx,
+            final Handler<AsyncResult<Configuration>> aHandler) {
+        final Future<Configuration> result = Future.future();
+
         myVertx = aVertx;
         myServicePrefix = setServicePrefix(aConfig);
-        myUploadsDir = setUploadsDir(aConfig);
         myPort = setPort(aConfig);
         myRedirectPort = setRedirectPort(aConfig);
         myHost = setHost(aConfig);
-        myWatchFolder = setWatchFolder(aConfig);
         myTileSize = setTileSize(aConfig);
-        myDataDirs = setDataDir(aConfig);
-        mySolrServer = setSolrServer(aConfig);
         myURLScheme = setURLScheme(aConfig);
+        // TODO: Handle OAuth configs better than this
         myGoogleClientID = setGoogleClientID(aConfig);
         myFacebookClientID = setFacebookClientID(aConfig);
         myUsers = setUsers(aConfig);
 
-        // We can add additional data directories if needed
-        addAdditionalDataDirs(aConfig);
+        if (aHandler != null) {
+            result.setHandler(aHandler);
+
+            setWatchFolder(aConfig, watchFolderHandler -> {
+                if (watchFolderHandler.failed()) {
+                    result.fail(watchFolderHandler.cause());
+                } else {
+                    setUploadsDir(aConfig, uploadsDirHandler -> {
+                        if (uploadsDirHandler.failed()) {
+                            result.fail(uploadsDirHandler.cause());
+                        } else {
+                            setDataDirs(aConfig, dataDirsHandler -> {
+                                if (dataDirsHandler.failed()) {
+                                    result.fail(dataDirsHandler.cause());
+                                } else {
+                                    setSolrServer(aConfig, solrServerHandler -> {
+                                        if (solrServerHandler.failed()) {
+                                            result.fail(solrServerHandler.cause());
+                                        }
+
+                                        aVertx.sharedData().getLocalMap(SHARED_DATA_KEY).put(CONFIG_KEY, this);
+                                        result.complete(this);
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
     }
 
     private String[] setUsers(final JsonObject aConfig) {
@@ -450,11 +490,7 @@ public class Configuration implements Shareable {
         return false;
     }
 
-    private void addAdditionalDataDirs(final JsonObject aConfig) {
-
-    }
-
-    private String setURLScheme(final JsonObject aConfig) throws ConfigurationException {
+    private String setURLScheme(final JsonObject aConfig) {
         final Properties properties = System.getProperties();
         final String https = "https";
         final String http = "http";
@@ -485,36 +521,12 @@ public class Configuration implements Shareable {
         }
     }
 
-    private URL setSolrServer(final JsonObject aConfig) throws ConfigurationException {
-        final Properties properties = System.getProperties();
-        final String solrServer;
-
-        // We'll give command line properties first priority then fall back to our JSON configuration
-        if (properties.containsKey(SOLR_SERVER_PROP)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Found {} set in system properties", SOLR_SERVER_PROP);
-            }
-
-            solrServer = properties.getProperty(SOLR_SERVER_PROP);
-        } else {
-            solrServer = aConfig.getString(SOLR_SERVER_PROP, DEFAULT_SOLR_SERVER);
-        }
-
-        // Check that it's a proper URL; we'll let the verticle test whether it's up and functioning
-        try {
-            return new URL(solrServer);
-        } catch (final MalformedURLException details) {
-            throw new ConfigurationException("Solr server URL is not well-formed: " + solrServer);
-        }
-    }
-
     /**
      * Sets the host at which Jiiify listens.
      *
      * @param aConfig A JsonObject with configuration information
-     * @throws ConfigurationException If there is trouble configuring Jiiify
      */
-    private String setHost(final JsonObject aConfig) throws ConfigurationException {
+    private String setHost(final JsonObject aConfig) {
         final String configHost = aConfig.getString(HTTP_HOST_PROP, "");
         final String testHost = DEFAULT_HOST + "-test";
 
@@ -548,9 +560,8 @@ public class Configuration implements Shareable {
      * Sets the port at which Jiiify listens.
      *
      * @param aConfig A JsonObject with configuration information
-     * @throws ConfigurationException If there is trouble configuring Jiiify
      */
-    private int setPort(final JsonObject aConfig) throws ConfigurationException {
+    private int setPort(final JsonObject aConfig) {
         int port;
 
         try {
@@ -579,9 +590,8 @@ public class Configuration implements Shareable {
      * Sets the port that redirects to a secure port (only when https is configured).
      *
      * @param aConfig A JsonObject with configuration information
-     * @throws ConfigurationException If there is trouble configuring Jiiify
      */
-    private int setRedirectPort(final JsonObject aConfig) throws ConfigurationException {
+    private int setRedirectPort(final JsonObject aConfig) {
         int port;
 
         try {
@@ -610,9 +620,8 @@ public class Configuration implements Shareable {
      * Sets the default tile size.
      *
      * @param aConfig A JsonObject with configuration information
-     * @throws ConfigurationException If there is trouble configuring Jiiify
      */
-    private int setTileSize(final JsonObject aConfig) throws ConfigurationException {
+    private int setTileSize(final JsonObject aConfig) {
         int tileSize;
 
         try {
@@ -637,7 +646,7 @@ public class Configuration implements Shareable {
         return tileSize;
     }
 
-    private String setServicePrefix(final JsonObject aConfig) throws ConfigurationException {
+    private String setServicePrefix(final JsonObject aConfig) {
         final Properties properties = System.getProperties();
 
         String prefix;
@@ -663,10 +672,35 @@ public class Configuration implements Shareable {
         return prefix;
     }
 
-    private File setUploadsDir(final JsonObject aConfig) throws ConfigurationException {
+    private void setSolrServer(final JsonObject aConfig, final Handler<AsyncResult<Configuration>> aHandler) {
+        final Properties properties = System.getProperties();
+        final Future<Configuration> result = Future.future();
+
+        if (aHandler != null) {
+            result.setHandler(aHandler);
+
+            final String solrServer = properties.getProperty(SOLR_SERVER_PROP, aConfig.getString(SOLR_SERVER_PROP,
+                    DEFAULT_SOLR_SERVER));
+
+            if (LOGGER.isDebugEnabled() && properties.containsKey(SOLR_SERVER_PROP)) {
+                LOGGER.debug("Found {} set in system properties", SOLR_SERVER_PROP);
+            }
+
+            try {
+                // TODO: Actually ping the server here too?
+                mySolrServer = new URL(solrServer);
+                result.complete(this);
+            } catch (final MalformedURLException details) {
+                result.fail(new ConfigurationException("Solr server URL is not well-formed: " + solrServer));
+            }
+        } else {
+
+        }
+    }
+
+    private void setUploadsDir(final JsonObject aConfig, final Handler<AsyncResult<Configuration>> aHandler) {
         final Properties properties = System.getProperties();
         final String defaultUploadDirPath = DEFAULT_UPLOADS_DIR.getAbsolutePath();
-        final File uploadsDir;
 
         // Then get the uploads directory we want to use, giving preference to system properties
         if (properties.containsKey(UPLOADS_DIR_PROP)) {
@@ -674,47 +708,81 @@ public class Configuration implements Shareable {
                 LOGGER.debug("Found {} set in system properties", UPLOADS_DIR_PROP);
             }
 
-            uploadsDir = confirmUploadsDir(properties.getProperty(UPLOADS_DIR_PROP, defaultUploadDirPath));
+            confirmUploadsDir(properties.getProperty(UPLOADS_DIR_PROP, defaultUploadDirPath), aHandler);
         } else {
-            uploadsDir = confirmUploadsDir(aConfig.getString(UPLOADS_DIR_PROP, defaultUploadDirPath));
+            confirmUploadsDir(aConfig.getString(UPLOADS_DIR_PROP, defaultUploadDirPath), aHandler);
         }
-
-        LOGGER.info("Setting Jiiify file uploads directory to: {}", uploadsDir);
-        return uploadsDir;
     }
 
-    private Map<String, PairtreeRoot> setDataDir(final JsonObject aConfig) throws IOException {
+    private void confirmUploadsDir(final String aDirPath, final Handler<AsyncResult<Configuration>> aHandler) {
+        final Future<Configuration> result = Future.future();
+        final File uploadsDir;
+
+        if (aHandler != null) {
+            result.setHandler(aHandler);
+
+            if (aDirPath.equalsIgnoreCase("java.io.tmpdir") || aDirPath.trim().equals("")) {
+                uploadsDir = DEFAULT_UPLOADS_DIR;
+
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Using a temporary directory {} for file uploads", uploadsDir);
+                }
+            } else {
+                uploadsDir = new File(aDirPath);
+
+                if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("Using a user supplied file uploads directory: {}", uploadsDir);
+                }
+            }
+
+            try {
+                if (!Files.createDirectories(uploadsDir.toPath()).toFile().canWrite()) {
+                    result.fail(new ConfigurationException(LOGGER.getMessage(EXC_021, uploadsDir)));
+                } else {
+                    LOGGER.info("Setting Jiiify file uploads directory to: {}", uploadsDir);
+
+                    myUploadsDir = uploadsDir;
+                    result.complete(this);
+                }
+            } catch (final IOException details) {
+                result.fail(new ConfigurationException(LOGGER.getMessage(EXC_022, uploadsDir)));
+            }
+        }
+    }
+
+    private void setDataDirs(final JsonObject aConfig, final Handler<AsyncResult<Configuration>> aHandler) {
         final Properties props = System.getProperties();
-        final String path = DEFAULT_DATA_DIR.getAbsolutePath();
-        final Map<String, PairtreeRoot> dataDirs = new HashMap<String, PairtreeRoot>();
+        final Future<Configuration> result = Future.future();
         final PairtreeRoot pairtree;
         final String location;
 
-        if (props.containsKey(DATA_DIR_PROP)) {
-            if (LOGGER.isDebugEnabled()) {
+        if (aHandler != null) {
+            result.setHandler(aHandler);
+
+            if (LOGGER.isDebugEnabled() && props.containsKey(DATA_DIR_PROP)) {
                 LOGGER.debug("Found {} set in system properties", DATA_DIR_PROP);
             }
 
-            location = props.getProperty(DATA_DIR_PROP, path);
+            location = props.getProperty(DATA_DIR_PROP, aConfig.getString(DATA_DIR_PROP, DEFAULT_DATA_DIR
+                    .getAbsolutePath()));
+
+            // TODO: Get AWS access key and secret key from aConfig if available
+            pairtree = PairtreeFactory.getFactory(myVertx).getPairtree(location);
+
+            pairtree.create(handler -> {
+                if (handler.succeeded()) {
+                    LOGGER.info("Setting default Jiiify data directory to: {}", pairtree.getPath());
+
+                    myDataDirs.put(DEFAULT_DATA_DIR_NAME, pairtree);
+                    result.complete(this);
+                } else {
+                    LOGGER.error("Failed to set default Jiiify data directory to: {}", pairtree.getPath());
+                    result.fail(handler.cause());
+                }
+            });
         } else {
-            location = aConfig.getString(DATA_DIR_PROP, path);
+
         }
-
-        pairtree = PairtreeFactory.getFactory(myVertx).getPairtree(location);
-
-        try {
-            pairtree.createBlocking();
-        } catch (final VertxException details) {
-            throw new IOException(details);
-        }
-
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Setting default Jiiify data directory to: {}", pairtree.getPath());
-        }
-
-        dataDirs.put(DEFAULT_DATA_DIR_NAME, pairtree);
-
-        return Collections.unmodifiableMap(dataDirs);
     }
 
     /**
@@ -723,65 +791,33 @@ public class Configuration implements Shareable {
      * @param aConfig A JsonObject configuration
      * @throws ConfigurationException If there is trouble setting the ingest watch folder
      */
-    private File setWatchFolder(final JsonObject aConfig) throws ConfigurationException {
+    private void setWatchFolder(final JsonObject aConfig, final Handler<AsyncResult<Configuration>> aHandler) {
         final Properties properties = System.getProperties();
+        final Future<Configuration> result = Future.future();
+        final Path watchFolder;
 
-        File watchFolder = null;
+        if (aHandler != null) {
+            result.setHandler(aHandler);
 
-        if (properties.containsKey(Constants.WATCH_FOLDER_PROP)) {
-            if (LOGGER.isDebugEnabled()) {
+            if (LOGGER.isDebugEnabled() && properties.containsKey(WATCH_FOLDER_PROP)) {
                 LOGGER.debug("Found {} set in system properties", WATCH_FOLDER_PROP);
             }
 
-            watchFolder = new File(properties.getProperty(WATCH_FOLDER_PROP));
-        } else {
-            final String watchFolderPath = aConfig.getString(WATCH_FOLDER_PROP);
+            watchFolder = Paths.get(properties.getProperty(WATCH_FOLDER_PROP, aConfig.getString(WATCH_FOLDER_PROP,
+                    DEFAULT_WATCH_FOLDER.getAbsolutePath())));
 
-            if (watchFolderPath != null) {
-                watchFolder = new File(watchFolderPath);
-            }
-        }
-
-        if (watchFolder != null) {
-            if (watchFolder.exists()) {
-                if (!watchFolder.canWrite()) {
-                    throw new ConfigurationException(LOGGER.getMessage(MessageCodes.EXC_023, watchFolder));
+            try {
+                if (!Files.createDirectories(watchFolder).toFile().canWrite()) {
+                    result.fail(new ConfigurationException(LOGGER.getMessage(EXC_023, watchFolder)));
+                } else {
+                    LOGGER.info("Setting Jiiify ingest watch folder to: {}", watchFolder);
+                    myWatchFolder = watchFolder.toFile();
+                    result.complete();
                 }
-            } else if (!watchFolder.mkdirs()) {
-                throw new ConfigurationException(LOGGER.getMessage(MessageCodes.EXC_024, watchFolder));
+            } catch (final IOException details) {
+                result.fail(new ConfigurationException(LOGGER.getMessage(EXC_024, watchFolder)));
             }
-
-            LOGGER.info("Setting Jiiify ingest watch folder to: {}", watchFolder);
         }
-
-        return watchFolder;
     }
 
-    private File confirmUploadsDir(final String aDirPath) throws ConfigurationException {
-        final File uploadsDir;
-
-        if (aDirPath.equalsIgnoreCase("java.io.tmpdir") || aDirPath.trim().equals("")) {
-            uploadsDir = DEFAULT_UPLOADS_DIR;
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Using a temporary directory {} for file uploads", uploadsDir);
-            }
-        } else {
-            uploadsDir = new File(aDirPath);
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Using a user supplied file uploads directory: {}", uploadsDir);
-            }
-        }
-
-        if (uploadsDir.exists()) {
-            if (!uploadsDir.canWrite()) {
-                throw new ConfigurationException(LOGGER.getMessage(MessageCodes.EXC_021, uploadsDir));
-            }
-        } else if (!uploadsDir.mkdirs()) {
-            throw new ConfigurationException(LOGGER.getMessage(MessageCodes.EXC_022, uploadsDir));
-        }
-
-        return uploadsDir;
-    }
 }

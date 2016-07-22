@@ -2,20 +2,15 @@
 package info.freelibrary.jiiify.verticles;
 
 import static info.freelibrary.jiiify.Configuration.DEFAULT_SESSION_TIMEOUT;
-import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.JCEKS_PROP;
 import static info.freelibrary.jiiify.Constants.JKS_PROP;
 import static info.freelibrary.jiiify.Constants.KEY_PASS_PROP;
-import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.naming.ConfigurationException;
-
 import info.freelibrary.jiiify.Configuration;
-import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.RoutePatterns;
 import info.freelibrary.jiiify.handlers.DownloadHandler;
 import info.freelibrary.jiiify.handlers.FailureHandler;
@@ -62,20 +57,27 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
     private Configuration myConfig;
 
     @Override
-    public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+    public void start(final Future<Void> aFuture) {
+        new Configuration(config(), vertx, configHandler -> {
+            if (configHandler.succeeded()) {
+                LOGGER.debug("Configuration successfully parsed");
+                myConfig = configHandler.result();
+                // TODO: add handler to deployverticles()
+                deployJiiifyVerticles();
+                initializeMainVerticle(aFuture);
+            } else {
+                aFuture.fail(configHandler.cause());
+            }
+        });
+    }
+
+    private void initializeMainVerticle(final Future<Void> aFuture) {
         final SessionHandler sessionHandler = SessionHandler.create(LocalSessionStore.create(vertx));
         final TemplateEngine templateEngine = HandlebarsTemplateEngine.create();
         final TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
         final HttpServerOptions options = new HttpServerOptions();
         final Router router = Router.router(vertx);
         final JWTAuth jwtAuth;
-
-        // Store our parsed configuration so we can access it when needed
-        myConfig = new Configuration(config(), vertx);
-        vertx.sharedData().getLocalMap(SHARED_DATA_KEY).put(CONFIG_KEY, myConfig);
-
-        // Start up Jiiify's other verticles
-        deployJiiifyVerticles();
 
         // Set the port on which we want to listen for connections
         options.setPort(myConfig.getPort());
@@ -93,15 +95,24 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             jceksConfig.put("path", JCEKS_PROP).put("type", "jceks").put("password", ksPassword);
             jwtAuth = JWTAuth.create(vertx, new JsonObject().put("keyStore", jceksConfig));
 
+            // Get JKS from an external configuration file
             if (jksFile.exists()) {
                 LOGGER.info("Using a system JKS configuration: {}", jksFile);
                 jksOptions.setPath(jksFile.getAbsolutePath());
             } else {
                 final InputStream inStream = getClass().getResourceAsStream("/" + jksProperty);
 
+                // Get JKS configuration from a configuration file in the jar file
                 if (inStream != null) {
-                    jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
+                    LOGGER.debug("Loading JKS configuration from jar file");
+
+                    try {
+                        jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
+                    } catch (final IOException details) {
+                        throw new RuntimeException(details);
+                    }
                 } else {
+                    // Get JKS configuration from the Maven build's target directory
                     LOGGER.debug("Trying to use the build's default JKS: {}", jksProperty);
                     jksOptions.setPath("target/classes/" + jksProperty);
                 }
@@ -183,7 +194,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         vertx.createHttpServer(options).requestHandler(router::accept).listen(response -> {
             if (response.succeeded()) {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(MessageCodes.DBG_006, JiiifyMainVerticle.class.getName(), deploymentID());
+                    LOGGER.debug("Successfully started {}: {}", JiiifyMainVerticle.class.getName(), deploymentID());
                 }
 
                 aFuture.complete();
@@ -278,6 +289,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 }
             } else {
                 LOGGER.error("Failed to launch {}", aVerticleName);
+                response.cause().printStackTrace();
             }
         });
     }

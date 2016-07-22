@@ -4,9 +4,9 @@ package info.freelibrary.jiiify.verticles;
 import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
+import static info.freelibrary.jiiify.MessageCodes.DBG_000;
 
 import info.freelibrary.jiiify.Configuration;
-import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
@@ -24,7 +24,7 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
     @Override
     public void stop(final Future<Void> aFuture) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(MessageCodes.DBG_000, getClass().getName(), deploymentID());
+            LOGGER.debug(DBG_000, getClass().getName(), deploymentID());
         }
 
         aFuture.complete();
