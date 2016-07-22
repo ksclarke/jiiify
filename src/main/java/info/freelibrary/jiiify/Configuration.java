@@ -435,15 +435,6 @@ public class Configuration implements Shareable {
     }
 
     /**
-     * Returns true if the ingest watch folder is configured.
-     *
-     * @return True if the ingest watch folder is configured
-     */
-    public boolean hasWatchFolder() {
-        return myWatchFolder != null;
-    }
-
-    /**
      * Checks whether we are using more than one Pairtree data directory.
      *
      * @return True if we are using multiple data directories; else, false
