@@ -44,7 +44,7 @@ public class ThumbnailsHandler extends JiiifyHandler {
         final PairtreeObject ptObj = myConfig.getDataDir(id).getObject(id);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Checking IIIF manifest file for thumbnails: {}", ptObj.getBlocking(MANIFEST_FILE));
+            LOGGER.debug("Checking IIIF manifest file for thumbnails: {}", ptObj.getPath(MANIFEST_FILE));
         }
 
         // FIXME: put this centrally for all IIIF routes(?)

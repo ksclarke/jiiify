@@ -47,6 +47,8 @@ public interface Constants {
 
     /* These config values are only used internally. */
 
+    public static final String JIIIFY_TESTING = "jiiify.ignore.failures";
+
     public static final String FILE_PATH_KEY = "jiiify.file.path";
 
     public static final String IIIF_PATH_KEY = "jiiify.iiif.path";

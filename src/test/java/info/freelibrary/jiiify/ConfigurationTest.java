@@ -100,7 +100,7 @@ public class ConfigurationTest {
             if (handler.failed()) {
                 aContext.fail(handler.cause());
             } else {
-                aContext.assertEquals(dir.getAbsolutePath(), handler.result().getUploadsDir().getAbsolutePath());
+                aContext.assertEquals(dir.getAbsolutePath(), handler.result().getUploadsDir());
             }
 
             async.complete();
@@ -393,7 +393,6 @@ public class ConfigurationTest {
                 try {
                     final File dir = new File("/tmp/uploads-dir-" + randomUUID());
                     final JsonObject config = new JsonObject().put(UPLOADS_DIR_PROP, dir.getAbsolutePath());
-                    final File expected = new File(dir.getAbsolutePath());
                     final Method method = getSetUploadsDirMethod();
 
                     method.setAccessible(true);
@@ -404,7 +403,7 @@ public class ConfigurationTest {
                             if (aResult.failed()) {
                                 aContext.fail(aResult.cause());
                             } else {
-                                aContext.assertEquals(expected, aResult.result().getUploadsDir());
+                                aContext.assertEquals(dir.getAbsolutePath(), aResult.result().getUploadsDir());
                             }
 
                             dir.delete();
@@ -673,7 +672,7 @@ public class ConfigurationTest {
 
                     method.setAccessible(true);
                     LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-                    System.setProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR.getAbsolutePath());
+                    System.setProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR);
                     method.invoke(handler.result(), config, new Handler<AsyncResult<Configuration>>() {
 
                         @Override
