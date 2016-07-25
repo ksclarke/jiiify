@@ -74,8 +74,8 @@ public class Configuration implements Shareable {
 
     public static final long DEFAULT_SESSION_TIMEOUT = 7200000L; // two hours
 
-    public static final File DEFAULT_UPLOADS_DIR = new File(System.getProperty("java.io.tmpdir"),
-            "jiiify-file-uploads");
+    public static final String DEFAULT_UPLOADS_DIR = new File(System.getProperty("java.io.tmpdir"),
+            "jiiify-file-uploads").getAbsolutePath();
 
     public static final File DEFAULT_WATCH_FOLDER = new File(System.getProperty("java.io.tmpdir"),
             "jiiify-watch-folder");
@@ -100,7 +100,7 @@ public class Configuration implements Shareable {
 
     private final String myServicePrefix;
 
-    private File myUploadsDir;
+    private String myUploadsDir;
 
     private File myWatchFolder;
 
@@ -398,7 +398,7 @@ public class Configuration implements Shareable {
      *
      * @return The directory into which uploads should be put
      */
-    public File getUploadsDir() {
+    public String getUploadsDir() {
         return myUploadsDir;
     }
 
@@ -691,7 +691,6 @@ public class Configuration implements Shareable {
 
     private void setUploadsDir(final JsonObject aConfig, final Handler<AsyncResult<Configuration>> aHandler) {
         final Properties properties = System.getProperties();
-        final String defaultUploadDirPath = DEFAULT_UPLOADS_DIR.getAbsolutePath();
 
         // Then get the uploads directory we want to use, giving preference to system properties
         if (properties.containsKey(UPLOADS_DIR_PROP)) {
@@ -699,15 +698,15 @@ public class Configuration implements Shareable {
                 LOGGER.debug("Found {} set in system properties", UPLOADS_DIR_PROP);
             }
 
-            confirmUploadsDir(properties.getProperty(UPLOADS_DIR_PROP, defaultUploadDirPath), aHandler);
+            confirmUploadsDir(properties.getProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR), aHandler);
         } else {
-            confirmUploadsDir(aConfig.getString(UPLOADS_DIR_PROP, defaultUploadDirPath), aHandler);
+            confirmUploadsDir(aConfig.getString(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR), aHandler);
         }
     }
 
     private void confirmUploadsDir(final String aDirPath, final Handler<AsyncResult<Configuration>> aHandler) {
         final Future<Configuration> result = Future.future();
-        final File uploadsDir;
+        final String uploadsDir;
 
         if (aHandler != null) {
             result.setHandler(aHandler);
@@ -719,7 +718,7 @@ public class Configuration implements Shareable {
                     LOGGER.debug("Using a temporary directory {} for file uploads", uploadsDir);
                 }
             } else {
-                uploadsDir = new File(aDirPath);
+                uploadsDir = aDirPath;
 
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Using a user supplied file uploads directory: {}", uploadsDir);
@@ -727,7 +726,7 @@ public class Configuration implements Shareable {
             }
 
             try {
-                if (!Files.createDirectories(uploadsDir.toPath()).toFile().canWrite()) {
+                if (!Files.createDirectories(Paths.get(uploadsDir)).toFile().canWrite()) {
                     result.fail(new ConfigurationException(LOGGER.getMessage(EXC_021, uploadsDir)));
                 } else {
                     LOGGER.info("Setting Jiiify file uploads directory to: {}", uploadsDir);

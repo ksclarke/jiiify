@@ -5,12 +5,12 @@ import static info.freelibrary.jiiify.Constants.FAILURE_RESPONSE;
 import static info.freelibrary.jiiify.Constants.FILE_PATH_KEY;
 import static info.freelibrary.jiiify.Constants.IIIF_PATH_KEY;
 import static info.freelibrary.jiiify.Constants.SUCCESS_RESPONSE;
+import static info.freelibrary.jiiify.MessageCodes.EXC_000;
 
 import java.io.IOException;
 
 import javax.naming.ConfigurationException;
 
-import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageQuality;
 import info.freelibrary.jiiify.iiif.ImageRequest;
 import info.freelibrary.jiiify.image.ImageObject;
@@ -59,12 +59,16 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
                     image.adjustQuality(request.getQuality());
                 }
 
-                // FIXME: don't block
-                ptObj.putBlocking(request.getPath(), image.toBuffer(request.getFormat().getExtension()));
-
-                message.reply(SUCCESS_RESPONSE);
+                ptObj.put(request.getPath(), image.toBuffer(request.getFormat().getExtension()), handler -> {
+                    if (handler.succeeded()) {
+                        message.reply(SUCCESS_RESPONSE);
+                    } else {
+                        LOGGER.error(handler.cause(), EXC_000, handler.cause().getMessage());
+                        message.reply(FAILURE_RESPONSE);
+                    }
+                });
             } catch (final Exception details) {
-                LOGGER.error(details, MessageCodes.EXC_000, details.getMessage());
+                LOGGER.error(details, EXC_000, details.getMessage());
                 message.reply(FAILURE_RESPONSE);
             } catch (final OutOfMemoryError details) {
                 LOGGER.error(details, "OutOfMemoryError: {}", json.getString(IIIF_PATH_KEY));

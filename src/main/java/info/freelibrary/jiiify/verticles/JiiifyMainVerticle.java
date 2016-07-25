@@ -143,7 +143,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         final IngestHandler ingestHandler = new IngestHandler(myConfig);
 
         // Configure some basics
-        router.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getUploadsDir().getAbsolutePath()));
+        router.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getUploadsDir()));
         router.route().handler(CookieHandler.create());
         router.route().handler(sessionHandler);
 
