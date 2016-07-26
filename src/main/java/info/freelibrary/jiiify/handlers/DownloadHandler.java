@@ -15,6 +15,7 @@ import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 import static java.nio.file.StandardOpenOption.CREATE_NEW;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
@@ -26,6 +27,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -34,6 +37,7 @@ import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.iiif.IIIFException;
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.iiif.ImageRequest;
+import info.freelibrary.jiiify.iiif.InvalidInfoException;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
@@ -51,10 +55,10 @@ public class DownloadHandler extends JiiifyHandler {
 
     private static final String DOWNLOAD_SERVER_PARAM = "server";
 
-    private static final Map<String, String> ENV;
+    private static final Map<String, String> ENV = new HashMap<String, String>();
     static {
-        ENV = new HashMap<String, String>();
         ENV.put("create", "true");
+        ENV.put("encoding", "UTF-8");
     }
 
     /**
@@ -105,13 +109,13 @@ public class DownloadHandler extends JiiifyHandler {
         }
     }
 
+    @SuppressWarnings("rawtypes")
     private void downloadObject(final RoutingContext aContext, final String aID) {
         final PairtreeObject ptObj = myConfig.getDataDir(aID).getObject(aID);
 
         ptObj.get(ImageInfo.FILE_NAME, handler -> {
             if (handler.succeeded()) {
-                final String imageInfoString = handler.result().toString();
-                final JsonObject jsonObject = new JsonObject(imageInfoString);
+                final JsonObject jsonObject = new JsonObject(handler.result().toString());
 
                 if (jsonObject.containsKey(ImageInfo.WIDTH) && jsonObject.containsKey(ImageInfo.HEIGHT)) {
                     final String servicePrefix = myConfig.getServicePrefix();
@@ -119,6 +123,7 @@ public class DownloadHandler extends JiiifyHandler {
                     final int w = jsonObject.getInteger(ImageInfo.WIDTH);
                     final int h = jsonObject.getInteger(ImageInfo.HEIGHT);
                     final List<String> tilePaths = ImageUtils.getTilePaths(servicePrefix, aID, tileSize, w, h);
+                    final List<String> paths = new ArrayList<String>(tilePaths.size());
                     final List<Future> futures = new ArrayList<Future>();
 
                     for (final String path : tilePaths) {
@@ -127,10 +132,16 @@ public class DownloadHandler extends JiiifyHandler {
                         futures.add(future);
 
                         try {
-                            ptObj.find(new ImageRequest(path).getPath(), findHandler -> {
+                            final String resourcePath = new ImageRequest(path).getPath();
+
+                            paths.add(resourcePath);
+
+                            ptObj.find(resourcePath, findHandler -> {
                                 if (findHandler.succeeded()) {
+                                    LOGGER.debug("Download resource file found: {}", resourcePath);
                                     future.complete();
                                 } else {
+                                    LOGGER.debug("Download resource file not found: {}", resourcePath);
                                     future.fail(findHandler.cause());
                                 }
                             });
@@ -140,19 +151,26 @@ public class DownloadHandler extends JiiifyHandler {
                         }
                     }
 
-                    CompositeFuture.all(futures).setHandler(futuresHandler -> {
+                    final CompositeFuture future = CompositeFuture.all(futures).setHandler(futuresHandler -> {
                         if (futuresHandler.succeeded()) {
-                            final ImageInfo imageInfo = new ImageInfo(imageInfoString);
-
                             if (LOGGER.isDebugEnabled()) {
                                 LOGGER.debug("Zipping up an object for download: {}", ptObj.getID());
                             }
 
-                            startDownload(ptObj, tilePaths, imageInfo, aContext);
+                            try {
+                                startDownload(ptObj, paths, new ImageInfo(jsonObject), aContext);
+                            } catch (final InvalidInfoException details) {
+                                LOGGER.debug("Invalid ImageInfo JSON");
+                                aContext.response().putHeader(CONTENT_TYPE, HTML_MIME_TYPE).end(
+                                        "Invalid ImageInfo JSON");
+                            }
                         } else {
+                            LOGGER.debug("Not ready for download");
                             aContext.response().putHeader(CONTENT_TYPE, HTML_MIME_TYPE).end("Not ready for download");
                         }
                     });
+
+                    LOGGER.debug("Number of tiles to be zipped: {}", future.size());
                 } else {
                     final String message = "Height and/or width not found in image info file";
 
@@ -178,18 +196,13 @@ public class DownloadHandler extends JiiifyHandler {
     private void startDownload(final PairtreeObject aPtObj, final List<String> aPathsList, final ImageInfo aImageInfo,
             final RoutingContext aContext) {
         try {
-            final String encodedID = PathUtils.encodeIdentifier(aPtObj.getID());
-            final Path zipFile = Paths.get(myConfig.getUploadsDir(), encodedID + ".zip");
-            final FileSystem zipFS = FileSystems.newFileSystem(zipFile.toUri(), ENV);
+            final String id = aPtObj.getID();
+            final String fileName = PathUtils.encodeIdentifier(id) + ".zip";
+            final Path zipPath = Paths.get(myConfig.getUploadsDir(), fileName);
             final String server = aContext.request().getParam(DOWNLOAD_SERVER_PARAM);
+            final FileSystem zipFS = FileSystems.newFileSystem(createZip(zipPath, aImageInfo, server, id), null);
             final HttpServerResponse response = aContext.response();
             final List<Future> futures = new ArrayList<Future>();
-
-            // Set the server in the info JSON file with information supplied via download form
-            aImageInfo.setID(server + (server.endsWith("/") ? "" : File.separator) + aPtObj.getID());
-
-            // Write ImageInfo to Zip file
-            Files.write(zipFS.getPath("/", ImageInfo.FILE_NAME), aImageInfo.toString().getBytes(), CREATE_NEW);
 
             // Cycle through all our tile paths and add them to the zip file
             for (final String path : aPathsList) {
@@ -200,6 +213,7 @@ public class DownloadHandler extends JiiifyHandler {
                 aPtObj.get(path, handler -> {
                     if (handler.succeeded()) {
                         try {
+                            Files.createDirectories(zipFS.getPath(Paths.get(path).getParent().toString()));
                             Files.write(zipFS.getPath("/", path), handler.result().getBytes(), CREATE_NEW);
                             future.complete();
                         } catch (final IOException details) {
@@ -215,17 +229,27 @@ public class DownloadHandler extends JiiifyHandler {
                 if (handler.succeeded()) {
                     final MultiMap headers = response.headers();
 
-                    // Set download headers so zip file will be named with the object ID
-                    headers.add(CONTENT_TYPE, ZIP_MIME_TYPE);
-                    headers.add("Content-Disposition", "attachment; filename=" + encodedID + ".zip");
-                    headers.add("Content-Length", Long.toString(zipFS.supportedFileAttributeViews().size()));
+                    try {
+                        zipFS.close();
 
-                    // And, lastly, send the zip file to our downloader
-                    response.sendFile(zipFile.toString(), responseHandler -> {
-                        if (responseHandler.failed()) {
-                            LOGGER.error(responseHandler.cause(), responseHandler.cause().getMessage());
+                        // Set download headers so zip file will be named with the object ID
+                        headers.add(CONTENT_TYPE, ZIP_MIME_TYPE);
+                        headers.add("Content-Disposition", "attachment; filename=" + fileName);
+                        headers.add("Content-Length", Long.toString(zipFS.supportedFileAttributeViews().size()));
+
+                        if (LOGGER.isDebugEnabled()) {
+                            LOGGER.debug("Sending file for browser download: {}", zipPath);
                         }
-                    });
+
+                        // And, lastly, send the zip file to our downloader
+                        response.sendFile(zipPath.toString(), responseHandler -> {
+                            if (responseHandler.failed()) {
+                                LOGGER.error(responseHandler.cause(), responseHandler.cause().getMessage());
+                            }
+                        });
+                    } catch (final IOException details) {
+                        response.putHeader(CONTENT_TYPE, HTML_MIME_TYPE).end(details.getMessage());
+                    }
                 } else {
                     LOGGER.error(handler.cause(), handler.cause().getMessage());
                     response.putHeader(CONTENT_TYPE, HTML_MIME_TYPE).end(handler.cause().getMessage());
@@ -237,4 +261,24 @@ public class DownloadHandler extends JiiifyHandler {
         }
     }
 
+    /**
+     * @param aZipPath
+     */
+    private Path createZip(final Path aZipPath, final ImageInfo aImageInfo, final String aServer, final String aID)
+            throws IOException {
+        // Set the server in the info JSON file with information supplied via download form
+        aImageInfo.setID(aServer + (aServer.endsWith("/") ? "" : File.separator) + aID);
+
+        final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(aZipPath.toFile()));
+        final ZipEntry zipEntry = new ZipEntry(ImageInfo.FILE_NAME);
+        final byte[] bytes = aImageInfo.toString().getBytes();
+
+        // Have to do this the old fashioned way thanks to JDK bug (https://bugs.openjdk.java.net/browse/JDK-7156873)
+        out.putNextEntry(zipEntry);
+        out.write(bytes, 0, bytes.length);
+        out.closeEntry();
+        out.close();
+
+        return aZipPath;
+    }
 }
