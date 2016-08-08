@@ -2,20 +2,17 @@
 package info.freelibrary.jiiify.verticles;
 
 import static info.freelibrary.jiiify.Configuration.DEFAULT_SESSION_TIMEOUT;
-import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.JCEKS_PROP;
 import static info.freelibrary.jiiify.Constants.JKS_PROP;
 import static info.freelibrary.jiiify.Constants.KEY_PASS_PROP;
-import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-
-import javax.naming.ConfigurationException;
+import java.util.ArrayList;
+import java.util.List;
 
 import info.freelibrary.jiiify.Configuration;
-import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.RoutePatterns;
 import info.freelibrary.jiiify.handlers.DownloadHandler;
 import info.freelibrary.jiiify.handlers.FailureHandler;
@@ -38,8 +35,11 @@ import info.freelibrary.jiiify.templates.HandlebarsTemplateEngine;
 import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.StringUtils;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.core.http.HttpServerResponse;
@@ -62,7 +62,25 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
     private Configuration myConfig;
 
     @Override
-    public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+    public void start(final Future<Void> aFuture) {
+        new Configuration(config(), vertx, configHandler -> {
+            if (configHandler.succeeded()) {
+                myConfig = configHandler.result();
+
+                deployJiiifyVerticles(deployHandler -> {
+                    if (deployHandler.succeeded()) {
+                        initializeMainVerticle(aFuture);
+                    } else {
+                        aFuture.fail(deployHandler.cause());
+                    }
+                });
+            } else {
+                aFuture.fail(configHandler.cause());
+            }
+        });
+    }
+
+    private void initializeMainVerticle(final Future<Void> aFuture) {
         final SessionHandler sessionHandler = SessionHandler.create(LocalSessionStore.create(vertx));
         final TemplateEngine templateEngine = HandlebarsTemplateEngine.create();
         final TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
@@ -70,19 +88,12 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         final Router router = Router.router(vertx);
         final JWTAuth jwtAuth;
 
-        // Store our parsed configuration so we can access it when needed
-        myConfig = new Configuration(config());
-        vertx.sharedData().getLocalMap(SHARED_DATA_KEY).put(CONFIG_KEY, myConfig);
-
-        // Start up Jiiify's other verticles
-        deployJiiifyVerticles();
-
         // Set the port on which we want to listen for connections
         options.setPort(myConfig.getPort());
         options.setHost("0.0.0.0");
         options.setCompressionSupported(true);
 
-        // Use https or http, but switching between them requires re-ingesting everything
+        // FIXME: Use https or http, but switching between them requires re-ingesting everything
         if (myConfig.usesHttps()) {
             final String jksProperty = System.getProperty(JKS_PROP, JKS_PROP);
             final String ksPassword = System.getProperty(KEY_PASS_PROP, "");
@@ -93,15 +104,24 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             jceksConfig.put("path", JCEKS_PROP).put("type", "jceks").put("password", ksPassword);
             jwtAuth = JWTAuth.create(vertx, new JsonObject().put("keyStore", jceksConfig));
 
+            // Get JKS from an external configuration file
             if (jksFile.exists()) {
                 LOGGER.info("Using a system JKS configuration: {}", jksFile);
                 jksOptions.setPath(jksFile.getAbsolutePath());
             } else {
                 final InputStream inStream = getClass().getResourceAsStream("/" + jksProperty);
 
+                // Get JKS configuration from a configuration file in the jar file
                 if (inStream != null) {
-                    jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
+                    LOGGER.debug("Loading JKS configuration from jar file");
+
+                    try {
+                        jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
+                    } catch (final IOException details) {
+                        throw new RuntimeException(details);
+                    }
                 } else {
+                    // Get JKS configuration from the Maven build's target directory
                     LOGGER.debug("Trying to use the build's default JKS: {}", jksProperty);
                     jksOptions.setPath("target/classes/" + jksProperty);
                 }
@@ -123,7 +143,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         final IngestHandler ingestHandler = new IngestHandler(myConfig);
 
         // Configure some basics
-        router.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getUploadsDir().getAbsolutePath()));
+        router.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getUploadsDir()));
         router.route().handler(CookieHandler.create());
         router.route().handler(sessionHandler);
 
@@ -182,16 +202,10 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         // Start the server and start listening for connections
         vertx.createHttpServer(options).requestHandler(router::accept).listen(response -> {
             if (response.succeeded()) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(MessageCodes.DBG_006, JiiifyMainVerticle.class.getName(), deploymentID());
-                }
-
+                LOGGER.info("Successfully started {} [{}]", JiiifyMainVerticle.class.getSimpleName(), deploymentID());
                 aFuture.complete();
             } else {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Server failed to start server at {}:{}", myConfig.getHost(), myConfig.getPort());
-                }
-
+                LOGGER.info("Server failed to start server at {}:{}", myConfig.getHost(), myConfig.getPort());
                 aFuture.fail(response.cause());
             }
         });
@@ -243,25 +257,36 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
      *
      * @param aConfig A Jiiify configuration
      */
-    private void deployJiiifyVerticles() {
+    @SuppressWarnings("rawtypes")
+    private void deployJiiifyVerticles(final Handler<AsyncResult<Void>> aHandler) {
         final DeploymentOptions workerOptions = new DeploymentOptions().setWorker(true).setMultiThreaded(true);
         final DeploymentOptions options = new DeploymentOptions();
+        final List<Future> futures = new ArrayList<Future>();
+        final Future<Void> future = Future.future();
 
-        // Check to see whether we've configured the watch folder ingest service and start it up if so
-        if (myConfig.hasWatchFolder()) {
-            deployVerticle(WatchFolderVerticle.class.getName(), options);
+        if (aHandler != null) {
+            future.setHandler(aHandler);
+
+            futures.add(deployVerticle(WatchFolderVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(ImageWorkerVerticle.class.getName(), workerOptions, Future.future()));
+            futures.add(deployVerticle(TileMasterVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(SolrServiceVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(ImageIndexVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(ImageIngestVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(ThumbnailVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(ManifestVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(ImageInfoVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(ImagePropertiesVerticle.class.getName(), options, Future.future()));
+
+            // Confirm all our verticles were successfully deployed
+            CompositeFuture.all(futures).setHandler(handler -> {
+                if (handler.succeeded()) {
+                    future.complete();
+                } else {
+                    future.fail(handler.cause());
+                }
+            });
         }
-
-        // TODO: Perhaps some method more dynamic in the future?
-        deployVerticle(ImageWorkerVerticle.class.getName(), workerOptions);
-        deployVerticle(TileMasterVerticle.class.getName(), options);
-        deployVerticle(SolrServiceVerticle.class.getName(), options);
-        deployVerticle(ImageIndexVerticle.class.getName(), options);
-        deployVerticle(ImageIngestVerticle.class.getName(), options);
-        deployVerticle(ThumbnailVerticle.class.getName(), options);
-        deployVerticle(ManifestVerticle.class.getName(), options);
-        deployVerticle(ImageInfoVerticle.class.getName(), options);
-        deployVerticle(ImagePropertiesVerticle.class.getName(), options);
     }
 
     /**
@@ -270,16 +295,25 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
      * @param aVerticleName The name of the verticle to deploy
      * @param aOptions Any deployment options that should be considered
      */
-    private void deployVerticle(final String aVerticleName, final DeploymentOptions aOptions) {
+    private Future<Void> deployVerticle(final String aVerticleName, final DeploymentOptions aOptions,
+            final Future<Void> aFuture) {
         vertx.deployVerticle(aVerticleName, aOptions, response -> {
-            if (response.succeeded()) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Successfully deployed {} [{}]", aVerticleName, response.result());
+            try {
+                final String name = Class.forName(aVerticleName).getSimpleName();
+
+                if (response.succeeded()) {
+                    LOGGER.debug("Successfully deployed {} [{}]", name, response.result());
+                    aFuture.complete();
+                } else {
+                    LOGGER.error("Failed to launch {}", name, response.cause());
+                    aFuture.fail(response.cause());
                 }
-            } else {
-                LOGGER.error("Failed to launch {}", aVerticleName);
+            } catch (final ClassNotFoundException details) {
+                aFuture.fail(details);
             }
         });
+
+        return aFuture;
     }
 
 }

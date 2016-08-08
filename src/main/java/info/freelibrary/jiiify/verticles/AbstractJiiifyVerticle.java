@@ -4,9 +4,9 @@ package info.freelibrary.jiiify.verticles;
 import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
+import static info.freelibrary.jiiify.MessageCodes.DBG_000;
 
 import info.freelibrary.jiiify.Configuration;
-import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
@@ -24,13 +24,13 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
     @Override
     public void stop(final Future<Void> aFuture) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(MessageCodes.DBG_000, getClass().getName(), deploymentID());
+            LOGGER.debug(DBG_000, getClass().getName(), deploymentID());
         }
 
         aFuture.complete();
     }
 
-    protected Configuration getConfiguration() {
+    protected Configuration getConfig() {
         return (Configuration) vertx.sharedData().getLocalMap(SHARED_DATA_KEY).get(CONFIG_KEY);
     }
 
@@ -51,7 +51,7 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
      */
     protected void sendMessage(final JsonObject aJsonObject, final String aVerticleName, final int aCount) {
         final long sendTimeout = DeliveryOptions.DEFAULT_TIMEOUT * aCount;
-        final int retryCount = getConfiguration().getRetryCount();
+        final int retryCount = getConfig().getRetryCount();
         final DeliveryOptions options = new DeliveryOptions();
         final EventBus eventBus = vertx.eventBus();
 

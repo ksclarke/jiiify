@@ -46,7 +46,7 @@ import io.vertx.core.json.JsonObject;
 /**
  * A verticle that watches a folder for image file changes and then fires off messages about them to the image tiler.
  *
- * @author Kevin S. Clarke (<a href="mailto:ksclarke@gmail.com">ksclarke@gmail.com</a>)
+ * @author Kevin S. Clarke (<a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>)
  */
 public class WatchFolderVerticle extends AbstractJiiifyVerticle {
 
@@ -61,13 +61,8 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
     @Override
     public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
         final Configuration config = (Configuration) vertx.sharedData().getLocalMap(SHARED_DATA_KEY).get(CONFIG_KEY);
-        final Path watchDir;
+        final Path watchDir = Paths.get(config.getWatchFolder().getAbsolutePath());
 
-        if (!config.hasWatchFolder()) {
-            throw new ConfigurationException(MessageCodes.EXC_025);
-        }
-
-        watchDir = Paths.get(config.getWatchFolder().getAbsolutePath());
         myWatcher = FileSystems.getDefault().newWatchService();
         recursivelyRegister(watchDir);
 

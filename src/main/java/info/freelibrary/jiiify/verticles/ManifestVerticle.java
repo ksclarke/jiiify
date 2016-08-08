@@ -8,6 +8,7 @@ import static info.freelibrary.jiiify.Constants.SOLR_SERVICE_KEY;
 import static info.freelibrary.jiiify.Constants.SUCCESS_RESPONSE;
 import static info.freelibrary.jiiify.Constants.THUMBNAIL_KEY;
 import static info.freelibrary.jiiify.Constants.UTF_8_ENCODING;
+import static info.freelibrary.jiiify.Metadata.MANIFEST_FILE;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -27,7 +28,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.Constants;
-import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.presentation.json.AbstractIiifResourceMixIn;
 import info.freelibrary.jiiify.iiif.presentation.json.ManifestMixIn;
@@ -46,11 +46,11 @@ import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.jiiify.util.SolrUtils;
+import info.freelibrary.pairtree.PairtreeObject;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 
 public class ManifestVerticle extends AbstractJiiifyVerticle {
@@ -61,18 +61,15 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
             final JsonObject jsonMessage = messageHandler.body();
             final String id = jsonMessage.getString(ID_KEY);
             final String thumbnail = jsonMessage.getString(IIIF_PATH_KEY);
-            final String fsPath = PathUtils.getObjectPath(vertx, id);
-            final FileSystem fileSystem = vertx.fileSystem();
+            final PairtreeObject ptObj = getConfig().getDataDir(id).getObject(id);
 
-            fileSystem.mkdirs(fsPath, mkdirsHandler -> {
-                if (mkdirsHandler.succeeded()) {
-                    final String manifestPath = fsPath + File.separator + Metadata.MANIFEST_FILE;
-
+            ptObj.create(handler -> {
+                if (handler.succeeded()) {
                     try {
                         final Manifest manifest = createManifest(jsonMessage);
                         final Buffer buffer = Buffer.buffer(toJson(manifest), UTF_8_ENCODING);
 
-                        writeManifest(fileSystem, manifestPath, buffer, id, thumbnail, messageHandler);
+                        writeManifest(ptObj, buffer, id, thumbnail, messageHandler);
                     } catch (final JsonProcessingException | URISyntaxException details) {
                         LOGGER.error(details, "Unexpected exception thrown");
                         messageHandler.reply(FAILURE_RESPONSE);
@@ -81,7 +78,7 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
                         messageHandler.reply(FAILURE_RESPONSE);
                     }
                 } else {
-                    LOGGER.error("Unable to create object directory: {}", fsPath);
+                    LOGGER.error("Unable to create object directory: {}", ptObj.getPath());
                     messageHandler.reply(FAILURE_RESPONSE);
                 }
             });
@@ -91,7 +88,7 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
     }
 
     private Manifest createManifest(final JsonObject aJsonObject) throws IOException, URISyntaxException {
-        final Configuration config = getConfiguration();
+        final Configuration config = getConfig();
         final String server = config.getServer();
         final String iiif = server + config.getServicePrefix();
         final String thumbnail = server + aJsonObject.getString(IIIF_PATH_KEY);
@@ -123,7 +120,7 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
         image.setOn(canvas.getId());
 
         canvas.setImages(Arrays.asList(image));
-        canvas.setThumbnail(thumbnail); /* this is where edsu has it */
+        canvas.setThumbnail(thumbnail);
 
         sequence.setId(id(iiif, encodedID, "sequence"));
         sequence.setThumbnail(thumbnail);
@@ -143,25 +140,25 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
         return builder.toString();
     }
 
-    private void writeManifest(final FileSystem aFileSystem, final String aFilePath, final Buffer aManifest,
-            final String aID, final String aThumbnail, final Message<JsonObject> aMessageHandler) {
-        aFileSystem.writeFile(aFilePath, aManifest, writeHandler -> {
-            if (writeHandler.succeeded()) {
+    private void writeManifest(final PairtreeObject aPtObj, final Buffer aManifest, final String aID,
+            final String aThumbnail, final Message<JsonObject> aMessageHandler) {
+        aPtObj.put(MANIFEST_FILE, aManifest, putHandler -> {
+            if (putHandler.succeeded()) {
                 final SolrService service = SolrService.createProxy(vertx, SOLR_SERVICE_KEY);
                 final List<KeyValue<String, ?>> fields = new ArrayList<KeyValue<String, ?>>();
 
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Wrote manifest file: {}", aFilePath);
+                    LOGGER.debug("Wrote manifest file: {}", aPtObj.getPath(MANIFEST_FILE));
                 }
 
                 fields.add(KeyValue.with(ID_KEY, aID));
                 fields.add(KeyValue.with(THUMBNAIL_KEY, aThumbnail));
 
-                service.index(SolrUtils.getSimpleUpdateDoc(fields), handler -> {
-                    if (handler.failed()) {
-                        LOGGER.error("Failed submitting thumbnail to Solr: {}", handler.result());
+                service.index(SolrUtils.getSimpleUpdateDoc(fields), indexHandler -> {
+                    if (indexHandler.failed()) {
+                        LOGGER.error("Failed submitting thumbnail to Solr: {}", indexHandler.result());
                         aMessageHandler.reply(FAILURE_RESPONSE);
-                    } else if (handler.succeeded()) {
+                    } else if (indexHandler.succeeded()) {
                         if (LOGGER.isDebugEnabled()) {
                             LOGGER.debug("Succeeded submitting thumbnail to Solr");
                         }
@@ -170,13 +167,7 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
                     }
                 });
             } else {
-                final Throwable throwable = writeHandler.cause();
-
-                if (throwable != null) {
-                    LOGGER.error(throwable, "Failed to write manifest file: {}", aFilePath);
-                } else {
-                    LOGGER.error("Failed to write manifest file: {}", aFilePath);
-                }
+                LOGGER.error(putHandler.cause(), "Failed to write manifest file: {}", aPtObj.getPath(MANIFEST_FILE));
             }
         });
     }

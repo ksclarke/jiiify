@@ -10,6 +10,7 @@ import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Properties;
 
@@ -19,8 +20,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.util.PathUtils;
+import info.freelibrary.pairtree.PairtreeObject;
 
-import io.vertx.core.file.FileSystem;
 import io.vertx.ext.web.RoutingContext;
 
 public class PropertiesHandler extends JiiifyHandler {
@@ -38,25 +39,29 @@ public class PropertiesHandler extends JiiifyHandler {
     public void handle(final RoutingContext aContext) {
         final String requestPath = aContext.request().uri();
         final String id = PathUtils.decode(requestPath.split("\\/")[4]);
-        final FileSystem fileSystem = aContext.vertx().fileSystem();
-        final String properties = PathUtils.getFilePath(aContext.vertx(), id, Metadata.PROPERTIES_FILE);
+        final PairtreeObject ptObj = myConfig.getDataDir(id).getObject(id);
 
-        fileSystem.exists(properties, existsHandler -> {
-            if (existsHandler.succeeded()) {
-                if (existsHandler.result()) {
-                    fileSystem.readFile(properties, readHandler -> {
-                        if (readHandler.succeeded()) {
-                            processProperties(aContext, readHandler.result().getBytes(), id);
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Checking for properties file: {}", ptObj.getPath(Metadata.PROPERTIES_FILE));
+        }
+
+        ptObj.find(Metadata.PROPERTIES_FILE, findHandler -> {
+            if (findHandler.succeeded()) {
+                if (findHandler.result()) {
+                    ptObj.get(Metadata.PROPERTIES_FILE, getHandler -> {
+                        if (getHandler.succeeded()) {
+                            processProperties(aContext, getHandler.result().getBytes(), id);
                         } else {
-                            fail(aContext, readHandler.cause());
+                            fail(aContext, getHandler.cause());
                         }
                     });
                 } else {
                     aContext.fail(404);
-                    aContext.put(ERROR_MESSAGE, msg("Image properties file ({}) not found", properties));
+                    aContext.put(ERROR_MESSAGE, msg("Image properties file not found: {}", Paths.get(ptObj.getPath(),
+                            Metadata.PROPERTIES_FILE)));
                 }
             } else {
-                fail(aContext, existsHandler.cause());
+                fail(aContext, findHandler.cause());
             }
         });
     }

@@ -3,15 +3,14 @@ package info.freelibrary.jiiify.iiif;
 
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
+import java.util.StringJoiner;
 
 import info.freelibrary.jiiify.util.PathUtils;
+import info.freelibrary.pairtree.PairtreeUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
-import info.freelibrary.util.PairtreeRoot;
-import info.freelibrary.util.PairtreeUtils;
 import info.freelibrary.util.StringUtils;
 
 public class ImageRequest implements Cloneable {
@@ -31,8 +30,6 @@ public class ImageRequest implements Cloneable {
     private ImageQuality myQuality;
 
     private ImageFormat myFormat;
-
-    private File myCacheFile;
 
     /**
      * Creates a IIIF image request object for a particular image region.
@@ -254,49 +251,21 @@ public class ImageRequest implements Cloneable {
 
     @Override
     public String toString() {
-        final StringBuilder sb = new StringBuilder("/").append(myServicePrefix).append('/');
+        final String fileName = StringUtils.toString('.', myQuality, myFormat);
+        final String id = getPathEncodedID();
 
-        try {
-            sb.append(PathUtils.encodeIdentifier(myID)).append('/').append(myRegion).append('/').append(mySize);
-            sb.append('/').append(myRotation).append('/').append(myQuality).append('.').append(myFormat);
-        } catch (final URISyntaxException details) {
-            LOGGER.warn("Identifier contains characters invalid for a URI: {}", myID);
-            sb.append(myID).append('/').append(myRegion).append('/').append(mySize);
-            sb.append('/').append(myRotation).append('/').append(myQuality).append('.').append(myFormat);
-        }
-
-        return sb.toString();
+        return new StringJoiner("/", "/", "").add(myServicePrefix).add(id).add(myRegion.toString()).add(mySize
+                .toString()).add(myRotation.toString()).add(fileName).toString();
     }
 
     /**
-     * Whether the image request has a previous cached version of its output file.
+     * Returns a Pairtree object path for this image request.
      *
-     * @param aDataDir The Pairtree root at which a cached file would be found
-     * @return True if the image request has a previously cached output; else, false
-     * @throws IOException If there is trouble reading or checking a previously cached file
+     * @return A Pairtree object path for this image request
      */
-    public boolean hasCachedFile(final PairtreeRoot aDataDir) throws IOException {
-        return getCacheFile(aDataDir).exists() && myCacheFile.length() > 0;
-    }
-
-    /**
-     * Returns a cached file for this image request.
-     *
-     * @param aDataDir The Pairtree root at which a cached file would be found
-     * @return A file handled for a cached output file.
-     * @throws IOException If there is trouble reading from the file cache
-     */
-    public File getCacheFile(final PairtreeRoot aDataDir) throws IOException {
-        if (myCacheFile == null) {
-            final String fileName = StringUtils.toString('.', myQuality, myFormat);
-            final String objPath = PairtreeUtils.mapToPtPath(aDataDir.getAbsolutePath(), myID, myID);
-            final String imagePath = StringUtils.toString(File.separatorChar, myRegion, mySize, myRotation);
-            final File cacheFile = new File(objPath + File.separatorChar + imagePath + File.separatorChar + fileName);
-
-            myCacheFile = cacheFile;
-        }
-
-        return myCacheFile;
+    public String getPath() {
+        final String fileName = StringUtils.toString('.', myQuality, myFormat);
+        return Paths.get(myRegion.toString(), mySize.toString(), myRotation.toString(), fileName).toString();
     }
 
     /**
@@ -328,17 +297,24 @@ public class ImageRequest implements Cloneable {
      */
     @Override
     public ImageRequest clone() {
-        final ImageRequest request;
-
         try {
-            request = (ImageRequest) super.clone();
-
-            // Don't clone our previous cache file
-            request.myCacheFile = null;
+            return (ImageRequest) super.clone();
         } catch (final CloneNotSupportedException details) {
             throw new RuntimeException(details);
         }
+    }
 
-        return request;
+    /**
+     * A simple convenience method to return the path encoded ID.
+     *
+     * @return The path encoded ID
+     */
+    private String getPathEncodedID() {
+        try {
+            return PathUtils.encodeIdentifier(myID);
+        } catch (final URISyntaxException details) {
+            LOGGER.warn("Identifier contains characters invalid for a URI: {}", myID);
+            return myID;
+        }
     }
 }
