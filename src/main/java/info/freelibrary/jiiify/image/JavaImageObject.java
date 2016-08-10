@@ -13,6 +13,7 @@ import java.util.Iterator;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.FileCacheImageInputStream;
+import javax.imageio.stream.ImageOutputStream;
 
 import org.imgscalr.Scalr;
 
@@ -34,8 +35,6 @@ public class JavaImageObject implements ImageObject {
     private final Logger LOGGER = LoggerFactory.getLogger(JavaImageObject.class, MESSAGES);
 
     private BufferedImage myImage;
-
-    private boolean needsFormatChange;
 
     /**
      * Creates new image using the pure Java image processing.
@@ -94,16 +93,19 @@ public class JavaImageObject implements ImageObject {
         final String mimeType = ImageFormat.getMIMEType(aFileExt);
         final Iterator<ImageWriter> iterator = ImageIO.getImageWritersByMIMEType(mimeType);
 
+        // TODO: test performance and resource usage differences
+        ImageIO.setUseCache(true);
+
         if (iterator.hasNext()) {
             final ImageWriter writer = iterator.next();
-            final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            final ImageOutputStream outStream = ImageIO.createImageOutputStream(baos);
 
             try {
                 writer.setOutput(outStream);
                 writer.write(myImage);
                 outStream.flush();
-
-                return Buffer.buffer(outStream.toByteArray());
+                return Buffer.buffer(baos.toByteArray());
             } finally {
                 outStream.close();
                 writer.dispose();
