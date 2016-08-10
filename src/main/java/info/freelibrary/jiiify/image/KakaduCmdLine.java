@@ -148,7 +148,7 @@ public class KakaduCmdLine {
     }
 
     private void run(final String aCommand, final File aInputFile, final File aOutputFile) throws IOException {
-        final List<File> tempFiles = new ArrayList<File>();
+        final List<File> tempFiles = new ArrayList<>();
         final String[] command;
 
         if (aCommand.equals(KDU_COMPRESS)) {
