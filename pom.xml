@@ -247,7 +247,7 @@
             <compilerArgs>
               <arg>-AoutputDirectory=${project.basedir}/src/main</arg>
             </compilerArgs>
-            <!-- Fork so we can set JUL logging configuration for CodeGen -->
+            <!-- Fork so we can set JUL logging configuration for CodeGen; change to 'false' for debugging failures -->
             <fork>true</fork>
             <properties>
               <java.util.logging.config.file>src/main/resources/logging.properties</java.util.logging.config.file>
