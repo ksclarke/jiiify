@@ -1,18 +1,23 @@
 
 package info.freelibrary.jiiify.handlers;
 
+import static info.freelibrary.jiiify.Metadata.CONTENT_LENGTH;
 import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
 import static info.freelibrary.jiiify.Metadata.JSON_MIME_TYPE;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_HEADER;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
+
+import java.net.URISyntaxException;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
 /**
@@ -48,20 +53,33 @@ public class ImageInfoHandler extends JiiifyHandler {
         // FIXME: put this centrally for all IIIF routes(?)
         response.headers().set("Access-Control-Allow-Origin", "*");
 
-        ptObj.find(ImageInfo.FILE_NAME, existsHandler -> {
-            if (existsHandler.succeeded()) {
-                if (existsHandler.result()) {
-                    ptObj.get(ImageInfo.FILE_NAME, getHandler -> {
-                        if (getHandler.succeeded()) {
+        ptObj.find(ImageInfo.FILE_NAME, existsResult -> {
+            if (existsResult.succeeded()) {
+                if (existsResult.result()) {
+                    ptObj.get(ImageInfo.FILE_NAME, getResult -> {
+                        if (getResult.succeeded()) {
+                            final JsonObject json = getResult.result().toJsonObject();
+                            final String server = myConfig.getServer() + myConfig.getServicePrefix();
+                            final Buffer buffer = Buffer.buffer();
+
+                            try {
+                                json.put(ImageInfo.ID, server + "/" + PathUtils.encodeIdentifier(id));
+                            } catch (URISyntaxException details) {
+                                LOGGER.error("Failed to update ImageInfo JSON's @id", details);
+                            }
+
+                            json.writeToBuffer(buffer);
+
+                            response.putHeader(CONTENT_LENGTH, Integer.toString(buffer.length()));
                             response.putHeader(CONTENT_TYPE, JSON_MIME_TYPE);
-                            response.end(getHandler.result());
+                            response.end(buffer);
                             response.close();
 
                             if (LOGGER.isDebugEnabled()) {
                                 LOGGER.debug("Served image info: {}", request.uri());
                             }
                         } else {
-                            fail(aContext, existsHandler.cause());
+                            fail(aContext, existsResult.cause());
                             error(aContext, request);
                         }
                     });
@@ -71,7 +89,7 @@ public class ImageInfoHandler extends JiiifyHandler {
                     aContext.put(ERROR_MESSAGE, msg("Image info file not found: " + request.uri()));
                 }
             } else {
-                fail(aContext, existsHandler.cause());
+                fail(aContext, existsResult.cause());
                 error(aContext, request);
             }
         });
