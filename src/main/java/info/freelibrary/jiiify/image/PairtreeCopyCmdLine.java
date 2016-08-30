@@ -1,7 +1,6 @@
 
 package info.freelibrary.jiiify.image;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,9 +10,9 @@ import java.util.List;
 import info.freelibrary.pairtree.PairtreeFactory;
 import info.freelibrary.pairtree.PairtreeFactory.PairtreeImpl;
 import info.freelibrary.pairtree.PairtreeRoot;
-import info.freelibrary.pairtree.PairtreeUtils;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.IOUtils;
+import info.freelibrary.util.PairtreeUtils;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -37,18 +36,12 @@ public class PairtreeCopyCmdLine {
     private final String myFSPairtree;
 
     private PairtreeCopyCmdLine(final String[] args) {
-        myS3Pairtree = PairtreeFactory.getFactory(VERTX, PairtreeImpl.S3Bucket).getPairtree(args);
-        myFSPairtree = args[args.length - 1];
-    }
-
-    /**
-     * Runs the Pairtree copy script.
-     *
-     * @param args An arguments list
-     */
-    public static void main(final String[] args) {
         final Future<Void> future = Future.future();
 
+        myS3Pairtree = PairtreeFactory.getFactory(VERTX, PairtreeImpl.S3Bucket).getPairtree(args);
+        myFSPairtree = args[args.length - 1];
+
+        // Cleanup after we've finished the run
         future.setHandler(result -> {
             if (!result.succeeded()) {
                 System.err.println(result.cause());
@@ -57,11 +50,27 @@ public class PairtreeCopyCmdLine {
             VERTX.close();
         });
 
-        new PairtreeCopyCmdLine(args).checkForJp2s(args[args.length - 1], future);
+        // Create an S3 Pairtree and start copying
+        myS3Pairtree.create(result -> {
+            if (result.succeeded()) {
+                recursiveCopy(args[args.length - 1], future);
+            } else {
+                future.fail(result.cause());
+            }
+        });
+    }
+
+    /**
+     * Runs the Pairtree copy script.
+     *
+     * @param args An arguments list
+     */
+    public static void main(final String[] args) {
+        new PairtreeCopyCmdLine(args);
     }
 
     @SuppressWarnings("rawtypes")
-    private void checkForJp2s(final String aPath, final Future<Void> aFuture) {
+    private void recursiveCopy(final String aPath, final Future<Void> aFuture) {
         FS.readDir(aPath, readDirResult -> {
             if (readDirResult.succeeded()) {
                 final Iterator<String> iterator = readDirResult.result().iterator();
@@ -76,29 +85,31 @@ public class PairtreeCopyCmdLine {
 
                     FS.props(entry, propsResult -> {
                         final FileProps fileProps = propsResult.result();
+                        final String fileExt = FileUtils.getExt(entry);
 
                         if (fileProps.isDirectory()) {
-                            checkForJp2s(entry, future);
-                        } else if (FileUtils.getExt(entry).equals("jp2")) {
-                            final String path = entry.replaceAll(myFSPairtree + "/", "");
-
+                            recursiveCopy(entry, future);
+                        } else if ("jp2".equals(fileExt) || "properties".equals(fileExt) || "jpg".equals(fileExt) ||
+                            "json".equals(fileExt)) {
                             try {
-                                final String id = getID(path);
-                                final String name = PairtreeUtils.encodeID(id) + ".jp2";
+                                final String fullPath = entry.replace(myFSPairtree + "/pairtree_root/", "");
+                                final String encodedID = getID(fullPath);
+                                final String id = PairtreeUtils.decodeID(encodedID);
+                                final int idIndex = fullPath.indexOf(encodedID) + encodedID.length() + 1;
+                                final String resourcePath = fullPath.substring(idIndex);
                                 final byte[] bytes = IOUtils.readBytes(new FileInputStream(entry));
 
-                                System.out.println("Processing " + id + " [Adding " + name + "]");
+                                System.out.println("Processing " + resourcePath + " [" + id + "]");
 
-                                myS3Pairtree.getObject(id).put(name, Buffer.buffer(bytes),
-                                    putResult -> {
-                                        if (putResult.succeeded()) {
-                                            System.out.println("Success! " + name + " added.");
-                                            future.complete();
-                                        } else {
-                                            System.err.println("Error! " + name + " couldn't be added.");
-                                            future.fail(putResult.cause());
-                                        }
-                                    });
+                                myS3Pairtree.getObject(id).put(resourcePath, Buffer.buffer(bytes), putResult -> {
+                                    if (putResult.succeeded()) {
+                                        System.out.println("Success! " + entry + " successfully migrated");
+                                        future.complete();
+                                    } else {
+                                        System.err.println("Error! " + entry + " couldn't be migrated");
+                                        future.fail(putResult.cause());
+                                    }
+                                });
                             } catch (final IOException details) {
                                 future.fail(details);
                             }
@@ -122,6 +133,12 @@ public class PairtreeCopyCmdLine {
     }
 
     private String getID(final String aPath) {
-        return PairtreeUtils.decodeID(FileUtils.stripExt(new File(aPath).getName()));
+        for (final String pathPart : aPath.split("\\/")) {
+            if (pathPart.length() > 2) {
+                return pathPart;
+            }
+        }
+
+        throw new RuntimeException("Didn't find a Pairtree object: " + aPath);
     }
 }
