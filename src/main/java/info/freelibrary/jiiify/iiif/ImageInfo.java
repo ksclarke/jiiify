@@ -3,6 +3,7 @@ package info.freelibrary.jiiify.iiif;
 
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 
+import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
@@ -212,8 +213,6 @@ public class ImageInfo {
         final JsonObject profileObj = new JsonObject();
         final JsonArray formats = new JsonArray();
         final JsonArray qualities = new JsonArray();
-        final JsonArray scaleFactors = new JsonArray();
-        final int longDimension = Math.max(myWidth, myHeight);
 
         // Profiles array
         profile.add(PROFILE);
@@ -221,16 +220,16 @@ public class ImageInfo {
         if (myFormats == null) {
             formats.add("jpg");
         } else {
-            for (int index = 0; index < myFormats.length; index++) {
-                formats.add(myFormats[index]);
+            for (final String myFormat : myFormats) {
+                formats.add(myFormat);
             }
         }
 
         if (myQualities == null) {
             qualities.add("default");
         } else {
-            for (int index = 0; index < myQualities.length; index++) {
-                qualities.add(myQualities[index]);
+            for (final String myQualitie : myQualities) {
+                qualities.add(myQualitie);
             }
         }
 
@@ -241,11 +240,7 @@ public class ImageInfo {
         // Tiles array
         tilesObj.put("width", myTileSize);
 
-        for (int multiplier = 1; multiplier * myTileSize < longDimension; multiplier *= 2) {
-            scaleFactors.add(multiplier);
-        }
-
-        tilesObj.put("scaleFactors", scaleFactors);
+        tilesObj.put("scaleFactors", ImageUtils.getScaleFactors(myWidth, myHeight, myTileSize));
         tiles.add(tilesObj);
 
         // The standard stuff

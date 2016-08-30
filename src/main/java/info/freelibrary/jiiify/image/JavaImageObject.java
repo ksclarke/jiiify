@@ -45,9 +45,12 @@ public class JavaImageObject implements ImageObject {
     public JavaImageObject(final Buffer aImgBuffer) throws IOException {
         final ByteArrayInputStream inStream = new ByteArrayInputStream(aImgBuffer.getBytes());
         final FileCacheImageInputStream cacheStream = new FileCacheImageInputStream(inStream, TMP_DIR);
-        // final MemoryCacheImageInputStream cacheStream = new MemoryCacheImageInputStream(inStream);
 
         myImage = ImageIO.read(cacheStream);
+
+        if (myImage == null) {
+            LOGGER.error("No registered image reader!"); // FIXME: externalize exception message
+        }
     }
 
     @Override
@@ -115,4 +118,18 @@ public class JavaImageObject implements ImageObject {
         }
     }
 
+    @Override
+    public int getWidth() {
+        return myImage.getWidth();
+    }
+
+    @Override
+    public int getHeight() {
+        return myImage.getHeight();
+    }
+
+    @Override
+    public void flush() {
+        myImage.flush();
+    }
 }

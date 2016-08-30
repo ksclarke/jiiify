@@ -18,6 +18,10 @@
   <logger name="io.vertx.core.Starter" level="WARN" />
   <logger name="ch.qos.logback" level="WARN" />
 
+  <logger name="info.freelibrary.jiiify.image.KakaduCmdLine" level="DEBUG">
+    <appender-ref ref="STDOUT" />
+  </logger>
+
   <logger name="info.freelibrary.util.NativeLibraryLoader" level="INFO" />
   <logger name="info.freelibrary.jiiify.verticles.WatchFolderVerticle" level="WARN" />
 

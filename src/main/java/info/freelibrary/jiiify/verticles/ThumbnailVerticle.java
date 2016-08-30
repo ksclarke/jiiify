@@ -51,7 +51,7 @@ public class ThumbnailVerticle extends AbstractJiiifyVerticle {
                         sendMessage(infoMessage, ImageWorkerVerticle.class.getName(), 0);
                         sendMessage(infoMessage, ManifestVerticle.class.getName(), 0);
                         messageHandler.reply(SUCCESS_RESPONSE);
-                    } catch (IOException | ConfigurationException details) {
+                    } catch (final IOException details) {
                         LOGGER.error(details, MessageCodes.EXC_000, details.getMessage());
                         messageHandler.reply(FAILURE_RESPONSE);
                     }

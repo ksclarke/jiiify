@@ -43,41 +43,34 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
     }
 
     /**
-     * A naive approach to retrying the sending of messages... to be improved.
+     * FIXME: Better handling of timeouts and responses (e.g. log a list of failures).
      *
-     * @param aJsonObject
-     * @param aVerticleName
-     * @param aCount
+     * @param aJsonObject A JSON message
+     * @param aVerticleName A verticle name that will respond to the message
+     * @param aTimeout A timeout measured in milliseconds
      */
-    protected void sendMessage(final JsonObject aJsonObject, final String aVerticleName, final int aCount) {
-        final long sendTimeout = DeliveryOptions.DEFAULT_TIMEOUT * aCount;
-        final int retryCount = getConfig().getRetryCount();
-        final DeliveryOptions options = new DeliveryOptions();
+    protected void sendMessage(final JsonObject aJsonObject, final String aVerticleName, final long aTimeout) {
+        final DeliveryOptions options = new DeliveryOptions().setSendTimeout(aTimeout);
         final EventBus eventBus = vertx.eventBus();
-
-        // Slow down timeout expectations if we're taking a long time processing images
-        if (aCount > 0) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Slowing down the {}'s timeout to: {}", getClass().getSimpleName(), sendTimeout);
-            }
-
-            options.setSendTimeout(sendTimeout);
-        }
 
         eventBus.send(aVerticleName, aJsonObject, options, response -> {
             if (response.failed()) {
-                if (aCount < retryCount) {
-                    LOGGER.warn("Unable to send message to {}; retrying: {}", aVerticleName, aJsonObject);
-                    sendMessage(aJsonObject, aVerticleName, aCount + 1);
+                if (response.cause() != null) {
+                    LOGGER.error(response.cause(), "Unable to send message to {}: {}", aVerticleName, aJsonObject);
                 } else {
-                    if (response.cause() != null) {
-                        LOGGER.error(response.cause(), "Unable to send message to {}: {}", aVerticleName,
-                                aJsonObject);
-                    } else {
-                        LOGGER.error("Unable to send message to {}: {}", aVerticleName, aJsonObject);
-                    }
+                    LOGGER.error("Unable to send message to {}: {}", aVerticleName, aJsonObject);
                 }
             }
         });
+    }
+
+    /**
+     * FIXME: Better handling of timeouts and responses (e.g. log a list of failures).
+     *
+     * @param aJsonObject A JSON message
+     * @param aVerticleName A verticle name that will respond to the message
+     */
+    protected void sendMessage(final JsonObject aJsonObject, final String aVerticleName) {
+        sendMessage(aJsonObject, aVerticleName, DeliveryOptions.DEFAULT_TIMEOUT);
     }
 }

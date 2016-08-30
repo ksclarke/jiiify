@@ -32,6 +32,21 @@ public class NativeImageObject implements ImageObject {
     }
 
     @Override
+    public int getWidth() {
+        return (int) myImage.size().width;
+    }
+
+    @Override
+    public int getHeight() {
+        return (int) myImage.size().height;
+    }
+
+    @Override
+    public void flush() {
+        myImage.free();
+    }
+
+    @Override
     public void extractRegion(final ImageRegion aRegion) throws IOException {
         final Rect roi = new Rect();
         final Mat newImage;

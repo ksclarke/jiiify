@@ -49,6 +49,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
                     } else {
                         final String id;
 
+                        // Use file name (without extension) as the ID if one is not supplied
                         if (json.containsKey(ID_KEY)) {
                             id = json.getString(ID_KEY);
                         } else {
@@ -131,6 +132,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
             final JsonObject aJsonObject) {
         final Object ts = aProperties.getOrDefault(TILE_SIZE_PROP, getConfig().getTileSize());
         final JsonObject jsonMessage = new JsonObject();
+        FileUtils.getExt(aImageFile.getAbsolutePath());
 
         // Pass along some metadata about the image being ingested
         jsonMessage.put(ID_KEY, aID);
@@ -138,25 +140,25 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         jsonMessage.put(FILE_PATH_KEY, aImageFile.getAbsolutePath());
 
         if (!aJsonObject.getBoolean("skiptiles", false)) {
-            sendMessage(jsonMessage, TileMasterVerticle.class.getName(), 0);
+            sendMessage(jsonMessage, TileMasterVerticle.class.getName());
         } else if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Skipping tile generation for: {}", aID);
         }
 
         if (!aJsonObject.getBoolean("skipindexing", false)) {
-            sendMessage(jsonMessage, ImageIndexVerticle.class.getName(), 0);
+            sendMessage(jsonMessage, ImageIndexVerticle.class.getName());
         } else if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Skipping indexing  for: {}", aID);
         }
 
         if (!aJsonObject.getBoolean("skipthumbs", false)) {
-            sendMessage(jsonMessage, ThumbnailVerticle.class.getName(), 0);
+            sendMessage(jsonMessage, ThumbnailVerticle.class.getName());
         } else if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Skipping thumbnail generation for: {}", aID);
         }
 
         if (!aJsonObject.getBoolean("skipproperties", false)) {
-            sendMessage(jsonMessage, ImagePropertiesVerticle.class.getName(), 0);
+            sendMessage(jsonMessage, ImagePropertiesVerticle.class.getName());
         } else if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Skipping property file generation for: {}", aID);
         }

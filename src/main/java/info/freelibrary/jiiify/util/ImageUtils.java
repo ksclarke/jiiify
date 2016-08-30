@@ -1,8 +1,12 @@
 
 package info.freelibrary.jiiify.util;
 
+import static info.freelibrary.jiiify.MessageCodes.EXC_026;
+import static info.freelibrary.jiiify.iiif.ImageFormat.JP2_MIME_TYPE;
+
 import java.awt.Dimension;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -14,30 +18,30 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import javax.naming.ConfigurationException;
 
 import org.opencv.core.Core;
 
 import info.freelibrary.jiiify.Constants;
-import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.image.ImageObject;
 import info.freelibrary.jiiify.image.JavaImageObject;
 import info.freelibrary.jiiify.image.NativeImageObject;
 import info.freelibrary.util.FileUtils;
+import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.NativeLibraryLoader;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 
 public class ImageUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageUtils.class, Constants.MESSAGES);
 
-    private static boolean useNativeLibs;
+    private static boolean useNativeLibs = true;
 
     static {
         try {
@@ -66,8 +70,18 @@ public class ImageUtils {
      * @return A list of derivative images to be pre-generated
      */
     public static List<String> getTilePaths(final String aService, final String aID, final int aTileSize,
-            final int aWidth, final int aHeight) {
-        final ArrayList<String> list = new ArrayList<String>();
+        final double aWidth, final double aHeight) {
+        return getTilePaths(aService, aID, aTileSize, (int) aWidth, (int) aHeight);
+    }
+
+    /**
+     * Return a list of derivative images to be pre-generated so that the OpenSeadragon viewer can use them.
+     *
+     * @return A list of derivative images to be pre-generated
+     */
+    public static List<String> getTilePaths(final String aService, final String aID, final int aTileSize,
+        final int aWidth, final int aHeight) {
+        final ArrayList<String> list = new ArrayList<>();
         final int longDim = Math.max(aWidth, aHeight);
         final String id;
 
@@ -79,8 +93,8 @@ public class ImageUtils {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Generating tile paths [ID: {}; Tile Size: {}; Width: {}; Height: {}]", aID, aTileSize,
-                    aWidth, aHeight);
+            LOGGER.debug("Generating tile paths [ID: {}; Tile Size: {}; Width: {}; Height: {}]", aID, aTileSize, aWidth,
+                aHeight);
         }
 
         for (int multiplier = 1; multiplier * aTileSize < longDim; multiplier *= 2) {
@@ -145,7 +159,7 @@ public class ImageUtils {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            final StringBuilder builder = new StringBuilder();
+            new StringBuilder();
 
             LOGGER.debug("{} tiles needed for {}", list.size(), aID);
 
@@ -183,23 +197,35 @@ public class ImageUtils {
      * @return An image dimension
      */
     public static Dimension getImageDimension(final File aImageFile) throws IOException {
-        final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getName()));
-        final Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mimeType);
+        // FIXME: Workaround for JP2 until it's supported by our ImageIO libraries
+        if (JP2_MIME_TYPE.equals(ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getAbsolutePath())))) {
+            final Buffer buffer = Buffer.buffer(IOUtils.readBytes(new FileInputStream(aImageFile)));
+            final NativeImageObject image = new NativeImageObject(buffer);
+            final int height = image.getHeight();
+            final int width = image.getWidth();
 
-        if (readers.hasNext()) {
-            final ImageReader reader = readers.next();
-            final ImageInputStream inStream = ImageIO.createImageInputStream(aImageFile);
+            image.flush();
 
-            try {
-                reader.setInput(inStream);
-                return new Dimension(reader.getWidth(0), reader.getHeight(0));
-            } finally {
-                inStream.close();
-                reader.dispose();
+            return new Dimension(width, height);
+        } else {
+            final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getName()));
+            final Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mimeType);
+
+            if (readers.hasNext()) {
+                final ImageReader reader = readers.next();
+                final ImageInputStream inStream = ImageIO.createImageInputStream(aImageFile);
+
+                try {
+                    reader.setInput(inStream);
+                    return new Dimension(reader.getWidth(0), reader.getHeight(0));
+                } finally {
+                    inStream.close();
+                    reader.dispose();
+                }
             }
-        }
 
-        throw new RuntimeException(LOGGER.getMessage(MessageCodes.EXC_026, mimeType));
+            throw new RuntimeException(LOGGER.getMessage(EXC_026, mimeType));
+        }
     }
 
     /**
@@ -207,11 +233,29 @@ public class ImageUtils {
      *
      * @param aImageFile A source image file
      * @return An image region representing the center of the image
-     * @throws ConfigurationException If there is a configuration error
      * @throws IOException If there is trouble reading the source image file
      */
-    public static ImageRegion getCenter(final File aImageFile) throws ConfigurationException, IOException {
+    public static ImageRegion getCenter(final File aImageFile) throws IOException {
         return getCenter(getImageDimension(aImageFile));
+    }
+
+    /**
+     * Gets the scale factors for an image.
+     *
+     * @param aWidth An image width
+     * @param aHeight An image height
+     * @param aTileSize A tile size
+     * @return The scale factors for an image with the supplied characteristics
+     */
+    public static JsonArray getScaleFactors(final int aWidth, final int aHeight, final int aTileSize) {
+        final int longDimension = Math.max(aWidth, aHeight);
+        final JsonArray scaleFactors = new JsonArray();
+
+        for (int multiplier = 1; multiplier * aTileSize < longDimension; multiplier *= 2) {
+            scaleFactors.add(multiplier);
+        }
+
+        return scaleFactors;
     }
 
     /**
@@ -219,9 +263,8 @@ public class ImageUtils {
      *
      * @param aDimension Dimensions to use as the source for the calculation of center
      * @return An image region representing the center of the dimensions
-     * @throws ConfigurationException If there is a configuration error
      */
-    public static ImageRegion getCenter(final Dimension aDimension) throws ConfigurationException {
+    public static ImageRegion getCenter(final Dimension aDimension) {
         final int smallSide = Math.min(aDimension.height, aDimension.width);
         final ImageRegion region;
 
@@ -262,10 +305,6 @@ public class ImageUtils {
         return ratio(Integer.parseInt(widthHeight[0]), Integer.parseInt(widthHeight[1]));
     }
 
-    private static String getSize(final double aMultiplier, final int aXTileSize, final int aYTileSize) {
-        return (int) Math.ceil(aXTileSize / aMultiplier) + "," + (int) Math.ceil(aYTileSize / aMultiplier);
-    }
-
     /**
      * Gets an <code>ImageObject</code> for the supplied image {@link io.vertx.core.buffer.Buffer}.
      *
@@ -283,6 +322,11 @@ public class ImageUtils {
         }
 
         return image;
+    }
+
+
+    private static String getSize(final double aMultiplier, final int aXTileSize, final int aYTileSize) {
+        return (int) Math.ceil(aXTileSize / aMultiplier) + "," + (int) Math.ceil(aYTileSize / aMultiplier);
     }
 
     private static int gcd(final int aWidth, final int aHeight) {

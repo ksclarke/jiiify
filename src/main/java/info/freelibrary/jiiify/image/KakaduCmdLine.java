@@ -42,13 +42,13 @@ import org.w3c.dom.NodeList;
 import com.opencsv.CSVReader;
 
 import info.freelibrary.jiiify.iiif.UnsupportedFormatException;
-import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.JarUtils;
 import info.freelibrary.util.PairtreeObject;
 import info.freelibrary.util.PairtreeRoot;
 import info.freelibrary.util.ProcessListener;
 import info.freelibrary.util.ProcessWatcher;
+import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -66,8 +66,6 @@ public class KakaduCmdLine {
     private static final String TMP_DIR = System.getProperty("java.io.tmpdir");
 
     private static final String KDU_COMPRESS = "kdu_compress";
-
-    private static final String KDU_EXPAND = "kdu_expand";
 
     private static final Pattern JAR_PATTERN = Pattern.compile(
             ".*\\/freelib-kakadu-[0-9\\.]*(-SNAPSHOT)?-[a-z0-9]+\\.jar\\!\\/");
@@ -91,7 +89,6 @@ public class KakaduCmdLine {
 
     static {
         final File kduCompress = new File(TMP_DIR, KDU_COMPRESS);
-        final File kduExpand = new File(TMP_DIR, KDU_EXPAND);
 
         try {
             for (final URL url : JarUtils.getJarURLs()) {
@@ -99,11 +96,9 @@ public class KakaduCmdLine {
 
                 if (JAR_PATTERN.matcher(jarPath).matches()) {
                     JarUtils.extract(jarPath, KDU_COMPRESS, new File(TMP_DIR));
-                    JarUtils.extract(jarPath, KDU_EXPAND, new File(TMP_DIR));
 
                     // TODO: support Windows?
                     setPosixFilePermissions(kduCompress.toPath(), convertToPermissionsSet(0700));
-                    setPosixFilePermissions(kduExpand.toPath(), convertToPermissionsSet(0700));
                 }
             }
         } catch (final IOException details) {
@@ -112,10 +107,6 @@ public class KakaduCmdLine {
 
         if (!kduCompress.exists()) {
             throw new ExceptionInInitializerError("Failed to find kdu_compress command line program");
-        }
-
-        if (!kduExpand.exists()) {
-            throw new ExceptionInInitializerError("Failed to find kdu_expand command line program");
         }
     }
 
@@ -185,9 +176,6 @@ public class KakaduCmdLine {
 
             command[0] = new File(TMP_DIR, KDU_COMPRESS).getAbsolutePath();
             command[18] = aOutputFile.getAbsolutePath();
-        } else if (aCommand.equals(KDU_EXPAND)) {
-            command = Arrays.copyOf(EXPAND_ARGS, EXPAND_ARGS.length);
-            command[0] = new File(TMP_DIR, KDU_EXPAND).getAbsolutePath();
         } else {
             throw new RuntimeException("Unexpected Kakadu command");
         }
@@ -226,7 +214,12 @@ public class KakaduCmdLine {
                         // This will, at this point, convert from CIELab to sRGB
                         final FileSystem fileSystem = Vertx.vertx().fileSystem();
                         Buffer imageBuffer = fileSystem.readFileBlocking(aSrcFile.getAbsolutePath());
-                        final ImageObject image = ImageUtils.getImage(imageBuffer);
+
+                        // We need the Java image processor to handle our CIELab images at the moment
+                        final ImageObject image = new JavaImageObject(imageBuffer);
+
+                        // ImageUtils will use native or Java image libraries depending on configuration
+                        // final ImageObject image = ImageUtils.getImage(imageBuffer);
 
                         imageBuffer = image.toBuffer(FileUtils.getExt(aSrcFile.getAbsolutePath()));
                         fileSystem.writeFileBlocking(file.getAbsolutePath(), imageBuffer);
@@ -246,6 +239,8 @@ public class KakaduCmdLine {
     }
 
     private final void execute(final String[] aCommand, final ProcessListener aListener) throws IOException {
+        LOGGER.debug("Executing: {}", StringUtils.toString(aCommand, ' '));
+
         final ProcessBuilder processBuilder = new ProcessBuilder(aCommand).inheritIO();
         final ProcessWatcher processWatcher = new ProcessWatcher(processBuilder);
 

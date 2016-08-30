@@ -44,7 +44,8 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
 
                 /* Send the IIIF paths for the tiles to be created to the image worker verticle */
                 ImageUtils.getTilePaths(prefix, id, tileSize, dimension.width, dimension.height).forEach(path -> {
-                    sendMessage(jsonMessage.copy().put(IIIF_PATH_KEY, path), ImageWorkerVerticle.class.getName(), 0);
+                    sendMessage(jsonMessage.copy().put(IIIF_PATH_KEY, path), ImageWorkerVerticle.class.getName(),
+                            Long.MAX_VALUE);
                 });
 
                 /* Metadata needed for image info file generation */

@@ -18,6 +18,25 @@ import io.vertx.core.buffer.Buffer;
 public interface ImageObject {
 
     /**
+     * Returns the width of the image.
+     *
+     * @return The width of the image.
+     */
+    public int getWidth();
+
+    /**
+     * Returns the height of the image.
+     *
+     * @return The height of the image.
+     */
+    public int getHeight();
+
+    /**
+     * Frees resources associated with the image.
+     */
+    public void flush();
+
+    /**
      * Changes the image object by extracting a region from the whole.
      *
      * @param aRegion A IIIF image region
