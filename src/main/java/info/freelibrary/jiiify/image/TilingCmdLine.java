@@ -27,6 +27,7 @@ import info.freelibrary.pairtree.PairtreeRoot;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.ProcessListener;
 import info.freelibrary.util.ProcessWatcher;
+import info.freelibrary.util.Stopwatch;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.AsyncResult;
@@ -201,8 +202,10 @@ public class TilingCmdLine {
         final Future<Void> future = Future.future();
         final CSVReader reader = new CSVReader(new FileReader(inputFilePath));
         final List<String[]> myIDs = reader.readAll();
+        final Stopwatch timer = new Stopwatch();
 
         reader.close();
+        timer.start();
 
         // Confirm that the Pairtree we've supplied exists
         root.exists(existsResult -> {
@@ -227,6 +230,8 @@ public class TilingCmdLine {
                 System.err.println(result.result());
             }
 
+            timer.stop();
+            System.out.println("Runtime: " + timer.getMilliseconds());
             VERTX.close();
         });
     }

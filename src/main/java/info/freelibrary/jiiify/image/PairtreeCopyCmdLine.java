@@ -13,6 +13,7 @@ import info.freelibrary.pairtree.PairtreeRoot;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.PairtreeUtils;
+import info.freelibrary.util.Stopwatch;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -37,6 +38,7 @@ public class PairtreeCopyCmdLine {
 
     private PairtreeCopyCmdLine(final String[] args) {
         final Future<Void> future = Future.future();
+        final Stopwatch timer = new Stopwatch();
 
         myS3Pairtree = PairtreeFactory.getFactory(VERTX, PairtreeImpl.S3Bucket).getPairtree(args);
         myFSPairtree = args[args.length - 1];
@@ -47,11 +49,16 @@ public class PairtreeCopyCmdLine {
                 System.err.println(result.cause());
             }
 
+            timer.stop();
+            System.out.println("Runtime: " + timer.getMilliseconds());
             VERTX.close();
+
         });
 
         // Create an S3 Pairtree and start copying
         myS3Pairtree.create(result -> {
+            timer.start();
+
             if (result.succeeded()) {
                 recursiveCopy(args[args.length - 1], future);
             } else {

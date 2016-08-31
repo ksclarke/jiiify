@@ -48,6 +48,7 @@ import info.freelibrary.util.PairtreeObject;
 import info.freelibrary.util.PairtreeRoot;
 import info.freelibrary.util.ProcessListener;
 import info.freelibrary.util.ProcessWatcher;
+import info.freelibrary.util.Stopwatch;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.Vertx;
@@ -256,6 +257,7 @@ public class KakaduCmdLine {
      * @throws InterruptedException If the Kakadu command line is interrupted
      */
     public static void main(final String... args) throws IOException, InterruptedException {
+        final Stopwatch timer = new Stopwatch();
         final Options options = new Options();
 
         options.addOption("p", true, "Location of Pairtree directory");
@@ -281,6 +283,8 @@ public class KakaduCmdLine {
                     } else {
                         final KakaduCmdLine kakadu = new KakaduCmdLine(ptRoot);
                         final CSVReader reader = new CSVReader(new FileReader(csvFile));
+
+                        timer.start();
 
                         try {
                             final List<String[]> valuesList = reader.readAll();
@@ -316,6 +320,9 @@ public class KakaduCmdLine {
                         } finally {
                             reader.close();
                         }
+
+                        timer.stop();
+                        System.out.println("Runtime: " + timer.getMilliseconds());
                     }
                 }
             }
