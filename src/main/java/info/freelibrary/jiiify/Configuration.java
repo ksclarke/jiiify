@@ -21,6 +21,7 @@ import static info.freelibrary.jiiify.MessageCodes.EXC_021;
 import static info.freelibrary.jiiify.MessageCodes.EXC_022;
 import static info.freelibrary.jiiify.MessageCodes.EXC_023;
 import static info.freelibrary.jiiify.MessageCodes.EXC_024;
+import static info.freelibrary.pairtree.PairtreeFactory.PairtreeImpl.S3Bucket;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +35,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 
 import javax.naming.ConfigurationException;
@@ -46,6 +48,7 @@ import info.freelibrary.pairtree.PairtreeRoot;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
+import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -75,10 +78,10 @@ public class Configuration implements Shareable {
     public static final long DEFAULT_SESSION_TIMEOUT = 7200000L; // two hours
 
     public static final String DEFAULT_UPLOADS_DIR = new File(System.getProperty("java.io.tmpdir"),
-            "jiiify-file-uploads").getAbsolutePath();
+        "jiiify-file-uploads").getAbsolutePath();
 
     public static final File DEFAULT_WATCH_FOLDER = new File(System.getProperty("java.io.tmpdir"),
-            "jiiify-watch-folder");
+        "jiiify-watch-folder");
 
     public static final File DEFAULT_DATA_DIR = new File("jiiify_data");
 
@@ -119,7 +122,7 @@ public class Configuration implements Shareable {
     /* FIXME: hard-coded for now */
     private final String[] mySubmasterFormats = new String[] { ImageFormat.TIFF_EXT, ImageFormat.TIF_EXT };
 
-    private final Map<String, PairtreeRoot> myDataDirs = new HashMap<String, PairtreeRoot>();
+    private final Map<String, PairtreeRoot> myDataDirs = new HashMap<>();
 
     /**
      * Creates a new Jiiify configuration object, which simplifies accessing configuration information.
@@ -128,7 +131,7 @@ public class Configuration implements Shareable {
      * @throws ConfigurationException If there is trouble reading or setting a configuration option
      */
     public Configuration(final JsonObject aConfig, final Vertx aVertx,
-            final Handler<AsyncResult<Configuration>> aHandler) {
+        final Handler<AsyncResult<Configuration>> aHandler) {
         final Future<Configuration> result = Future.future();
 
         myVertx = aVertx;
@@ -500,7 +503,7 @@ public class Configuration implements Shareable {
 
             if (!scheme.equals(http) && !scheme.equals(https)) {
                 LOGGER.warn("Found {} set in system properties but its value ({}) isn't value so using: {}",
-                        URL_SCHEME_PROP, scheme, https);
+                    URL_SCHEME_PROP, scheme, https);
 
                 return https;
             } else {
@@ -671,7 +674,7 @@ public class Configuration implements Shareable {
             result.setHandler(aHandler);
 
             final String solrServer = properties.getProperty(SOLR_SERVER_PROP, aConfig.getString(SOLR_SERVER_PROP,
-                    DEFAULT_SOLR_SERVER));
+                DEFAULT_SOLR_SERVER));
 
             if (LOGGER.isDebugEnabled() && properties.containsKey(SOLR_SERVER_PROP)) {
                 LOGGER.debug("Found {} set in system properties", SOLR_SERVER_PROP);
@@ -741,38 +744,53 @@ public class Configuration implements Shareable {
     }
 
     private void setDataDirs(final JsonObject aConfig, final Handler<AsyncResult<Configuration>> aHandler) {
-        final Properties props = System.getProperties();
+        Objects.requireNonNull(aHandler);
+
+        final String awsAccessKey = StringUtils.trimToNull(aConfig.getString("aws.access.key"));
+        final String awsSecretKey = StringUtils.trimToNull(aConfig.getString("aws.secret.key"));
+        final String s3Endpoint = StringUtils.trimToNull(aConfig.getString("s3.endpoint"));
         final Future<Configuration> result = Future.future();
+        final Properties props = System.getProperties();
         final PairtreeRoot pairtree;
         final String location;
 
-        if (aHandler != null) {
-            result.setHandler(aHandler);
+        result.setHandler(aHandler);
 
-            if (LOGGER.isDebugEnabled() && props.containsKey(DATA_DIR_PROP)) {
-                LOGGER.debug("Found {} set in system properties", DATA_DIR_PROP);
-            }
-
-            location = props.getProperty(DATA_DIR_PROP, aConfig.getString(DATA_DIR_PROP, DEFAULT_DATA_DIR
-                    .getAbsolutePath()));
-
-            // TODO: Get AWS access key and secret key from aConfig if available
-            pairtree = PairtreeFactory.getFactory(myVertx).getPairtree(location);
-
-            pairtree.create(handler -> {
-                if (handler.succeeded()) {
-                    LOGGER.info("Setting default Jiiify data directory to: {}", pairtree.getPath());
-
-                    myDataDirs.put(DEFAULT_DATA_DIR_NAME, pairtree);
-                    result.complete(this);
-                } else {
-                    LOGGER.error("Failed to set default Jiiify data directory to: {}", pairtree.getPath());
-                    result.fail(handler.cause());
-                }
-            });
-        } else {
-
+        if (LOGGER.isDebugEnabled() && props.containsKey(DATA_DIR_PROP)) {
+            LOGGER.debug("Found {} set in system properties", DATA_DIR_PROP);
         }
+
+        location = props.getProperty(DATA_DIR_PROP, aConfig.getString(DATA_DIR_PROP, DEFAULT_DATA_DIR
+            .getAbsolutePath()));
+
+        if (awsAccessKey != null && awsSecretKey != null) {
+            LOGGER.info("Setting AWS credentials: {}", awsAccessKey);
+
+            if (s3Endpoint == null) {
+                pairtree = PairtreeFactory.getFactory(myVertx, S3Bucket).getPairtree(location, awsAccessKey,
+                    awsSecretKey);
+            } else {
+                LOGGER.info("Setting S3 endpoint: {}", s3Endpoint);
+
+                pairtree = PairtreeFactory.getFactory(myVertx, S3Bucket).getPairtree(location, awsAccessKey,
+                    awsSecretKey, s3Endpoint);
+            }
+        } else {
+            pairtree = PairtreeFactory.getFactory(myVertx).getPairtree(location);
+        }
+
+        pairtree.create(handler -> {
+            if (handler.succeeded()) {
+                LOGGER.info("Setting default Jiiify data directory to: {}", pairtree.getPath());
+
+                myDataDirs.put(DEFAULT_DATA_DIR_NAME, pairtree);
+                result.complete(this);
+            } else {
+                final Throwable details = handler.cause();
+                LOGGER.error("Failed to set default Jiiify data directory to: {}", pairtree.getPath(), details);
+                result.fail(details);
+            }
+        });
     }
 
     /**
@@ -794,7 +812,7 @@ public class Configuration implements Shareable {
             }
 
             watchFolder = Paths.get(properties.getProperty(WATCH_FOLDER_PROP, aConfig.getString(WATCH_FOLDER_PROP,
-                    DEFAULT_WATCH_FOLDER.getAbsolutePath())));
+                DEFAULT_WATCH_FOLDER.getAbsolutePath())));
 
             try {
                 if (!Files.createDirectories(watchFolder).toFile().canWrite()) {

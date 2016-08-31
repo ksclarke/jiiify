@@ -7,6 +7,9 @@ le_jiiify.jks
 # The default Vertx uploads directory
 file-uploads
 
+# Configuration file
+config.json
+
 # Directory for internal cache files
 .vertx
 

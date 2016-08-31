@@ -25,7 +25,6 @@
     <opencsv.version>3.7</opencsv.version>
     <javatuples.version>1.2</javatuples.version>
     <commons.cli.version>1.3.1</commons.cli.version>
-    <freelib.utils.version>0.7.0</freelib.utils.version>
     <opencv.version>3.0.0-SNAPSHOT</opencv.version>
     <imgscalr.version>4.2</imgscalr.version>
     <kakadu.version>7.8-SNAPSHOT</kakadu.version>
@@ -115,7 +114,6 @@
     <dependency>
       <groupId>info.freelibrary</groupId>
       <artifactId>freelib-utils</artifactId>
-      <version>${freelib.utils.version}</version>
     </dependency>
     <dependency>
       <groupId>info.freelibrary</groupId>

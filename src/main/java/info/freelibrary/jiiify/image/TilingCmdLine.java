@@ -115,20 +115,28 @@ public class TilingCmdLine {
             }
 
             if (idLogFile.length() == 0) {
-                idLogFile.deleteOnExit();
+                idLogFile.delete();
             }
 
             aFuture.complete();
         });
     }
 
+    @SuppressWarnings("rawtypes")
     private void tile(final String aID, final File aJp2File, final Future<String> aFuture) {
         final List<Future> futures = new ArrayList<>();
 
         // Have to do this as non-lambda to make Checkstyle happy
         final Handler<AsyncResult<String>> handler = aResult -> {
-            System.out.println("The result is: " + aResult.result());
-            // aFuture.complete();
+            System.out.println("The result of processing " + aID + " is: " + aResult.result());
+
+            CompositeFuture.all(futures).setHandler(result -> {
+                if (result.succeeded()) {
+                    aFuture.complete();
+                } else {
+                    aFuture.fail(result.cause());
+                }
+            });
         };
 
         VERTX.executeBlocking(future -> {
@@ -136,6 +144,7 @@ public class TilingCmdLine {
                 final Dimension dims = ImageUtils.getImageDimension(aJp2File);
                 final List<File> tmpFiles = new ArrayList<>();
                 final List<String> command = new ArrayList<>();
+                final Future<Void> thumbnail = Future.future();
 
                 final int thumbnailSize = 150;
                 final ImageRegion region = ImageUtils.getCenter(dims);
@@ -164,7 +173,7 @@ public class TilingCmdLine {
                 tmpFiles.add(aJp2File);
                 tmpFiles.add(tmpFile);
 
-                execute(command.toArray(new String[command.size()]), new KakaduListener(tmpFiles, request));
+                execute(command.toArray(new String[command.size()]), new KakaduListener(tmpFiles, request, thumbnail));
 
                 System.out.println(request);
                 System.out.println(StringUtils.toString('|', command));
@@ -254,11 +263,14 @@ public class TilingCmdLine {
 
         private final String myID;
 
-        private KakaduListener(final List<File> aCleanupList, final ImageRequest aImageRequest) {
+        private final Future myFuture;
+
+        private KakaduListener(final List<File> aCleanupList, final ImageRequest aImageRequest, final Future aFuture) {
             myTempFiles = aCleanupList;
             myImageSize = aImageRequest.getSize();
             myID = aImageRequest.getID();
             myResourcePath = aImageRequest.getPath();
+            myFuture = aFuture;
         }
 
         @Override
@@ -286,8 +298,10 @@ public class TilingCmdLine {
                         myPtRoot.getObject(myID).put(myResourcePath, image.toBuffer("jpg"), upload -> {
                             if (upload.succeeded()) {
                                 System.out.println("Stored in Pairtree: " + myResourcePath);
+                                myFuture.complete();
                             } else {
                                 System.out.println("Failed to store in Pairtree " + myResourcePath);
+                                myFuture.fail(upload.cause());
                             }
                         });
                     } catch (final IOException details) {
