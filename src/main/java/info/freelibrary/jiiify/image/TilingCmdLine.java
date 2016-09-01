@@ -126,25 +126,17 @@ public class TilingCmdLine {
     private void tile(final String aID, final File aJp2File, final Future<String> aFuture) {
         final List<Future> futures = new ArrayList<>();
 
-        // Have to do this as non-lambda to make Checkstyle happy
+        // Can't use lambda below because Checkstyle complains :-(
         final Handler<AsyncResult<String>> handler = aResult -> {
             System.out.println("The result of processing " + aID + " is: " + aResult.result());
-
-            CompositeFuture.all(futures).setHandler(result -> {
-                if (result.succeeded()) {
-                    aFuture.complete();
-                } else {
-                    aFuture.fail(result.cause());
-                }
-            });
         };
 
-        VERTX.executeBlocking(future -> {
+        VERTX.executeBlocking(result -> {
             try {
                 final Dimension dims = ImageUtils.getImageDimension(aJp2File);
                 final List<File> tmpFiles = new ArrayList<>();
                 final List<String> command = new ArrayList<>();
-                final Future<Void> thumbnail = Future.future();
+                final Future<Void> future = Future.future();
 
                 final int thumbnailSize = 150;
                 final ImageRegion region = ImageUtils.getCenter(dims);
@@ -172,8 +164,9 @@ public class TilingCmdLine {
 
                 tmpFiles.add(aJp2File);
                 tmpFiles.add(tmpFile);
+                futures.add(future);
 
-                execute(command.toArray(new String[command.size()]), new KakaduListener(tmpFiles, request, thumbnail));
+                execute(command.toArray(new String[command.size()]), new KakaduListener(tmpFiles, request, future));
 
                 System.out.println(request);
                 System.out.println(StringUtils.toString('|', command));
@@ -181,12 +174,18 @@ public class TilingCmdLine {
                 ImageUtils.getTilePaths(PREFIX, aID, TILE_SIZE, width, height).forEach(tile -> {
                     System.out.println(tile);
                 });;
-
-                future.complete("Success!");
             } catch (final IOException details) {
                 System.err.println(details);
-                future.fail("Block failed");
+                result.fail("Block failed");
             }
+
+            CompositeFuture.all(futures).setHandler(compositeResult -> {
+                if (result.succeeded()) {
+                    aFuture.complete();
+                } else {
+                    aFuture.fail(result.cause());
+                }
+            });
         }, false, handler);
     }
 
@@ -263,13 +262,13 @@ public class TilingCmdLine {
 
         private final String myID;
 
-        private final Future myFuture;
+        private final Future<Void> myFuture;
 
-        private KakaduListener(final List<File> aCleanupList, final ImageRequest aImageRequest, final Future aFuture) {
-            myTempFiles = aCleanupList;
-            myImageSize = aImageRequest.getSize();
-            myID = aImageRequest.getID();
-            myResourcePath = aImageRequest.getPath();
+        private KakaduListener(final List<File> aCleanList, final ImageRequest aRequest, final Future<Void> aFuture) {
+            myTempFiles = aCleanList;
+            myImageSize = aRequest.getSize();
+            myID = aRequest.getID();
+            myResourcePath = aRequest.getPath();
             myFuture = aFuture;
         }
 
