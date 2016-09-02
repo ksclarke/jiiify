@@ -12,9 +12,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.UUID;
 
 import com.opencsv.CSVReader;
 
+import info.freelibrary.jiiify.iiif.IIIFException;
 import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 import info.freelibrary.jiiify.iiif.ImageRequest;
@@ -125,17 +127,21 @@ public class TilingCmdLine {
     @SuppressWarnings("rawtypes")
     private void tile(final String aID, final File aJp2File, final Future<String> aFuture) {
         final List<Future> futures = new ArrayList<>();
+        final List<File> toCleans = new ArrayList<>();
 
         // Can't use lambda below because Checkstyle complains :-(
         final Handler<AsyncResult<String>> handler = aResult -> {
-            System.out.println("The result of processing " + aID + " is: " + aResult.result());
+            if (aResult.succeeded()) {
+                System.out.println("The result of processing " + aID + " is: " + aResult.result());
+            } else {
+                System.err.println(aResult.cause());
+                aFuture.fail(aResult.cause());
+            }
         };
 
         VERTX.executeBlocking(result -> {
             try {
                 final Dimension dims = ImageUtils.getImageDimension(aJp2File);
-                final List<File> tmpFiles = new ArrayList<>();
-                final List<String> command = new ArrayList<>();
                 final Future<Void> future = Future.future();
 
                 final int thumbnailSize = 150;
@@ -147,32 +153,21 @@ public class TilingCmdLine {
                 final double width = dims.getWidth();
                 final double height = dims.getHeight();
 
-                // Region coordinates
-                final float regionX = region.getFloat(Region.X);
-                final float regionY = region.getFloat(Region.Y);
-                final float regionW = region.getFloat(Region.WIDTH);
-                final float regionH = region.getFloat(Region.HEIGHT);
-                final File tmpFile = new File(aJp2File.getParentFile(), FileUtils.stripExt(aJp2File) + ".ppm");
-
-                command.add(TMP_DIR + "/kdu_expand");
-                command.add("-i");
-                command.add(aJp2File.getAbsolutePath());
-                command.add("-o");
-                command.add(tmpFile.getAbsolutePath());
-                command.add("-region");
-                command.add(getRegion(regionX, regionY, regionW, regionH, width, height));
-
-                tmpFiles.add(aJp2File);
-                tmpFiles.add(tmpFile);
                 futures.add(future);
+                toCleans.add(aJp2File);
 
-                execute(command.toArray(new String[command.size()]), new KakaduListener(tmpFiles, request, future));
-
-                System.out.println(request);
-                System.out.println(StringUtils.toString('|', command));
+                kduExpand(request, aJp2File, width, height, future);
 
                 ImageUtils.getTilePaths(PREFIX, aID, TILE_SIZE, width, height).forEach(tile -> {
-                    System.out.println(tile);
+                    final Future<Void> tileFuture = Future.future();
+
+                    futures.add(tileFuture);
+
+                    try {
+                        kduExpand(new ImageRequest(tile), aJp2File, width, height, tileFuture);
+                    } catch (final IIIFException | IOException details) {
+                        tileFuture.fail(details);
+                    }
                 });;
             } catch (final IOException details) {
                 System.err.println(details);
@@ -180,6 +175,10 @@ public class TilingCmdLine {
             }
 
             CompositeFuture.all(futures).setHandler(compositeResult -> {
+                for (final File file : toCleans) {
+                    file.delete();
+                }
+
                 if (result.succeeded()) {
                     aFuture.complete();
                 } else {
@@ -187,6 +186,37 @@ public class TilingCmdLine {
                 }
             });
         }, false, handler);
+    }
+
+    private void kduExpand(final ImageRequest aRequest, final File aJp2File, final double aWidth, final double aHeight,
+        final Future<Void> aFuture) throws IOException {
+
+        final ImageRegion region = aRequest.getRegion();
+        final List<String> command = new ArrayList<>();
+        final List<File> toClean = new ArrayList<>();
+
+        // Region coordinates
+        final float regionX = region.getFloat(Region.X);
+        final float regionY = region.getFloat(Region.Y);
+        final float regionW = region.getFloat(Region.WIDTH);
+        final float regionH = region.getFloat(Region.HEIGHT);
+
+        final File tmpFile = new File(aJp2File.getParentFile(), UUID.randomUUID() + ".ppm");
+
+        toClean.add(tmpFile);
+
+        command.add(TMP_DIR + "/kdu_expand");
+        command.add("-i");
+        command.add(aJp2File.getAbsolutePath());
+        command.add("-o");
+        command.add(tmpFile.getAbsolutePath());
+        command.add("-region");
+        command.add(getRegion(regionX, regionY, regionW, regionH, aWidth, aHeight));
+
+        execute(command.toArray(new String[command.size()]), new KakaduListener(toClean, aRequest, aFuture));
+
+        System.out.println(aRequest);
+        System.out.println(StringUtils.toString('|', command));
     }
 
     private String getRegion(final float aRegionX, final float aRegionY, final float aRegionW, final float aRegionH,
@@ -290,26 +320,23 @@ public class TilingCmdLine {
                     try {
                         final Buffer buffer = fileSystem.readFileBlocking(file.getAbsolutePath());
                         final JavaImageObject image = new JavaImageObject(buffer);
-                        final File jpg = new File(file.getParentFile(), FileUtils.stripExt(file.getName() + ".jpg"));
 
                         image.resize(myImageSize);
 
                         myPtRoot.getObject(myID).put(myResourcePath, image.toBuffer("jpg"), upload -> {
                             if (upload.succeeded()) {
                                 System.out.println("Stored in Pairtree: " + myResourcePath);
+                                file.delete();
                                 myFuture.complete();
                             } else {
                                 System.out.println("Failed to store in Pairtree " + myResourcePath);
+                                file.delete();
                                 myFuture.fail(upload.cause());
                             }
                         });
                     } catch (final IOException details) {
                         System.err.println(details);
                     }
-                }
-
-                if (!file.delete()) {
-                    System.err.println("Can't delete file: " + file);
                 }
             }
 

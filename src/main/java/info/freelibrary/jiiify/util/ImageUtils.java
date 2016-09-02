@@ -6,7 +6,6 @@ import static info.freelibrary.jiiify.iiif.ImageFormat.JP2_MIME_TYPE;
 
 import java.awt.Dimension;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -28,7 +27,6 @@ import info.freelibrary.jiiify.image.ImageObject;
 import info.freelibrary.jiiify.image.JavaImageObject;
 import info.freelibrary.jiiify.image.NativeImageObject;
 import info.freelibrary.util.FileUtils;
-import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.NativeLibraryLoader;
@@ -36,6 +34,15 @@ import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
+import kdu_jni.Jp2_family_src;
+import kdu_jni.Jp2_locator;
+import kdu_jni.Jp2_source;
+import kdu_jni.KduException;
+import kdu_jni.Kdu_channel_mapping;
+import kdu_jni.Kdu_codestream;
+import kdu_jni.Kdu_compressed_source;
+import kdu_jni.Kdu_coords;
+import kdu_jni.Kdu_dims;
 
 public class ImageUtils {
 
@@ -70,7 +77,7 @@ public class ImageUtils {
      * @return A list of derivative images to be pre-generated
      */
     public static List<String> getTilePaths(final String aService, final String aID, final int aTileSize,
-        final double aWidth, final double aHeight) {
+            final double aWidth, final double aHeight) {
         return getTilePaths(aService, aID, aTileSize, (int) aWidth, (int) aHeight);
     }
 
@@ -80,7 +87,7 @@ public class ImageUtils {
      * @return A list of derivative images to be pre-generated
      */
     public static List<String> getTilePaths(final String aService, final String aID, final int aTileSize,
-        final int aWidth, final int aHeight) {
+            final int aWidth, final int aHeight) {
         final ArrayList<String> list = new ArrayList<>();
         final int longDim = Math.max(aWidth, aHeight);
         final String id;
@@ -94,7 +101,7 @@ public class ImageUtils {
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Generating tile paths [ID: {}; Tile Size: {}; Width: {}; Height: {}]", aID, aTileSize, aWidth,
-                aHeight);
+                    aHeight);
         }
 
         for (int multiplier = 1; multiplier * aTileSize < longDim; multiplier *= 2) {
@@ -199,12 +206,61 @@ public class ImageUtils {
     public static Dimension getImageDimension(final File aImageFile) throws IOException {
         // FIXME: Workaround for JP2 until it's supported by our ImageIO libraries
         if (JP2_MIME_TYPE.equals(ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getAbsolutePath())))) {
-            final Buffer buffer = Buffer.buffer(IOUtils.readBytes(new FileInputStream(aImageFile)));
-            final NativeImageObject image = new NativeImageObject(buffer);
-            final int height = image.getHeight();
-            final int width = image.getWidth();
+            final Jp2_source inputSource = new Jp2_source();
+            final Jp2_family_src jp2_family_in = new Jp2_family_src();
+            final Jp2_locator loc = new Jp2_locator();
+            final int height;
+            final int width;
 
-            image.flush();
+            try {
+                jp2_family_in.Open(aImageFile.getAbsolutePath(), true);
+                inputSource.Open(jp2_family_in, loc);
+                inputSource.Read_header();
+
+                final Kdu_compressed_source kduIn = inputSource;
+                final Kdu_codestream codestream = new Kdu_codestream();
+
+                codestream.Create(kduIn);
+
+                final Kdu_channel_mapping channels = new Kdu_channel_mapping();
+
+                if (inputSource.Exists()) {
+                    channels.Configure(inputSource, false);
+                } else {
+                    channels.Configure(codestream);
+                }
+
+                final int ref_component = channels.Get_source_component(0);
+                final Kdu_dims image_dims = new Kdu_dims();
+
+                codestream.Get_dims(ref_component, image_dims);
+
+                final Kdu_coords imageSize = image_dims.Access_size();
+
+                width = imageSize.Get_x();
+                height = imageSize.Get_y();
+
+                channels.Native_destroy();
+
+                if (codestream.Exists()) {
+                    codestream.Destroy();
+                }
+
+                kduIn.Native_destroy();
+                inputSource.Native_destroy();
+                jp2_family_in.Native_destroy();
+            } catch (final KduException details) {
+                throw new IOException(details);
+            }
+
+            // // Using OpenCV
+            // final Buffer buffer = Buffer.buffer(IOUtils.readBytes(new FileInputStream(aImageFile)));
+            // final NativeImageObject image = new NativeImageObject(buffer);
+            //
+            // height = image.getHeight();
+            // width = image.getWidth();
+            //
+            // image.flush();
 
             return new Dimension(width, height);
         } else {
@@ -323,7 +379,6 @@ public class ImageUtils {
 
         return image;
     }
-
 
     private static String getSize(final double aMultiplier, final int aXTileSize, final int aYTileSize) {
         return (int) Math.ceil(aXTileSize / aMultiplier) + "," + (int) Math.ceil(aYTileSize / aMultiplier);
