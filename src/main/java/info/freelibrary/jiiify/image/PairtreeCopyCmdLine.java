@@ -24,7 +24,7 @@ import io.vertx.core.file.FileSystem;
 
 /*
  * java -cp src/test/resources:target/jiiify-0.0.1-SNAPSHOT-exec.jar info.freelibrary.jiiify.image.PairtreeCopyCmdLine \
- *   "ksclarke-jiiify" "AWS_ACCESS_KEY" "AWS_SECRET_KEY" ~/test-jp2s.cs
+ *   "ksclarke-jiiify" "AWS_ACCESS_KEY" "AWS_SECRET_KEY" "S3_ENDPOINT" /path/to/pairtree
  */
 public class PairtreeCopyCmdLine {
 

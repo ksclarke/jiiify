@@ -156,11 +156,11 @@
       <artifactId>imageio-tiff</artifactId>
       <version>${twelvemonkeys.version}</version>
     </dependency>
-        <dependency>
-      <groupId>com.twelvemonkeys.imageio</groupId>
-      <artifactId>imageio-pnm</artifactId>
-      <version>${twelvemonkeys.version}</version>
-    </dependency>
+    <dependency>
+    <groupId>com.twelvemonkeys.imageio</groupId>
+    <artifactId>imageio-bmp</artifactId>
+    <version>${twelvemonkeys.version}</version>
+</dependency>
     <dependency>
       <groupId>kdu_jni</groupId>
       <artifactId>freelib-kakadu</artifactId>

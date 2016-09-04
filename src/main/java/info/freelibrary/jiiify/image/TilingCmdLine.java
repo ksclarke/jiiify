@@ -57,6 +57,8 @@ public class TilingCmdLine {
 
     private final PairtreeRoot myPtRoot;
 
+    private static int JPG_COUNT = 0;
+
     private TilingCmdLine(final PairtreeRoot aPtRoot, final List<String[]> aIDsList) {
         myIterator = aIDsList.iterator();
         myPtRoot = aPtRoot;
@@ -112,15 +114,14 @@ public class TilingCmdLine {
         CompositeFuture.all(futures).setHandler(result -> {
             try {
                 writer.close();
+                aFuture.complete();
             } catch (final IOException details) {
-                System.err.println(details);
+                aFuture.fail(details);
+            } finally {
+                if (idLogFile.length() == 0) {
+                    idLogFile.delete();
+                }
             }
-
-            if (idLogFile.length() == 0) {
-                idLogFile.delete();
-            }
-
-            aFuture.complete();
         });
     }
 
@@ -157,6 +158,7 @@ public class TilingCmdLine {
                 toCleans.add(aJp2File);
 
                 kduExpand(request, aJp2File, width, height, future);
+                JPG_COUNT += 1;
 
                 ImageUtils.getTilePaths(PREFIX, aID, TILE_SIZE, width, height).forEach(tile -> {
                     final Future<Void> tileFuture = Future.future();
@@ -165,6 +167,7 @@ public class TilingCmdLine {
 
                     try {
                         kduExpand(new ImageRequest(tile), aJp2File, width, height, tileFuture);
+                        JPG_COUNT += 1;
                     } catch (final IIIFException | IOException details) {
                         tileFuture.fail(details);
                     }
@@ -189,8 +192,7 @@ public class TilingCmdLine {
     }
 
     private void kduExpand(final ImageRequest aRequest, final File aJp2File, final double aWidth, final double aHeight,
-        final Future<Void> aFuture) throws IOException {
-
+            final Future<Void> aFuture) throws IOException {
         final ImageRegion region = aRequest.getRegion();
         final List<String> command = new ArrayList<>();
         final List<File> toClean = new ArrayList<>();
@@ -201,7 +203,7 @@ public class TilingCmdLine {
         final float regionW = region.getFloat(Region.WIDTH);
         final float regionH = region.getFloat(Region.HEIGHT);
 
-        final File tmpFile = new File(aJp2File.getParentFile(), UUID.randomUUID() + ".ppm");
+        final File tmpFile = new File(aJp2File.getParentFile(), UUID.randomUUID() + ".bmp");
 
         toClean.add(tmpFile);
 
@@ -210,17 +212,64 @@ public class TilingCmdLine {
         command.add(aJp2File.getAbsolutePath());
         command.add("-o");
         command.add(tmpFile.getAbsolutePath());
+        // command.add("-num_threads");
+        // command.add("1");
         command.add("-region");
         command.add(getRegion(regionX, regionY, regionW, regionH, aWidth, aHeight));
 
-        execute(command.toArray(new String[command.size()]), new KakaduListener(toClean, aRequest, aFuture));
+        // execute(command.toArray(new String[command.size()]), new KakaduListener(toClean, aRequest, aFuture));
+        singleThreadExecute(command.toArray(new String[command.size()]), toClean, aRequest, aFuture);
 
-        System.out.println(aRequest);
         System.out.println(StringUtils.toString('|', command));
     }
 
+    private void singleThreadExecute(final String[] aCommand, final List<File> aCleanList, final ImageRequest aRequest,
+            final Future<Void> aFuture) {
+        try {
+            final Process process = Runtime.getRuntime().exec(aCommand);
+            final int exitCode = process.waitFor();
+
+            if (exitCode == 0) {
+                final FileSystem fileSystem = VERTX.fileSystem();
+
+                // Clean up any temporary files that were created
+                for (final File file : aCleanList) {
+                    if ("bmp".equals(FileUtils.getExt(file.getName()))) {
+                        try {
+                            final Buffer buffer = fileSystem.readFileBlocking(file.getAbsolutePath());
+                            final JavaImageObject image = new JavaImageObject(buffer);
+                            final ImageSize imageSize = aRequest.getSize();
+                            final String resourcePath = aRequest.getPath();
+                            final String id = aRequest.getID();
+
+                            image.resize(imageSize);
+
+                            myPtRoot.getObject(id).put(resourcePath, image.toBuffer("jpg"), upload -> {
+                                if (upload.succeeded()) {
+                                    System.out.println("Stored in Pairtree: " + resourcePath);
+                                    file.delete();
+                                    aFuture.complete();
+                                } else {
+                                    System.out.println("Failed to store in Pairtree " + resourcePath);
+                                    file.delete();
+                                    aFuture.fail(upload.cause());
+                                }
+                            });
+                        } catch (final IOException details) {
+                            aFuture.fail(details);
+                        }
+                    }
+                }
+            } else {
+                aFuture.fail("Kakadu exit code: " + exitCode);
+            }
+        } catch (final IOException | InterruptedException details) {
+            aFuture.fail(details);
+        }
+    }
+
     private String getRegion(final float aRegionX, final float aRegionY, final float aRegionW, final float aRegionH,
-        final double aWidth, final double aHeight) {
+            final double aWidth, final double aHeight) {
         final StringBuilder buffer = new StringBuilder();
 
         buffer.append('{').append(aRegionY / aHeight).append(',').append(aRegionX / aWidth).append("},{");
@@ -269,7 +318,7 @@ public class TilingCmdLine {
             }
 
             timer.stop();
-            System.out.println("Runtime: " + timer.getMilliseconds());
+            System.out.println("Runtime: " + timer.getMilliseconds() + " - " + JPG_COUNT + " tiles");
             VERTX.close();
         });
     }
@@ -311,12 +360,12 @@ public class TilingCmdLine {
                 case 0:
                     break;
                 default:
-                    System.err.println("Exit value: " + aProcess.exitValue());
+                    System.err.println("Exit value: " + exitCode);
             }
 
             // Clean up any temporary files that were created
             for (final File file : myTempFiles) {
-                if ("ppm".equals(FileUtils.getExt(file.getName()))) {
+                if ("bmp".equals(FileUtils.getExt(file.getName()))) {
                     try {
                         final Buffer buffer = fileSystem.readFileBlocking(file.getAbsolutePath());
                         final JavaImageObject image = new JavaImageObject(buffer);
