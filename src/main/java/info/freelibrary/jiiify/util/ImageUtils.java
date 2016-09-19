@@ -206,13 +206,14 @@ public class ImageUtils {
     public static Dimension getImageDimension(final File aImageFile) throws IOException {
         // FIXME: Workaround for JP2 until it's supported by our ImageIO libraries
         if (JP2_MIME_TYPE.equals(ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getAbsolutePath())))) {
-            final Jp2_source inputSource = new Jp2_source();
-            final Jp2_family_src jp2_family_in = new Jp2_family_src();
-            final Jp2_locator loc = new Jp2_locator();
             final int height;
             final int width;
 
             try {
+                final Jp2_source inputSource = new Jp2_source();
+                final Jp2_family_src jp2_family_in = new Jp2_family_src();
+                final Jp2_locator loc = new Jp2_locator();
+
                 jp2_family_in.Open(aImageFile.getAbsolutePath(), true);
                 inputSource.Open(jp2_family_in, loc);
                 inputSource.Read_header();
@@ -250,6 +251,7 @@ public class ImageUtils {
                 inputSource.Native_destroy();
                 jp2_family_in.Native_destroy();
             } catch (final KduException details) {
+                System.err.println(details);
                 throw new IOException(details);
             }
 

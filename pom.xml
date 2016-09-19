@@ -15,8 +15,8 @@
     <jiiify.redirect.port>8000</jiiify.redirect.port>
     <jiiify.jks>jiiify.jks</jiiify.jks>
     <!-- A default value that can be overridden via Maven profile or on the command line -->
-    <dev.tools/>
-    <jiiify.memory/>
+    <dev.tools />
+    <jiiify.memory />
     <!-- These are samples for testing purposes only ... DO NOT USE THEM IN PRODUCTION!!! -->
     <jiiify.json.config.path>${basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
 
@@ -46,6 +46,13 @@
   </properties>
 
   <dependencies>
+    <!-- FIXME: to remove, needed for temporary reasons -->
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1.1</version>
+    </dependency>
+
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
@@ -157,10 +164,10 @@
       <version>${twelvemonkeys.version}</version>
     </dependency>
     <dependency>
-    <groupId>com.twelvemonkeys.imageio</groupId>
-    <artifactId>imageio-bmp</artifactId>
-    <version>${twelvemonkeys.version}</version>
-</dependency>
+      <groupId>com.twelvemonkeys.imageio</groupId>
+      <artifactId>imageio-bmp</artifactId>
+      <version>${twelvemonkeys.version}</version>
+    </dependency>
     <dependency>
       <groupId>kdu_jni</groupId>
       <artifactId>freelib-kakadu</artifactId>
@@ -488,24 +495,13 @@
                   <resource>META-INF/services/io.vertx.core.spi.VerticleFactory</resource>
                 </transformer>
                 <!-- ServicesResourceTransformer needed for TwelveMonkeys ImageIO discovery -->
-                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
               </transformers>
-              <artifactSet> </artifactSet>
-              <!-- <minimizeJar>true</minimizeJar>
-              <filters>
-                <filter>
-                  <artifact>io.vertx:*</artifact>
-                  <includes>
-                    <include>**</include>
-                  </includes>
-                </filter>
-                <filter>
-                  <artifact>ch.qos.logback:*</artifact>
-                  <includes>
-                    <include>**</include>
-                  </includes>
-                </filter>
-              </filters>-->
+              <artifactSet>
+              </artifactSet>
+              <!-- <minimizeJar>true</minimizeJar> <filters> <filter> <artifact>io.vertx:*</artifact> <includes> <include>**</include> 
+                </includes> </filter> <filter> <artifact>ch.qos.logback:*</artifact> <includes> <include>**</include> </includes> </filter> 
+                </filters> -->
               <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-exec.jar</outputFile>
             </configuration>
           </execution>
@@ -589,14 +585,8 @@
         </os>
       </activation>
       <dependencies>
-        <!--  
-        <dependency>
-          <groupId>org.opencv</groupId>
-          <artifactId>opencv</artifactId>
-          <version>${opencv.version}</version>
-          <classifier>macosx</classifier>
-        </dependency>
-        -->
+        <!-- <dependency> <groupId>org.opencv</groupId> <artifactId>opencv</artifactId> <version>${opencv.version}</version> 
+          <classifier>macosx</classifier> </dependency> -->
       </dependencies>
       <!-- Default "out-of-the-box" deployment options to be overridden -->
       <properties>
@@ -615,14 +605,8 @@
         </os>
       </activation>
       <dependencies>
-        <!-- 
-        <dependency>
-          <groupId>org.opencv</groupId>
-          <artifactId>opencv</artifactId>
-          <version>${opencv.version}</version>
-          <classifier>windows</classifier>
-        </dependency>
-        -->
+        <!-- <dependency> <groupId>org.opencv</groupId> <artifactId>opencv</artifactId> <version>${opencv.version}</version> 
+          <classifier>windows</classifier> </dependency> -->
       </dependencies>
     </profile>
   </profiles>

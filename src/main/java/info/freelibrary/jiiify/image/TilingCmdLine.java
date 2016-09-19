@@ -26,9 +26,8 @@ import info.freelibrary.pairtree.PairtreeFactory;
 import info.freelibrary.pairtree.PairtreeFactory.PairtreeImpl;
 import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.pairtree.PairtreeRoot;
+import info.freelibrary.pairtree.PairtreeUtils;
 import info.freelibrary.util.FileUtils;
-import info.freelibrary.util.ProcessListener;
-import info.freelibrary.util.ProcessWatcher;
 import info.freelibrary.util.Stopwatch;
 import info.freelibrary.util.StringUtils;
 
@@ -57,8 +56,6 @@ public class TilingCmdLine {
 
     private final PairtreeRoot myPtRoot;
 
-    private static int JPG_COUNT = 0;
-
     private TilingCmdLine(final PairtreeRoot aPtRoot, final List<String[]> aIDsList) {
         myIterator = aIDsList.iterator();
         myPtRoot = aPtRoot;
@@ -74,7 +71,7 @@ public class TilingCmdLine {
         while (myIterator.hasNext()) {
             final String id = myIterator.next()[0];
             final PairtreeObject obj = myPtRoot.getObject(id);
-            final Future<String> future = Future.<String>future();
+            final Future<Void> future = Future.<Void>future();
             final String jp2Resource = encodeID(id) + ".jp2";
 
             futures.add(future);
@@ -126,24 +123,27 @@ public class TilingCmdLine {
     }
 
     @SuppressWarnings("rawtypes")
-    private void tile(final String aID, final File aJp2File, final Future<String> aFuture) {
-        final List<Future> futures = new ArrayList<>();
+    private void tile(final String aID, final File aJp2File, final Future<Void> aFuture) {
         final List<File> toCleans = new ArrayList<>();
 
         // Can't use lambda below because Checkstyle complains :-(
         final Handler<AsyncResult<String>> handler = aResult -> {
             if (aResult.succeeded()) {
-                System.out.println("The result of processing " + aID + " is: " + aResult.result());
+                System.out.println("-> " + aResult.result());
+                aFuture.complete();
             } else {
-                System.err.println(aResult.cause());
                 aFuture.fail(aResult.cause());
             }
         };
 
-        VERTX.executeBlocking(result -> {
+        System.out.println("Getting ready to tile: " + aJp2File);
+
+        VERTX.<String>executeBlocking(future -> {
+            final List<Future> futures = new ArrayList<>();
+
             try {
                 final Dimension dims = ImageUtils.getImageDimension(aJp2File);
-                final Future<Void> future = Future.future();
+                final Future<String> thumbnailFuture = Future.future();
 
                 final int thumbnailSize = 150;
                 final ImageRegion region = ImageUtils.getCenter(dims);
@@ -154,45 +154,44 @@ public class TilingCmdLine {
                 final double width = dims.getWidth();
                 final double height = dims.getHeight();
 
-                futures.add(future);
+                futures.add(thumbnailFuture);
                 toCleans.add(aJp2File);
 
-                kduExpand(request, aJp2File, width, height, future);
-                JPG_COUNT += 1;
+                kduExpand(request, aJp2File, width, height, thumbnailFuture);
 
                 ImageUtils.getTilePaths(PREFIX, aID, TILE_SIZE, width, height).forEach(tile -> {
-                    final Future<Void> tileFuture = Future.future();
+                    final Future<String> tileFuture = Future.future();
 
                     futures.add(tileFuture);
 
                     try {
                         kduExpand(new ImageRequest(tile), aJp2File, width, height, tileFuture);
-                        JPG_COUNT += 1;
                     } catch (final IIIFException | IOException details) {
                         tileFuture.fail(details);
                     }
-                });;
+                });
+
             } catch (final IOException details) {
                 System.err.println(details);
-                result.fail("Block failed");
+                future.fail("Block failed");
             }
 
-            CompositeFuture.all(futures).setHandler(compositeResult -> {
+            CompositeFuture.all(futures).setHandler(result -> {
                 for (final File file : toCleans) {
                     file.delete();
                 }
 
                 if (result.succeeded()) {
-                    aFuture.complete();
+                    future.complete("Derivative image files created for " + aID);
                 } else {
-                    aFuture.fail(result.cause());
+                    future.fail(result.cause());
                 }
             });
-        }, false, handler);
+        }, true, handler);
     }
 
     private void kduExpand(final ImageRequest aRequest, final File aJp2File, final double aWidth, final double aHeight,
-            final Future<Void> aFuture) throws IOException {
+            final Future<String> aFuture) throws IOException {
         final ImageRegion region = aRequest.getRegion();
         final List<String> command = new ArrayList<>();
         final List<File> toClean = new ArrayList<>();
@@ -212,19 +211,16 @@ public class TilingCmdLine {
         command.add(aJp2File.getAbsolutePath());
         command.add("-o");
         command.add(tmpFile.getAbsolutePath());
-        // command.add("-num_threads");
-        // command.add("1");
         command.add("-region");
         command.add(getRegion(regionX, regionY, regionW, regionH, aWidth, aHeight));
 
-        // execute(command.toArray(new String[command.size()]), new KakaduListener(toClean, aRequest, aFuture));
-        singleThreadExecute(command.toArray(new String[command.size()]), toClean, aRequest, aFuture);
-
-        System.out.println(StringUtils.toString('|', command));
+        execute(command.toArray(new String[command.size()]), toClean, aRequest, aFuture);
     }
 
-    private void singleThreadExecute(final String[] aCommand, final List<File> aCleanList, final ImageRequest aRequest,
-            final Future<Void> aFuture) {
+    private void execute(final String[] aCommand, final List<File> aCleanList, final ImageRequest aRequest,
+            final Future<String> aFuture) {
+        System.out.println(StringUtils.toString('|', (Object[]) aCommand));
+
         try {
             final Process process = Runtime.getRuntime().exec(aCommand);
             final int exitCode = process.waitFor();
@@ -245,13 +241,16 @@ public class TilingCmdLine {
                             image.resize(imageSize);
 
                             myPtRoot.getObject(id).put(resourcePath, image.toBuffer("jpg"), upload -> {
+                                image.flush();
+
                                 if (upload.succeeded()) {
-                                    System.out.println("Stored in Pairtree: " + resourcePath);
+                                    final String eid = PairtreeUtils.encodeID(id);
+                                    System.out.println("Stored in Pairtree: /iiif/" + eid + "/" + resourcePath);
                                     file.delete();
-                                    aFuture.complete();
+                                    aFuture.complete("Stored in Pairtree: /iiif/" + eid + "/" + resourcePath);
                                 } else {
-                                    System.out.println("Failed to store in Pairtree " + resourcePath);
-                                    file.delete();
+                                    System.out.println("Failed to store in Pairtree: " + resourcePath + " (" + file
+                                            .getAbsolutePath() + ") [" + upload.cause().getMessage() + "]");
                                     aFuture.fail(upload.cause());
                                 }
                             });
@@ -318,78 +317,9 @@ public class TilingCmdLine {
             }
 
             timer.stop();
-            System.out.println("Runtime: " + timer.getMilliseconds() + " - " + JPG_COUNT + " tiles");
+            System.out.println("Runtime: " + timer.getMilliseconds());
             VERTX.close();
         });
     }
 
-    private final void execute(final String[] aCommand, final ProcessListener aListener) throws IOException {
-        final ProcessBuilder processBuilder = new ProcessBuilder(aCommand).inheritIO();
-        final ProcessWatcher processWatcher = new ProcessWatcher(processBuilder);
-
-        processWatcher.addListener(aListener);
-        processWatcher.start();
-    }
-
-    private class KakaduListener implements ProcessListener {
-
-        private final List<File> myTempFiles;
-
-        private final ImageSize myImageSize;
-
-        private final String myResourcePath;
-
-        private final String myID;
-
-        private final Future<Void> myFuture;
-
-        private KakaduListener(final List<File> aCleanList, final ImageRequest aRequest, final Future<Void> aFuture) {
-            myTempFiles = aCleanList;
-            myImageSize = aRequest.getSize();
-            myID = aRequest.getID();
-            myResourcePath = aRequest.getPath();
-            myFuture = aFuture;
-        }
-
-        @Override
-        public void processFinished(final Process aProcess) {
-            final FileSystem fileSystem = VERTX.fileSystem();
-            final int exitCode = aProcess.exitValue();
-
-            switch (exitCode) {
-                case 0:
-                    break;
-                default:
-                    System.err.println("Exit value: " + exitCode);
-            }
-
-            // Clean up any temporary files that were created
-            for (final File file : myTempFiles) {
-                if ("bmp".equals(FileUtils.getExt(file.getName()))) {
-                    try {
-                        final Buffer buffer = fileSystem.readFileBlocking(file.getAbsolutePath());
-                        final JavaImageObject image = new JavaImageObject(buffer);
-
-                        image.resize(myImageSize);
-
-                        myPtRoot.getObject(myID).put(myResourcePath, image.toBuffer("jpg"), upload -> {
-                            if (upload.succeeded()) {
-                                System.out.println("Stored in Pairtree: " + myResourcePath);
-                                file.delete();
-                                myFuture.complete();
-                            } else {
-                                System.out.println("Failed to store in Pairtree " + myResourcePath);
-                                file.delete();
-                                myFuture.fail(upload.cause());
-                            }
-                        });
-                    } catch (final IOException details) {
-                        System.err.println(details);
-                    }
-                }
-            }
-
-        }
-
-    }
 }
