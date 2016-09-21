@@ -373,7 +373,8 @@ public class Configuration implements Shareable {
      * @return The base URL of the Jiiify image server
      */
     public String getServer() {
-        return getScheme() + "://" + getHost() + (getPort() != 80 ? ":" + getPort() : "");
+        final int port = getPort();
+        return getScheme() + "://" + getHost() + (port != 80 && port != 443 ? ":" + getPort() : "");
     }
 
     /**
