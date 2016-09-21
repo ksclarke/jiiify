@@ -60,15 +60,15 @@ public class ImageInfoHandler extends JiiifyHandler {
                         if (getResult.succeeded()) {
                             final JsonObject json = getResult.result().toJsonObject();
                             final String server = myConfig.getServer() + myConfig.getServicePrefix();
-                            final Buffer buffer = Buffer.buffer();
+                            final Buffer buffer;
 
                             try {
                                 json.put(ImageInfo.ID, server + "/" + PathUtils.encodeIdentifier(id));
-                            } catch (URISyntaxException details) {
+                            } catch (final URISyntaxException details) {
                                 LOGGER.error("Failed to update ImageInfo JSON's @id", details);
                             }
 
-                            json.writeToBuffer(buffer);
+                            buffer = Buffer.buffer(json.toString());
 
                             response.putHeader(CONTENT_LENGTH, Integer.toString(buffer.length()));
                             response.putHeader(CONTENT_TYPE, JSON_MIME_TYPE);
