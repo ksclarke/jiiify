@@ -103,22 +103,23 @@ public class IngestHandler extends JiiifyHandler {
                     if (findHandler.succeeded()) {
                         if (findHandler.result()) {
                             if (shouldOverwrite) {
+                                LOGGER.debug("Manifest upload overwriting existing manifest [{}]", aID);
                                 writeManifestFile(aFilePath, ptObj, aContext, aJsonNode);
                             } else {
                                 aJsonNode.put("upload-message",
                                         "Manifest already exists and overwrite was not specified");
 
-                                if (LOGGER.isWarnEnabled()) {
-                                    LOGGER.warn("Didn't write manifest because it already existed: {}", ptObj.getPath(
-                                            MANIFEST_FILE));
-                                }
+                                LOGGER.warn("Didn't write manifest because it already existed: {}", ptObj.getPath(
+                                        MANIFEST_FILE));
 
                                 toTemplate(aContext, aJsonNode);
                             }
                         } else {
+                            LOGGER.debug("New manifest upload [{}]", aID);
                             writeManifestFile(aFilePath, ptObj, aContext, aJsonNode);
                         }
                     } else {
+                        // FIXME: Is this handling this correctly?
                         fail(aContext, existsHandler.cause());
                         toTemplate(aContext, aJsonNode);
                     }
@@ -230,8 +231,8 @@ public class IngestHandler extends JiiifyHandler {
     }
 
     // A copy and paste from the AbstractJiiifyVerticle... something to put in a utility class?
-    protected void sendMessage(final RoutingContext aContext, final JsonObject aJsonObject,
-            final String aVerticleName, final int aCount) {
+    protected void sendMessage(final RoutingContext aContext, final JsonObject aJsonObject, final String aVerticleName,
+            final int aCount) {
         final long sendTimeout = DeliveryOptions.DEFAULT_TIMEOUT * aCount;
         final int retryCount = 10;
         final DeliveryOptions options = new DeliveryOptions();
@@ -253,8 +254,7 @@ public class IngestHandler extends JiiifyHandler {
                     sendMessage(aContext, aJsonObject, aVerticleName, aCount + 1);
                 } else {
                     if (response.cause() != null) {
-                        LOGGER.error(response.cause(), "Unable to send message to {}: {}", aVerticleName,
-                                aJsonObject);
+                        LOGGER.error(response.cause(), "Unable to send message to {}: {}", aVerticleName, aJsonObject);
                     } else {
                         LOGGER.error("Unable to send message to {}: {}", aVerticleName, aJsonObject);
                     }
