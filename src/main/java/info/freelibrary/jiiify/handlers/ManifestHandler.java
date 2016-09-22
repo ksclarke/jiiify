@@ -57,10 +57,10 @@ public class ManifestHandler extends JiiifyHandler {
                             final JsonObject json = getResult.result().toJsonObject();
                             final String server = myConfig.getServer();
                             final String service = myConfig.getServicePrefix();
-                            final Buffer buffer = Buffer.buffer();
+                            final Buffer buffer;
 
                             updateJsonObject(json, server, service);
-                            json.writeToBuffer(buffer);
+                            buffer = Buffer.buffer(json.toString());
 
                             response.putHeader(CONTENT_LENGTH, Integer.toString(buffer.length()));
                             response.putHeader(CONTENT_TYPE, Metadata.JSON_MIME_TYPE);
