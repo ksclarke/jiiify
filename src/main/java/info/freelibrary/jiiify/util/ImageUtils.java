@@ -251,7 +251,10 @@ public class ImageUtils {
                 inputSource.Native_destroy();
                 jp2_family_in.Native_destroy();
             } catch (final KduException details) {
-                System.err.println(details);
+                LOGGER.error(details.getMessage(), details);
+                throw new IOException(details);
+            } catch (final Throwable details) {
+                LOGGER.error(details.getMessage(), details);
                 throw new IOException(details);
             }
 
