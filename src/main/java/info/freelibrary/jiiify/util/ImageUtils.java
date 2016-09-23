@@ -20,7 +20,6 @@ import javax.imageio.stream.ImageInputStream;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-import org.opencv.core.Core;
 import org.xml.sax.InputSource;
 import org.xml.sax.XMLReader;
 
@@ -33,7 +32,6 @@ import info.freelibrary.jiiify.image.NativeImageObject;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
-import info.freelibrary.util.NativeLibraryLoader;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.buffer.Buffer;
@@ -43,18 +41,14 @@ public class ImageUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageUtils.class, Constants.MESSAGES);
 
-    private static boolean useNativeLibs = true;
+    private static boolean useNativeLibs = false;
 
     static {
-        try {
-            NativeLibraryLoader.load(Core.NATIVE_LIBRARY_NAME);
-
-            if (LOGGER.isDebugEnabled() && useNativeLibs) {
-                LOGGER.debug("Using native image processing libraries");
-            }
-        } catch (final IOException details) {
-            LOGGER.warn("Error loading native libraries so using Java libraries instead: {}", details.getMessage());
-        }
+        /*
+         * try { NativeLibraryLoader.load(Core.NATIVE_LIBRARY_NAME); if (LOGGER.isDebugEnabled() && useNativeLibs) {
+         * LOGGER.debug("Using native image processing libraries"); } } catch (final IOException details) {
+         * LOGGER.warn("Error loading native libraries so using Java libraries instead: {}", details.getMessage()); }
+         */
     }
 
     /* Template for the region part of the IIIF request */
