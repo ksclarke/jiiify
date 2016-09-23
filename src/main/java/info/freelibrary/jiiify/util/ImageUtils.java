@@ -17,8 +17,12 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.opencv.core.Core;
+import org.xml.sax.InputSource;
+import org.xml.sax.XMLReader;
 
 import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.iiif.ImageFormat;
@@ -34,15 +38,6 @@ import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
-import kdu_jni.Jp2_family_src;
-import kdu_jni.Jp2_locator;
-import kdu_jni.Jp2_source;
-import kdu_jni.KduException;
-import kdu_jni.Kdu_channel_mapping;
-import kdu_jni.Kdu_codestream;
-import kdu_jni.Kdu_compressed_source;
-import kdu_jni.Kdu_coords;
-import kdu_jni.Kdu_dims;
 
 public class ImageUtils {
 
@@ -206,57 +201,89 @@ public class ImageUtils {
     public static Dimension getImageDimension(final File aImageFile) throws IOException {
         // FIXME: Workaround for JP2 until it's supported by our ImageIO libraries
         if (JP2_MIME_TYPE.equals(ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getAbsolutePath())))) {
+            final String[] command = new String[] { System.getProperty("java.io.tmpdir") + "/kdu_jp2info", "-i",
+                aImageFile.getAbsolutePath() };
             final int height;
             final int width;
 
             try {
-                final Jp2_source inputSource = new Jp2_source();
-                final Jp2_family_src jp2_family_in = new Jp2_family_src();
-                final Jp2_locator loc = new Jp2_locator();
+                final Process process = Runtime.getRuntime().exec(command);
+                final int exitCode = process.waitFor();
 
-                jp2_family_in.Open(aImageFile.getAbsolutePath(), true);
-                inputSource.Open(jp2_family_in, loc);
-                inputSource.Read_header();
+                if (exitCode == 0) {
+                    final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
 
-                final Kdu_compressed_source kduIn = inputSource;
-                final Kdu_codestream codestream = new Kdu_codestream();
+                    saxParserFactory.setNamespaceAware(true);
 
-                codestream.Create(kduIn);
+                    final SAXParser saxParser = saxParserFactory.newSAXParser();
+                    final XMLReader xmlReader = saxParser.getXMLReader();
+                    final KduWidthHeightHandler whHandler = new KduWidthHeightHandler();
 
-                final Kdu_channel_mapping channels = new Kdu_channel_mapping();
+                    xmlReader.setContentHandler(whHandler);
+                    xmlReader.parse(new InputSource(process.getInputStream()));
 
-                if (inputSource.Exists()) {
-                    channels.Configure(inputSource, false);
+                    height = whHandler.myHeight;
+                    width = whHandler.myWidth;
                 } else {
-                    channels.Configure(codestream);
+                    throw new IOException("kdu_jp2info exit code: " + exitCode);
                 }
-
-                final int ref_component = channels.Get_source_component(0);
-                final Kdu_dims image_dims = new Kdu_dims();
-
-                codestream.Get_dims(ref_component, image_dims);
-
-                final Kdu_coords imageSize = image_dims.Access_size();
-
-                width = imageSize.Get_x();
-                height = imageSize.Get_y();
-
-                channels.Native_destroy();
-
-                if (codestream.Exists()) {
-                    codestream.Destroy();
-                }
-
-                kduIn.Native_destroy();
-                inputSource.Native_destroy();
-                jp2_family_in.Native_destroy();
-            } catch (final KduException details) {
-                LOGGER.error(details.getMessage(), details);
-                throw new IOException(details);
-            } catch (final Throwable details) {
-                LOGGER.error(details.getMessage(), details);
+            } catch (final Exception details) {
                 throw new IOException(details);
             }
+
+            // Cross-platform (RHEL/Ubuntu) issues so commenting out for now
+            // if (JP2_MIME_TYPE.equals(ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getAbsolutePath())))) {
+            // final int height;
+            // final int width;
+            //
+            // try {
+            // final Jp2_source inputSource = new Jp2_source();
+            // final Jp2_family_src jp2_family_in = new Jp2_family_src();
+            // final Jp2_locator loc = new Jp2_locator();
+            //
+            // jp2_family_in.Open(aImageFile.getAbsolutePath(), true);
+            // inputSource.Open(jp2_family_in, loc);
+            // inputSource.Read_header();
+            //
+            // final Kdu_compressed_source kduIn = inputSource;
+            // final Kdu_codestream codestream = new Kdu_codestream();
+            //
+            // codestream.Create(kduIn);
+            //
+            // final Kdu_channel_mapping channels = new Kdu_channel_mapping();
+            //
+            // if (inputSource.Exists()) {
+            // channels.Configure(inputSource, false);
+            // } else {
+            // channels.Configure(codestream);
+            // }
+            //
+            // final int ref_component = channels.Get_source_component(0);
+            // final Kdu_dims image_dims = new Kdu_dims();
+            //
+            // codestream.Get_dims(ref_component, image_dims);
+            //
+            // final Kdu_coords imageSize = image_dims.Access_size();
+            //
+            // width = imageSize.Get_x();
+            // height = imageSize.Get_y();
+            //
+            // channels.Native_destroy();
+            //
+            // if (codestream.Exists()) {
+            // codestream.Destroy();
+            // }
+            //
+            // kduIn.Native_destroy();
+            // inputSource.Native_destroy();
+            // jp2_family_in.Native_destroy();
+            // } catch (final KduException details) {
+            // LOGGER.error(details.getMessage(), details);
+            // throw new IOException(details);
+            // } catch (final Throwable details) {
+            // LOGGER.error(details.getMessage(), details);
+            // throw new IOException(details);
+            // }
 
             // // Using OpenCV
             // final Buffer buffer = Buffer.buffer(IOUtils.readBytes(new FileInputStream(aImageFile)));
