@@ -129,7 +129,6 @@ public class TilingCmdLine {
         // Can't use lambda below because Checkstyle complains :-(
         final Handler<AsyncResult<String>> handler = aResult -> {
             if (aResult.succeeded()) {
-                System.out.println("-> " + aResult.result());
                 aFuture.complete();
             } else {
                 aFuture.fail(aResult.cause());
