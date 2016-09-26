@@ -88,6 +88,7 @@ public class ManifestHandler extends JiiifyHandler {
 
     /* Not the way I really want to do this, but as a temporary workaround... */
     private void updateJsonObject(final JsonObject aJsonObject, final String aServer, final String aService) {
+        final JsonObject defaultItem = aJsonObject.getJsonObject("default");
         final JsonObject resource = aJsonObject.getJsonObject("resource");
         final JsonObject service = aJsonObject.getJsonObject("service");
         final String thumbnail = aJsonObject.getString("thumbnail");
@@ -102,9 +103,9 @@ public class ManifestHandler extends JiiifyHandler {
             aJsonObject.put("thumbnail", aServer + thumbnail.substring(thumbnail.indexOf(iiifService)));
         }
 
-        if (logo != null && logo.contains(iiifService)) {
+        if (logo != null) {
             try {
-                aJsonObject.put("logo", new URL(aServer + new URL(logo).getPath()));
+                aJsonObject.put("logo", new URL(aServer + new URL(logo).getPath()).toExternalForm());
             } catch (final MalformedURLException details) {
                 LOGGER.error("Malformed logo URL: {}", logo, details);
             }
@@ -126,9 +127,14 @@ public class ManifestHandler extends JiiifyHandler {
             updateJsonObject(service, aServer, aService);
         }
 
+        if (defaultItem != null) {
+            updateJsonObject(defaultItem, aServer, aService);
+        }
+
         jsonArray.addAll(aJsonObject.getJsonArray("sequences", new JsonArray()));
         jsonArray.addAll(aJsonObject.getJsonArray("canvases", new JsonArray()));
         jsonArray.addAll(aJsonObject.getJsonArray("images", new JsonArray()));
+        jsonArray.addAll(aJsonObject.getJsonArray("item", new JsonArray()));
 
         iterator = jsonArray.iterator();
 
