@@ -63,6 +63,10 @@ public class ImageHandler extends JiiifyHandler {
                         serveCachedImageFile(ptObj, imageRequest.getPath(), aContext);
                     } else if (imageRequest.getRotation().isRotated()) {
                         checkUnrotatedSource(ptObj, imageRequest, aContext);
+                    } else {
+                        LOGGER.info("Requested image file not found: {}", requestPath);
+                        aContext.fail(404);
+                        aContext.put(ERROR_MESSAGE, msg("Image file not found: {}", requestPath));
                     }
                 } else {
                     LOGGER.info("Requested image file not found: {}", requestPath);
