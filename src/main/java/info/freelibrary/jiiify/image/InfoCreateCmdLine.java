@@ -7,12 +7,10 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.Arrays;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import org.json.simple.parser.ParseException;
 
+import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.util.FileUtils;
 
@@ -35,7 +33,6 @@ public class InfoCreateCmdLine {
      * @throws IOException
      * @throws ParseException
      */
-    @SuppressWarnings("unchecked")
     public static void main(final String[] args) throws FileNotFoundException, IOException, ParseException {
         if (args.length != 2) {
             System.out.println("Please supply physicalScale (for instance: 0.026266805)");
@@ -50,52 +47,16 @@ public class InfoCreateCmdLine {
                 final Dimension dims = ImageUtils.getImageDimension(jp2);
                 final File info = new File(file, "info.json");
                 final FileWriter writer = new FileWriter(info);
-                final JSONObject json = new JSONObject();
+                final ImageInfo imageInfo = new ImageInfo(id);
 
-                json.put("width", (int) dims.getWidth());
-                json.put("height", (int) dims.getHeight());
-                json.put("@id", "https://sinai-images.library.ucla.edu/iiif/" + id);
-                json.put("@context", "http://iiif.io/api/image/2/context.json");
+                imageInfo.setHeight(dims.height);
+                imageInfo.setWidth(dims.width);
+                imageInfo.setTileSize(1024);
+                imageInfo.setPhysicalScale(Double.parseDouble(args[1]), "mm");
 
-                final JSONArray tiles = new JSONArray();
-                final JSONObject tilesObject = new JSONObject();
-                final JSONArray scaleFactors = new JSONArray();
-
-                scaleFactors.addAll(Arrays.asList(new Integer[] { 1, 2, 4 }));
-                tilesObject.put("scaleFactors", scaleFactors);
-                tilesObject.put("width", 1024);
-                tiles.add(tilesObject);
-                json.put("tiles", tiles);
-
-                final JSONArray profile = new JSONArray();
-                final JSONObject profileObject = new JSONObject();
-                final JSONArray formats = new JSONArray();
-                final JSONArray qualities = new JSONArray();
-
-                profile.add("http://iiif.io/api/image/2/level0.json");
-                formats.add("jpg");
-                profileObject.put("formats", formats);
-                qualities.add("default");
-                profileObject.put("qualities", qualities);
-                profile.add(profileObject);
-                json.put("profile", profile);
-
-                final JSONObject service = new JSONObject();
-
-                service.put("@context", "http://iiif.io/api/annex/services/physdim/1/context.json");
-                service.put("profile", "http://iiif.io/api/annex/services/physdim");
-                service.put("physicalScale", args[1]);
-                service.put("physicalUnits", "mm");
-                json.put("service", service);
-
-                json.put("protocol", "http://iiif.io/api/image");
-
-                // Give me some output so I can spot check
                 System.out.println(info.getAbsolutePath());
-                // final int start = "/media/kevin/LinuxDrive/pairtree_root_1/".length();
-                // System.out.println("cp " + info.getAbsolutePath().substring(start) + " " + info.getAbsolutePath());
 
-                json.writeJSONString(writer);
+                writer.write(imageInfo.toString());
                 writer.close();
             }
         }

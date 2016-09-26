@@ -3,6 +3,10 @@ package info.freelibrary.jiiify.iiif;
 
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 
+import java.util.Objects;
+
+import org.json.simple.JSONObject;
+
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -41,6 +45,10 @@ public class ImageInfo {
     private int myHeight;
 
     private int myTileSize;
+
+    private double myPhysicalScale;
+
+    private String myPhysicalScaleUnit;
 
     private int[] myScales;
 
@@ -204,6 +212,41 @@ public class ImageInfo {
         return myTileSize;
     }
 
+    /**
+     * Sets the physical scale for the image.
+     *
+     * @param aScale A physical scale
+     * @param aUnit A unit for the physical scale
+     * @return The image info object with the physical scale set
+     */
+    public ImageInfo setPhysicalScale(final double aScale, final String aUnit) {
+        Objects.requireNonNull(aUnit, "A physical scale unit must be supplied");
+
+        myPhysicalScale = aScale;
+        myPhysicalScaleUnit = aUnit;
+
+        return this;
+    }
+
+    /**
+     * Gets the physical scale.
+     *
+     * @return The physical scale
+     */
+    public double getPhysicalScale() {
+        return myPhysicalScale;
+    }
+
+    /**
+     * Gets the physical scale unit.
+     *
+     * @return The physical scale unit
+     */
+    public String getPhysicalScaleUnit() {
+        return myPhysicalScaleUnit;
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
     public String toString() {
         final JsonObject json = new JsonObject();
@@ -252,6 +295,17 @@ public class ImageInfo {
 
         json.put("tiles", tiles);
         json.put("profile", profile);
+
+        if (myPhysicalScaleUnit != null) {
+            final JSONObject service = new JSONObject();
+
+            service.put("@context", "http://iiif.io/api/annex/services/physdim/1/context.json");
+            service.put("profile", "http://iiif.io/api/annex/services/physdim");
+            service.put("physicalScale", myPhysicalScale);
+            service.put("physicalUnits", myPhysicalScaleUnit);
+
+            json.put("service", service);
+        }
 
         return json.encodePrettily();
     }
