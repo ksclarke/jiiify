@@ -21,33 +21,36 @@ public class PairtreeRenamer {
      * @throws Exception
      */
     public static void main(final String[] args) throws Exception {
-        /* three times for the three occurrences in the path */
-        for (final File file : FileUtils.listFiles(new File(args[0]), new PlusFilter(), true)) {
-            if (file.renameTo(new File(file.getParentFile(), file.getName().replace('+', '~')))) {
-                System.out.println(file);
-            }
+        if (args.length != 3) {
+            System.err.println("Please supply a pairtree location, pattern (e.g. +), and replacement (e.g. ~)");
+            System.out.println("  " + PairtreeRenamer.class.getName() + " \"/path/to/pairtree\" \"+\" \"~\"");
         }
-        for (final File file : FileUtils.listFiles(new File(args[0]), new PlusFilter(), true)) {
-            if (file.renameTo(new File(file.getParentFile(), file.getName().replace('+', '~')))) {
-                System.out.println(file);
-            }
-        }
-        for (final File file : FileUtils.listFiles(new File(args[0]), new PlusFilter(), true)) {
-            if (file.renameTo(new File(file.getParentFile(), file.getName().replace('+', '~')))) {
+
+        final String pattern = args[0];
+        final String replacement = args[1];
+
+        for (final File file : FileUtils.listFiles(new File(args[0]), new PairtreeFilter(pattern), true)) {
+            if (file.renameTo(new File(file.getParentFile(), replace(file.getName(), pattern, replacement)))) {
                 System.out.println(file);
             }
         }
     }
 
-    static class PlusFilter implements FilenameFilter {
+    private static String replace(final String aString, final String aPattern, final String aReplacement) {
+        return aString.replace(aPattern, aReplacement);
+    }
+
+    static class PairtreeFilter implements FilenameFilter {
+
+        private final String myPattern;
+
+        public PairtreeFilter(final String aPattern) {
+            myPattern = aPattern;
+        }
 
         @Override
         public boolean accept(final File aDir, final String aFileName) {
-            if (aFileName.contains("+")) {
-                return true;
-            }
-
-            return false;
+            return aFileName.contains(myPattern) ? true : false;
         }
 
     }

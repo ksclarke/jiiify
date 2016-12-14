@@ -56,20 +56,24 @@ public class PathTester {
                 } else if (line.endsWith("info.json")) {
 
                 } else {
-                    final String size = parts[SIZE_INDEX];
+                    try {
+                        final String size = parts[SIZE_INDEX];
 
-                    if (size.equals("150,150")) {
-                        ++thumbnailCount;
-                        printThumbnailsCSV(ark, SERVER + path);
+                        if (size.equals("150,150")) {
+                            ++thumbnailCount;
+                            printThumbnailsCSV(ark, SERVER + path);
+                        }
+                    } catch (final ArrayIndexOutOfBoundsException details) {
+                        System.err.println("ERROR: " + path);
                     }
                 }
             }
         }
 
-        System.out.println();
-        System.out.println("ARK count: " + arkCount);
-        System.out.println("JP2 count: " + jp2Count);
-        System.out.println("Thumbnail count: " + thumbnailCount);
+        System.err.println();
+        System.err.println("ARK count: " + arkCount);
+        System.err.println("JP2 count: " + jp2Count);
+        System.err.println("Thumbnail count: " + thumbnailCount);
 
         reader.close();
     }
