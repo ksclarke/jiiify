@@ -6,10 +6,6 @@ import java.io.FileReader;
 
 public class PathTester {
 
-    private static final String INPUT_FILE = "/home/kevin/sinai-data-list.txt";
-
-    // private static final String INPUT_FILE = "/home/kevin/sinai-data-list.txt";
-
     private static final String SERVER = "https://sinai-images.library.ucla.edu/iiif/";
 
     private static final int ARK_INDEX = 0;
@@ -32,7 +28,7 @@ public class PathTester {
      * @throws Exception
      */
     public static void main(final String[] args) throws Exception {
-        final BufferedReader reader = new BufferedReader(new FileReader(INPUT_FILE));
+        final BufferedReader reader = new BufferedReader(new FileReader(args[0]));
 
         int thumbnailCount = 0;
         int jp2Count = 0;
@@ -54,6 +50,8 @@ public class PathTester {
                 } else if (line.endsWith("image.properties")) {
 
                 } else if (line.endsWith("info.json")) {
+
+                } else if (line.endsWith("README.txt")) {
 
                 } else {
                     try {

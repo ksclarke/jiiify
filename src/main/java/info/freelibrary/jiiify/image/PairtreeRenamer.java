@@ -26,12 +26,17 @@ public class PairtreeRenamer {
             System.out.println("  " + PairtreeRenamer.class.getName() + " \"/path/to/pairtree\" \"+\" \"~\"");
         }
 
-        final String pattern = args[0];
-        final String replacement = args[1];
+        final String pattern = args[1];
+        final String replacement = args[2];
 
-        for (final File file : FileUtils.listFiles(new File(args[0]), new PairtreeFilter(pattern), true)) {
-            if (file.renameTo(new File(file.getParentFile(), replace(file.getName(), pattern, replacement)))) {
-                System.out.println(file);
+        // Our pairtrees have three dirs/files that final need to final be replaced for final each item
+        for (int index = 0; index < 3; index++) {
+            for (final File file : FileUtils.listFiles(new File(args[0]), new PairtreeFilter(pattern), true)) {
+                final File newFile = new File(file.getParentFile(), replace(file.getName(), pattern, replacement));
+
+                if (file.renameTo(newFile)) {
+                    System.out.println(file);
+                }
             }
         }
     }

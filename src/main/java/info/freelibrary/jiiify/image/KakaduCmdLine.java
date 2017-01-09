@@ -129,17 +129,18 @@ public class KakaduCmdLine {
      * @param aImageFile The source image file
      * @throws IOException If there is trouble creating the JP2
      */
-    public final void createJP2(final String aID, final File aImageFile) throws IOException {
+    public final void createJP2(final String aID, final File aImageFile, final FileSystem aFS) throws IOException {
         final PairtreeObject ptObj = myPtRoot.getObject(aID);
 
         if (!ptObj.exists() && !ptObj.mkdirs()) {
             System.err.println("Can't create Pairtree structure: " + ptObj);
         } else {
-            run(KDU_COMPRESS, aImageFile, new File(ptObj, encodeID(aID) + "." + JP2_EXT));
+            run(KDU_COMPRESS, aImageFile, new File(ptObj, encodeID(aID) + "." + JP2_EXT), aFS);
         }
     }
 
-    private void run(final String aCommand, final File aInputFile, final File aOutputFile) throws IOException {
+    private void run(final String aCommand, final File aInputFile, final File aOutputFile, final FileSystem aFS)
+            throws IOException {
         final List<File> tempFiles = new ArrayList<>();
         final String[] command;
 
@@ -157,7 +158,7 @@ public class KakaduCmdLine {
                     reader.setInput(iis, true);
 
                     try {
-                        final String filePath = getDestFile(reader.getImageMetadata(0), aInputFile, tempFiles);
+                        final String filePath = getDestFile(aFS, reader.getImageMetadata(0), aInputFile, tempFiles);
 
                         if (filePath != null) {
                             command[16] = filePath;
@@ -173,6 +174,7 @@ public class KakaduCmdLine {
                     }
                 });
 
+                iis.close();
             }
 
             command[0] = new File(TMP_DIR, KDU_COMPRESS).getAbsolutePath();
@@ -184,8 +186,8 @@ public class KakaduCmdLine {
         execute(command, new KakaduListener(tempFiles));
     }
 
-    private final String getDestFile(final IIOMetadata aMetadata, final File aSrcFile, final List<File> aTempFileList)
-            throws XPathExpressionException, UnsupportedFormatException, IOException {
+    private final String getDestFile(final FileSystem aFS, final IIOMetadata aMetadata, final File aSrcFile,
+            final List<File> aTempFileList) throws XPathExpressionException, UnsupportedFormatException, IOException {
         final String[] names = aMetadata.getMetadataFormatNames();
         final int length = names.length;
 
@@ -213,8 +215,7 @@ public class KakaduCmdLine {
                         }
 
                         // This will, at this point, convert from CIELab to sRGB
-                        final FileSystem fileSystem = Vertx.vertx().fileSystem();
-                        Buffer imageBuffer = fileSystem.readFileBlocking(aSrcFile.getAbsolutePath());
+                        Buffer imageBuffer = aFS.readFileBlocking(aSrcFile.getAbsolutePath());
 
                         // We need the Java image processor to handle our CIELab images at the moment
                         final ImageObject image = new JavaImageObject(imageBuffer);
@@ -223,7 +224,7 @@ public class KakaduCmdLine {
                         // final ImageObject image = ImageUtils.getImage(imageBuffer);
 
                         imageBuffer = image.toBuffer(FileUtils.getExt(aSrcFile.getAbsolutePath()));
-                        fileSystem.writeFileBlocking(file.getAbsolutePath(), imageBuffer);
+                        aFS.writeFileBlocking(file.getAbsolutePath(), imageBuffer);
 
                         // Keep a record of this temporary file so we can clean it up
                         aTempFileList.add(file);
@@ -257,6 +258,7 @@ public class KakaduCmdLine {
      * @throws InterruptedException If the Kakadu command line is interrupted
      */
     public static void main(final String... args) throws IOException, InterruptedException {
+        final FileSystem fs = Vertx.vertx().fileSystem();
         final Stopwatch timer = new Stopwatch();
         final Options options = new Options();
 
@@ -304,7 +306,7 @@ public class KakaduCmdLine {
                                     } else {
                                         // We supply image ID and file to Kakadu
                                         try {
-                                            kakadu.createJP2(values[0], imageFile);
+                                            kakadu.createJP2(values[0], imageFile, fs);
 
                                             System.out.println("Converted: " + imageFile + " (" + (index + 1 -
                                                     (valuesList.size() - totalImages)) + " out of " + totalImages +
