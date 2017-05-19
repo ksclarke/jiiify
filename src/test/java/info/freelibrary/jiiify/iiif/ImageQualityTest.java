@@ -5,6 +5,11 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+/**
+ * A test of {@link info.freelibrary.jiiify.iiif.ImageQuality}
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageQualityTest {
 
     /**

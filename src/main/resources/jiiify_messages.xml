@@ -23,11 +23,15 @@
   <entry key="EXC-029">Failed to add new image file '{}' to watch list</entry>
   <entry key="EXC-030">Failed to add new folder '{}' to watch list</entry>
   <entry key="EXC-031">The polled WatchKey does not correspond to a watched directory</entry>
-  <entry key="EXC-032">Trying to calculate tiles, but image file '{}' does not exist</entry>
+  <!-- FIXME: 032 can be reused for a different error message -->
+  <entry key="EXC-032"></entry>
   <entry key="EXC-033">Tile size from {} wasn't valid so using the default '{}' instead</entry>
   <entry key="EXC-034">Unable to send tile path ({}) to image worker [{} attempts]: {}</entry>
   <entry key="EXC-035">Cannot write to the data directory: {}</entry>
   <entry key="EXC-036">Cannot create the data directory: {}</entry>
+  <entry key="EXC-037">FileSystem exists checked failed: {}</entry>
+  <entry key="EXC-038">Image buffer is null because there wasn't an appropriate reader</entry>
+  <entry key="EXC-039">Unable to send message to {}: {}</entry>
 
   <!-- Info messages -->
   <entry key="INFO-001">Ingesting added or updated image file: {}</entry>
@@ -36,6 +40,8 @@
   <!-- Warn messages -->
   <entry key="WARN-001">Failed to send tile path ({}) so trying again</entry>
   <entry key="WARN-002">Failed to send image path '{}' so trying again</entry>
+  <entry key="WARN-003">It's not recommended to run with less than 2 GB RAM available</entry>
+  <entry key="WARN-004">Set image processing cores to '{}'; available memory ({} GiB)</entry>
 
   <!-- Messages for debugging -->
   <entry key="DBG-000">Successfully undeployed {} [{}]</entry>

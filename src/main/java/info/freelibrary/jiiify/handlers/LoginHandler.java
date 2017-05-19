@@ -30,6 +30,11 @@ import io.vertx.ext.auth.jwt.JWTAuth;
 import io.vertx.ext.auth.jwt.JWTOptions;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * A handler that handles administrative interface login attempts.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class LoginHandler extends JiiifyHandler {
 
     public static final String GOOGLE = "google";
@@ -204,8 +209,8 @@ public class LoginHandler extends JiiifyHandler {
             if (users.length != 0) {
                 boolean found = false;
 
-                for (int index = 0; index < users.length; index++) {
-                    if (users[index].equals(email)) {
+                for (final String user : users) {
+                    if (user.equals(email)) {
                         found = true;
                     }
                 }

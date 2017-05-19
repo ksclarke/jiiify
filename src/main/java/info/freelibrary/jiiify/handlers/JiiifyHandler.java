@@ -14,6 +14,11 @@ import info.freelibrary.util.LoggerFactory;
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * An abstract handler from which other Jiiify handlers can inherit some basic functions.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 abstract class JiiifyHandler implements Handler<RoutingContext> {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass(), MESSAGES);

@@ -11,6 +11,11 @@ import info.freelibrary.jiiify.util.PathUtils;
 
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * A handler that handles configuration refresh requests.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class RefreshHandler extends JiiifyHandler {
 
     /**

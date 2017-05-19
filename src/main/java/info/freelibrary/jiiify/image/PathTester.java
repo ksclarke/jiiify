@@ -4,6 +4,11 @@ package info.freelibrary.jiiify.image;
 import java.io.BufferedReader;
 import java.io.FileReader;
 
+/**
+ * A temporary command line application for statistics (used for Sinai).
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class PathTester {
 
     private static final String SERVER = "https://sinai-images.library.ucla.edu/iiif/";

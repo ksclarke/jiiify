@@ -31,6 +31,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * A handler that handles search requests.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class SearchHandler extends JiiifyHandler {
 
     private final String TYPE_FIELD = "jiiify_type_s";
@@ -93,7 +98,7 @@ public class SearchHandler extends JiiifyHandler {
 
     /* FIXME: We need a better way to work with all this JSON -- a Solr object(?) */
     private ObjectNode toJsonNode(final JsonObject aJsonObject) throws URISyntaxException {
-        final List<Pair<Integer, Integer>> pairs = new ArrayList<Pair<Integer, Integer>>();
+        final List<Pair<Integer, Integer>> pairs = new ArrayList<>();
         final JsonObject emptyObject = new JsonObject();
         final JsonObject responseHeader = aJsonObject.getJsonObject("responseHeader", emptyObject);
         final JsonObject queryParams = responseHeader.getJsonObject("params", emptyObject);

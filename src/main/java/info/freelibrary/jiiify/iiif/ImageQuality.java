@@ -1,6 +1,7 @@
 
 package info.freelibrary.jiiify.iiif;
 
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.StringUtils;
 
 /**
@@ -30,16 +31,15 @@ public class ImageQuality {
     /**
      * Constructs a new <code>ImageQuality</code> from the supplied string.
      *
-     * @param aQualityString The value of the image quality
+     * @param aQuality The value of the image quality
      * @throws UnsupportedQualityException If the supplied quality isn't valid
      */
-    public ImageQuality(final String aQualityString) throws UnsupportedQualityException {
-        if (aQualityString.equals(DEFAULT) || aQualityString.equals(COLOR) || aQualityString.equals(GRAY) ||
-                aQualityString.equals(BITONAL)) {
-            myQuality = aQualityString;
+    public ImageQuality(final String aQuality) throws UnsupportedQualityException {
+        if (aQuality.equals(DEFAULT) || aQuality.equals(COLOR) || aQuality.equals(GRAY) || aQuality.equals(BITONAL)) {
+            myQuality = aQuality;
         } else {
-            throw new UnsupportedQualityException("EXC-012", aQualityString, StringUtils.toString(' ', DEFAULT,
-                    COLOR, GRAY, BITONAL));
+            final String availQualities = StringUtils.toString(' ', DEFAULT, COLOR, GRAY, BITONAL);
+            throw new UnsupportedQualityException(MessageCodes.EXC_012, aQuality, availQualities);
         }
     }
 

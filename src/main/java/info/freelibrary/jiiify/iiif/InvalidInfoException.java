@@ -3,6 +3,11 @@ package info.freelibrary.jiiify.iiif;
 
 import java.util.Locale;
 
+/**
+ * An exception thrown when there is an invalid info response.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class InvalidInfoException extends IIIFException {
 
     /**
@@ -18,7 +23,7 @@ public class InvalidInfoException extends IIIFException {
 
     /**
      * Creates an exception with message related to an invalid IIIF info response.
-     * 
+     *
      * @param aMessageKey A message key for the message
      */
     public InvalidInfoException(final String aMessageKey) {
@@ -27,7 +32,7 @@ public class InvalidInfoException extends IIIFException {
 
     /**
      * Creates an exception with message and additional details related to an invalid IIIF info response.
-     * 
+     *
      * @param aMessageKey A message key for the message
      * @param aVarargs Additional details for the message
      */
@@ -37,7 +42,7 @@ public class InvalidInfoException extends IIIFException {
 
     /**
      * Creates an exception with localized message related to an invalid IIIF info response.
-     * 
+     *
      * @param aLocale A locale for the exception message
      * @param aMessageKey A message key for the message
      */
@@ -47,7 +52,7 @@ public class InvalidInfoException extends IIIFException {
 
     /**
      * Creates an exception with localized message and additional details related to an invalid IIIF info response.
-     * 
+     *
      * @param aLocale A locale for the exception message
      * @param aMessageKey A message key for the message
      * @param aVarargs Additional details for the message
@@ -58,7 +63,7 @@ public class InvalidInfoException extends IIIFException {
 
     /**
      * Creates an exception from a root exception.
-     * 
+     *
      * @param aCause The underlying cause of this exception
      */
     public InvalidInfoException(final Throwable aCause) {
@@ -67,7 +72,7 @@ public class InvalidInfoException extends IIIFException {
 
     /**
      * Creates an exception with a message from a root exception.
-     * 
+     *
      * @param aCause The underlying cause of this exception
      * @param aMessageKey A message key for the message
      */
@@ -77,7 +82,7 @@ public class InvalidInfoException extends IIIFException {
 
     /**
      * Creates an exception with a localized message from a root exception.
-     * 
+     *
      * @param aCause The underlying cause of this exception
      * @param aLocale The locale to use for the message
      * @param aMessageKey A message key for the message
@@ -88,7 +93,7 @@ public class InvalidInfoException extends IIIFException {
 
     /**
      * Creates an exception with a message and additional details from a root exception.
-     * 
+     *
      * @param aCause The underlying cause of this exception
      * @param aMessageKey A message key for the message
      * @param aVarargs Additional details about the exception
@@ -99,7 +104,7 @@ public class InvalidInfoException extends IIIFException {
 
     /**
      * Creates an exception with a localized message and additional details from a root exception.
-     * 
+     *
      * @param aCause The underlying cause of this exception
      * @param aLocale The locale to use for the message
      * @param aMessageKey A message key for the message

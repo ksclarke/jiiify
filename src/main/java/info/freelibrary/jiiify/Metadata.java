@@ -1,6 +1,11 @@
 
 package info.freelibrary.jiiify;
 
+/**
+ * Defines basic metadata used in Jiiify.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public interface Metadata {
 
     public static final String CONTENT_TYPE = "Content-Type";

@@ -19,6 +19,11 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 
 import info.freelibrary.util.Logger;
 
+/**
+ * An abstract verticle test class.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public abstract class AbstractVerticleIT {
 
     private static final File LOGFILE = new File("target/phantomjsdriver.log");

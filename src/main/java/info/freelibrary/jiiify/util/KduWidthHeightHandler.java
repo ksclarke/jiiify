@@ -5,9 +5,9 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
- * A SAX handler for Kdu's jp2info output.
+ * A temporary SAX handler for Kdu's jp2info output.
  *
- * @author Kevin S. Clarke (<a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>)
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class KduWidthHeightHandler extends DefaultHandler {
 

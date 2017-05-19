@@ -21,6 +21,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * A handler that handles requests for IIIF manifests.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ManifestHandler extends JiiifyHandler {
 
     /**

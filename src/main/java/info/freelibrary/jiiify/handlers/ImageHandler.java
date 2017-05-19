@@ -27,6 +27,11 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler that handles image requests.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageHandler extends JiiifyHandler {
 
     /**

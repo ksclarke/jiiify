@@ -40,13 +40,12 @@ import info.freelibrary.util.FileExtFileFilter;
 import info.freelibrary.util.FileUtils;
 
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 
 /**
  * A verticle that watches a folder for image file changes and then fires off messages about them to the image tiler.
  *
- * @author Kevin S. Clarke (<a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>)
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class WatchFolderVerticle extends AbstractJiiifyVerticle {
 
@@ -67,16 +66,12 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
         recursivelyRegister(watchDir);
 
         // Get contacted every five seconds so we can check our watch folder [TODO: Make time configurable]
-        vertx.setPeriodic(5000, new Handler<Long>() {
-
-            @Override
-            public void handle(final Long aLong) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(MessageCodes.DBG_005);
-                }
-
-                checkWatchFolder();
+        vertx.setPeriodic(5000, aLong -> {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(MessageCodes.DBG_005);
             }
+
+            checkWatchFolder();
         });
 
         // FIXME: Blocking for now
@@ -91,7 +86,7 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
             final String filePath = file.getAbsolutePath();
 
             // Sends an ingest request which will be ignored if it exists already
-            sendMessage(json.put(FILE_PATH_KEY, filePath), ImageIngestVerticle.class.getName(), 0);
+            sendMessage(json.put(FILE_PATH_KEY, filePath), ImageIngestVerticle.class.getName());
         }
 
         aFuture.complete();
@@ -143,15 +138,15 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
                 final Path child = dir.resolve(name);
 
                 // Check the watch folder event
-                if (kind == ENTRY_MODIFY && !Files.isDirectory(child, NOFOLLOW_LINKS) && ImageFormat
-                        .isSupportedFormat(FileUtils.getExt(child.toString()))) {
+                if (kind == ENTRY_MODIFY && !Files.isDirectory(child, NOFOLLOW_LINKS) && ImageFormat.isSupportedFormat(
+                        FileUtils.getExt(child.toString()))) {
                     final String childPath = child.toAbsolutePath().toString();
                     final JsonObject json = new JsonObject().put(OVERWRITE_KEY, true);
 
                     LOGGER.info(MessageCodes.INFO_001, childPath);
 
                     // Notify our tiling verticle that we have an image that needs to be (re)tiled
-                    sendMessage(json.put(FILE_PATH_KEY, childPath), ImageIngestVerticle.class.getName(), 0);
+                    sendMessage(json.put(FILE_PATH_KEY, childPath), ImageIngestVerticle.class.getName());
                 } else if (kind == ENTRY_CREATE) {
                     try {
                         if (Files.isDirectory(child, NOFOLLOW_LINKS)) {

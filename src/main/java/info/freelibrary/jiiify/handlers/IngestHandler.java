@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.opencsv.CSVReader;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.jiiify.verticles.ImageIngestVerticle;
 import info.freelibrary.pairtree.PairtreeObject;
@@ -31,6 +32,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler that handles requests for image ingests.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class IngestHandler extends JiiifyHandler {
 
     /**
@@ -247,6 +253,8 @@ public class IngestHandler extends JiiifyHandler {
             options.setSendTimeout(sendTimeout);
         }
 
+        LOGGER.debug("Sending message [sendTimeout: {}] from IngestHandler: {}", sendTimeout, aJsonObject);
+
         eventBus.send(aVerticleName, aJsonObject, options, response -> {
             if (response.failed()) {
                 if (aCount < retryCount) {
@@ -254,9 +262,10 @@ public class IngestHandler extends JiiifyHandler {
                     sendMessage(aContext, aJsonObject, aVerticleName, aCount + 1);
                 } else {
                     if (response.cause() != null) {
-                        LOGGER.error(response.cause(), "Unable to send message to {}: {}", aVerticleName, aJsonObject);
+                        LOGGER.error(response.cause(), "Exception trying to send message to {}: {}", aVerticleName,
+                                aJsonObject);
                     } else {
-                        LOGGER.error("Unable to send message to {}: {}", aVerticleName, aJsonObject);
+                        LOGGER.error(MessageCodes.EXC_039, aVerticleName, aJsonObject);
                     }
                 }
             }

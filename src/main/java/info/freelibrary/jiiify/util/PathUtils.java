@@ -14,6 +14,11 @@ import info.freelibrary.jiiify.Constants;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+/**
+ * A utility class for dealing with IIIF paths.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class PathUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathUtils.class, MESSAGES);
@@ -89,8 +94,7 @@ public class PathUtils {
      * @param aIgnoreSlashFlag Whether slashes should be encoded or not
      * @return The percent-encoded string
      */
-    private static final String encode(final String aString, final boolean aIgnoreSlashFlag)
-            throws URISyntaxException {
+    private static final String encode(final String aString, final boolean aIgnoreSlashFlag) throws URISyntaxException {
         final CharacterIterator iterator = new StringCharacterIterator(decode(aString));
         final StringBuilder sb = new StringBuilder();
 

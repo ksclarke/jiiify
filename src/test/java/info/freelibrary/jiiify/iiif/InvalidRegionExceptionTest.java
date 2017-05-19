@@ -12,6 +12,11 @@ import org.junit.Test;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.TestConstants;
 
+/**
+ * A test of {@link info.freelibrary.jiiify.iiif.InvalidRegionException}
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class InvalidRegionExceptionTest {
 
     private Locale myDefaultLocale;
@@ -54,8 +59,7 @@ public class InvalidRegionExceptionTest {
     @Test
     public void testInvalidRegionExceptionStringObjectArray() {
         try {
-            throw new InvalidRegionException(MessageCodes.TEST_002, TestConstants.DETAIL_ONE,
-                    TestConstants.DETAIL_TWO);
+            throw new InvalidRegionException(MessageCodes.TEST_002, TestConstants.DETAIL_ONE, TestConstants.DETAIL_TWO);
         } catch (final InvalidRegionException details) {
             assertEquals(TestConstants.TEST_MSG_DETAILED, details.getMessage());
         }

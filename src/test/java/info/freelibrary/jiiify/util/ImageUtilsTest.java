@@ -1,3 +1,4 @@
+
 package info.freelibrary.jiiify.util;
 
 import static org.junit.Assert.assertEquals;
@@ -7,6 +8,11 @@ import org.junit.Test;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+/**
+ * A test of {@link info.freelibrary.jiiify.util.ImageUtils}
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageUtilsTest {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ImageUtilsTest.class);

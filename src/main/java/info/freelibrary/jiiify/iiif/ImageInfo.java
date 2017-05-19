@@ -5,8 +5,6 @@ import static info.freelibrary.jiiify.Constants.MESSAGES;
 
 import java.util.Objects;
 
-import org.json.simple.JSONObject;
-
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -14,6 +12,11 @@ import info.freelibrary.util.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * IIIF image info document.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageInfo {
 
     public final static String FILE_NAME = "info.json";
@@ -297,7 +300,7 @@ public class ImageInfo {
         json.put("profile", profile);
 
         if (myPhysicalScaleUnit != null) {
-            final JSONObject service = new JSONObject();
+            final JsonObject service = new JsonObject();
 
             service.put("@context", "http://iiif.io/api/annex/services/physdim/1/context.json");
             service.put("profile", "http://iiif.io/api/annex/services/physdim");

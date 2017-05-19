@@ -33,7 +33,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 /**
  * THIS IS STILL BROKEN.
  *
- * @author Kevin S. Clarke (<a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>)
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 @RunWith(VertxUnitRunner.class)
 public class JiiifyVerticleTest {
@@ -91,7 +91,7 @@ public class JiiifyVerticleTest {
     public static void after(final TestContext aContext) {
         final Iterator<String> idIterator = myVertx.deploymentIDs().iterator();
         final Async async = aContext.async();
-        final List<Future> futures = new ArrayList<Future>();
+        final List<Future> futures = new ArrayList<>();
 
         if (idIterator.hasNext()) {
             while (idIterator.hasNext()) {

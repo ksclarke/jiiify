@@ -16,6 +16,11 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.templ.TemplateEngine;
 
+/**
+ * Handler that handles exceptions.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class FailureHandler extends JiiifyHandler {
 
     public static final String ERROR_HEADER = "error-header";

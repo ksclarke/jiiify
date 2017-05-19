@@ -3,6 +3,11 @@ package info.freelibrary.jiiify.iiif;
 
 import java.util.Locale;
 
+/**
+ * An exception thrown when there is an issue with an invalid IIIF region.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class InvalidRegionException extends IIIFException {
 
     /**
@@ -19,7 +24,7 @@ public class InvalidRegionException extends IIIFException {
 
     /**
      * Creates an exception and message related to a IIIF region.
-     * 
+     *
      * @param aMessageKey A key that corresponds to the exception's message
      */
     public InvalidRegionException(final String aMessageKey) {
@@ -28,7 +33,7 @@ public class InvalidRegionException extends IIIFException {
 
     /**
      * Creates an exception and message with additional details related to a IIIF region.
-     * 
+     *
      * @param aMessageKey A key that corresponds to the exception's message
      * @param aVarargs Additional details to be added to the exception's message
      */
@@ -38,7 +43,7 @@ public class InvalidRegionException extends IIIFException {
 
     /**
      * Creates an exception and message related to a IIIF region.
-     * 
+     *
      * @param aLocale A locale for the exception's message
      * @param aMessageKey A key that corresponds to the exception's message
      */
@@ -48,7 +53,7 @@ public class InvalidRegionException extends IIIFException {
 
     /**
      * Creates an exception and localized message with additional details related to a IIIF region.
-     * 
+     *
      * @param aLocale A locale for the exception's message
      * @param aMessageKey A key that corresponds to the exception's message
      * @param aVarargs Additional details to be added to the exception's message
@@ -59,7 +64,7 @@ public class InvalidRegionException extends IIIFException {
 
     /**
      * Creates a region related exception from the supplied underlying cause.
-     * 
+     *
      * @param aCause An underlying cause of the <code>InvalidRegionException</code>
      */
     public InvalidRegionException(final Throwable aCause) {
@@ -69,7 +74,7 @@ public class InvalidRegionException extends IIIFException {
     /**
      * Creates a region related exception from the supplied underlying cause with the message for the supplied message
      * key.
-     * 
+     *
      * @param aCause An underlying cause of the <code>InvalidRegionException</code>
      * @param aMessageKey A key that corresponds to the exception's message
      */
@@ -78,9 +83,9 @@ public class InvalidRegionException extends IIIFException {
     }
 
     /**
-     * Creates a region related exception from the supplied underlying cause with the localized message for the
-     * supplied message key.
-     * 
+     * Creates a region related exception from the supplied underlying cause with the localized message for the supplied
+     * message key.
+     *
      * @param aCause An underlying cause of the <code>InvalidRegionException</code>
      * @param aLocale A locale for the exception's message
      * @param aMessageKey A key that corresponds to the exception's message
@@ -92,7 +97,7 @@ public class InvalidRegionException extends IIIFException {
     /**
      * Creates a region related exception from the supplied underlying cause with the message (and additional details)
      * for the supplied message key.
-     * 
+     *
      * @param aCause An underlying cause of the <code>InvalidRegionException</code>
      * @param aMessageKey A key that corresponds to the exception's message
      * @param aVarargs Additional details to be added to the exception's message
@@ -102,9 +107,9 @@ public class InvalidRegionException extends IIIFException {
     }
 
     /**
-     * Creates a region related exception from the supplied underlying cause with the localized message (and
-     * additional details) for the supplied message key.
-     * 
+     * Creates a region related exception from the supplied underlying cause with the localized message (and additional
+     * details) for the supplied message key.
+     *
      * @param aCause An underlying cause of the <code>InvalidRegionException</code>
      * @param aLocale A locale for the exception's message
      * @param aMessageKey A key that corresponds to the exception's message

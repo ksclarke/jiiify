@@ -1,7 +1,14 @@
 #! /bin/bash
 
+# Fail on first error
+set -e
+
 #
 # This is a startup script for devs. It's not intended for production. See the supervisor config for that.
+#
+# And, a troubleshooting tip... this file is filtered by the Maven resources plugin. If your editor updates this
+# file in the "target" directory after you edit the one in "src/main/resources" without filtering it, you'll get
+# a "bad substitution" error when you run the script.
 #
 
 # We're going to be opinionated about logging frameworks
@@ -9,7 +16,6 @@ LOG_DELEGATE="-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.S
 KEY_PASS_CONFIG="-Djiiify.key.pass=${jiiify.key.pass}"
 WATCH_FOLDER_DIR="-Djiiify.watch.folder=${jiiify.watch.folder}"
 JIIIFY_PORT="-Djiiify.port=${jiiify.port}"
-#VERTX_OPTS="-Dvertx.options.workerPoolSize=2"
 VERTX_OPTS=""
 DROPWIZARD_METRICS="-Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.registryName=jiiify.metrics"
 JMX_METRICS="-Dcom.sun.management.jmxremote -Dvertx.metrics.options.jmxEnabled=true"
@@ -23,6 +29,8 @@ AUTHBIND=""
 JIIIFY_CONFIG=""
 JKS_CONFIG=""
 XMX_CONFIG="${jiiify.memory}"
+JIIIFY_CORES="-Djiiify.cores=${jiiify.cores}"
+HEAP_DUMP_CONFIG="-XX:+HeapDumpOnOutOfMemoryError"
 
 # If we have authbind and it's configured to run our port, let's use it
 if hash authbind 2>/dev/null; then
@@ -90,7 +98,6 @@ if hash docker 2>/dev/null; then
         RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
 
         if [ "$RESPONSE_CODE" == "200" ]; then
-          echo "Successful start"
           break
         elif [ $INDEX == 10 ]; then
           echo "[ERROR] startup.sh | Failed to start Solr server"
@@ -107,5 +114,5 @@ if hash docker 2>/dev/null; then
   fi
 fi
 
-$AUTHBIND java $VERTX_OPTS $XMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR \
-  $JKS_CONFIG $JIIIFY_PORT $TOOLING $1 -jar "target/jiiify-${project.version}-exec.jar" $JIIIFY_CONFIG
+$AUTHBIND java $HEAP_DUMP_CONFIG $VERTX_OPTS $XMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR $JKS_CONFIG \
+$JIIIFY_PORT $TOOLING $JIIIFY_CORES $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG

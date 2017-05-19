@@ -22,6 +22,11 @@ import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * A verticle that calculates needed tiles and triggers their production.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class TileMasterVerticle extends AbstractJiiifyVerticle {
 
     @Override

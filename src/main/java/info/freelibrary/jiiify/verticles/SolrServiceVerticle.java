@@ -18,6 +18,8 @@ import io.vertx.serviceproxy.ProxyHelper;
 
 /**
  * A very simple verticle that publishes the Solr service.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class SolrServiceVerticle extends AbstractJiiifyVerticle {
 

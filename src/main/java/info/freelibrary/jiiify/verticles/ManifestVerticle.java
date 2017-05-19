@@ -53,6 +53,11 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Verticle that processes the internal IIIF manifest for an image.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ManifestVerticle extends AbstractJiiifyVerticle {
 
     @Override
@@ -145,7 +150,7 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
         aPtObj.put(MANIFEST_FILE, aManifest, putHandler -> {
             if (putHandler.succeeded()) {
                 final SolrService service = SolrService.createProxy(vertx, SOLR_SERVICE_KEY);
-                final List<KeyValue<String, ?>> fields = new ArrayList<KeyValue<String, ?>>();
+                final List<KeyValue<String, ?>> fields = new ArrayList<>();
 
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug("Wrote manifest file: {}", aPtObj.getPath(MANIFEST_FILE));

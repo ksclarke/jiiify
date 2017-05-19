@@ -6,6 +6,11 @@ import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+/**
+ * IIIF image size.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageSize {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ImageSize.class, Constants.MESSAGES);
@@ -32,7 +37,7 @@ public class ImageSize {
 
     /**
      * Creates a new image size object from the supplied width and height.
-     * 
+     *
      * @param aWidthHeight An integer value that is both height and width
      */
     public ImageSize(final int aWidthHeight) {
@@ -42,7 +47,7 @@ public class ImageSize {
 
     /**
      * Creates a new image size object from the supplied width and height.
-     * 
+     *
      * @param aWidth An image width
      * @param aHeight An image height
      */
@@ -53,7 +58,7 @@ public class ImageSize {
 
     /**
      * Creates a new image size object from the supplied IIIF URI width and height string.
-     * 
+     *
      * @param aSizeString A IIIF URI string with width and height
      * @throws InvalidSizeException If the supplied string isn't a valid height and width representation
      */
@@ -79,7 +84,7 @@ public class ImageSize {
 
             if (parts.length == 0) {
                 throw new InvalidSizeException(MessageCodes.EXC_015);
-            } else if ((aSizeString.length() - aSizeString.replace(",", "").length()) > 1) {
+            } else if (aSizeString.length() - aSizeString.replace(",", "").length() > 1) {
                 throw new InvalidSizeException(MessageCodes.EXC_016, aSizeString);
             }
 
@@ -223,8 +228,8 @@ public class ImageSize {
 
     /**
      * Returns height of the image request taking into consideration the supplied actual height of the image. If the
-     * supplied height is less than the requested height, the supplied height is returned. If the image size request
-     * is for a percentage of the original image, the percentage of the supplied number is returned.
+     * supplied height is less than the requested height, the supplied height is returned. If the image size request is
+     * for a percentage of the original image, the percentage of the supplied number is returned.
      *
      * @param aImageHeight The image's actual height in pixels
      * @param aImageWidth The image's actual width in pixels
@@ -239,7 +244,7 @@ public class ImageSize {
                     LOGGER.debug("Resizing based on a percentage: {}", myPercentage);
                 }
 
-                height = (myPercentage / 100) * aImageHeight;
+                height = myPercentage / 100 * aImageHeight;
             } else {
                 height = Math.round(scale(myWidth, aImageWidth) * aImageHeight);
 
@@ -268,8 +273,8 @@ public class ImageSize {
 
     /**
      * Returns width of the image request taking into consideration the supplied actual width of the image. If the
-     * supplied width is less than the requested width, the supplied width is returned. If the image size request is
-     * for a percentage of the original image, the percentage of the supplied number is returned.
+     * supplied width is less than the requested width, the supplied width is returned. If the image size request is for
+     * a percentage of the original image, the percentage of the supplied number is returned.
      *
      * @param aImageWidth The image's actual width in pixels
      * @param aImageHeight The image's actual height in pixels
@@ -284,7 +289,7 @@ public class ImageSize {
                     LOGGER.debug("Resizing based on a percentage: {}", myPercentage);
                 }
 
-                width = (myPercentage / 100) * aImageWidth;
+                width = myPercentage / 100 * aImageWidth;
             } else {
                 width = Math.round(scale(myHeight, aImageHeight) * aImageWidth);
 

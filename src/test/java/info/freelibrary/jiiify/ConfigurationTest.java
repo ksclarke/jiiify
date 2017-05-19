@@ -31,6 +31,11 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
+/**
+ * A test for the Jiiify configuration.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 @RunWith(VertxUnitRunner.class)
 public class ConfigurationTest {
 
@@ -396,19 +401,15 @@ public class ConfigurationTest {
                     final Method method = getSetUploadsDirMethod();
 
                     method.setAccessible(true);
-                    method.invoke(handler.result(), config, new Handler<AsyncResult<Configuration>>() {
-
-                        @Override
-                        public void handle(final AsyncResult<Configuration> aResult) {
-                            if (aResult.failed()) {
-                                aContext.fail(aResult.cause());
-                            } else {
-                                aContext.assertEquals(dir.getAbsolutePath(), aResult.result().getUploadsDir());
-                            }
-
-                            dir.delete();
-                            async.complete();
+                    method.invoke(handler.result(), config, (Handler<AsyncResult<Configuration>>) aResult -> {
+                        if (aResult.failed()) {
+                            aContext.fail(aResult.cause());
+                        } else {
+                            aContext.assertEquals(dir.getAbsolutePath(), aResult.result().getUploadsDir());
                         }
+
+                        dir.delete();
+                        async.complete();
                     });
                 } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException |
                         InvocationTargetException details) {
@@ -433,18 +434,14 @@ public class ConfigurationTest {
                     final JsonObject config = new JsonObject().put(UPLOADS_DIR_PROP, "java.io.tmpdir");
 
                     method.setAccessible(true);
-                    method.invoke(handler.result(), config, new Handler<AsyncResult<Configuration>>() {
-
-                        @Override
-                        public void handle(final AsyncResult<Configuration> aResult) {
-                            if (aResult.failed()) {
-                                aContext.fail(aResult.cause());
-                            } else {
-                                aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
-                            }
-
-                            async.complete();
+                    method.invoke(handler.result(), config, (Handler<AsyncResult<Configuration>>) aResult -> {
+                        if (aResult.failed()) {
+                            aContext.fail(aResult.cause());
+                        } else {
+                            aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
                         }
+
+                        async.complete();
                     });
                 } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException |
                         InvocationTargetException details) {
@@ -469,18 +466,14 @@ public class ConfigurationTest {
                     final JsonObject config = new JsonObject().put(UPLOADS_DIR_PROP, "");
 
                     method.setAccessible(true);
-                    method.invoke(handler.result(), config, new Handler<AsyncResult<Configuration>>() {
-
-                        @Override
-                        public void handle(final AsyncResult<Configuration> aResult) {
-                            if (aResult.failed()) {
-                                aContext.fail(aResult.cause());
-                            } else {
-                                aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
-                            }
-
-                            async.complete();
+                    method.invoke(handler.result(), config, (Handler<AsyncResult<Configuration>>) aResult -> {
+                        if (aResult.failed()) {
+                            aContext.fail(aResult.cause());
+                        } else {
+                            aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
                         }
+
+                        async.complete();
                     });
                 } catch (NoSuchMethodException | IllegalAccessException | IllegalArgumentException |
                         InvocationTargetException details) {
@@ -510,18 +503,14 @@ public class ConfigurationTest {
                     file.setReadOnly();
 
                     method.invoke(handler.result(), config.put(UPLOADS_DIR_PROP, file.getAbsolutePath()),
-                            new Handler<AsyncResult<Configuration>>() {
-
-                                @Override
-                                public void handle(final AsyncResult<Configuration> aResult) {
-                                    if (!aResult.failed()) {
-                                        aContext.fail("Failed to catch expected failure");
-                                    }
-
-                                    file.setWritable(true);
-                                    file.delete();
-                                    async.complete();
+                            (Handler<AsyncResult<Configuration>>) aResult -> {
+                                if (!aResult.failed()) {
+                                    aContext.fail("Failed to catch expected failure");
                                 }
+
+                                file.setWritable(true);
+                                file.delete();
+                                async.complete();
                             });
                 } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException |
                         InvocationTargetException | IOException details) {
@@ -548,23 +537,19 @@ public class ConfigurationTest {
 
                     method.setAccessible(true);
                     method.invoke(handler.result(), config.put(UPLOADS_DIR_PROP, file.getAbsolutePath()),
-                            new Handler<AsyncResult<Configuration>>() {
-
-                                @Override
-                                public void handle(final AsyncResult<Configuration> aResult) {
-                                    if (!aResult.failed()) {
-                                        aContext.fail("Failed to catch expected failure");
-                                    }
-
-                                    // It doesn't but just in case
-                                    if (file.exists()) {
-                                        file.delete();
-                                        aContext.fail(LOGGER.getMessage(
-                                                "Path that shouldn't exists ({}) exists, WTF?", file));
-                                    }
-
-                                    async.complete();
+                            (Handler<AsyncResult<Configuration>>) aResult -> {
+                                if (!aResult.failed()) {
+                                    aContext.fail("Failed to catch expected failure");
                                 }
+
+                                // It doesn't but just in case
+                                if (file.exists()) {
+                                    file.delete();
+                                    aContext.fail(LOGGER.getMessage("Path that shouldn't exists ({}) exists, WTF?",
+                                            file));
+                                }
+
+                                async.complete();
                             });
                 } catch (final InvocationTargetException details) {
                     async.complete();
@@ -591,19 +576,15 @@ public class ConfigurationTest {
 
                     method.setAccessible(true);
                     System.setProperty(UPLOADS_DIR_PROP, "java.io.tmpdir");
-                    method.invoke(handler.result(), config, new Handler<AsyncResult<Configuration>>() {
-
-                        @Override
-                        public void handle(final AsyncResult<Configuration> aResult) {
-                            if (aResult.failed()) {
-                                aContext.fail(aResult.cause());
-                            } else {
-                                aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
-                            }
-
-                            System.clearProperty(UPLOADS_DIR_PROP);
-                            async.complete();
+                    method.invoke(handler.result(), config, (Handler<AsyncResult<Configuration>>) aResult -> {
+                        if (aResult.failed()) {
+                            aContext.fail(aResult.cause());
+                        } else {
+                            aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
                         }
+
+                        System.clearProperty(UPLOADS_DIR_PROP);
+                        async.complete();
                     });
                 } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException |
                         InvocationTargetException details) {
@@ -632,20 +613,16 @@ public class ConfigurationTest {
                     method.setAccessible(true);
                     LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
                     System.setProperty(UPLOADS_DIR_PROP, "java.io.tmpdir");
-                    method.invoke(handler.result(), config, new Handler<AsyncResult<Configuration>>() {
-
-                        @Override
-                        public void handle(final AsyncResult<Configuration> aResult) {
-                            if (aResult.failed()) {
-                                aContext.fail(aResult.cause());
-                            } else {
-                                aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
-                            }
-
-                            System.clearProperty(UPLOADS_DIR_PROP);
-                            LoggingUtils.setLogLevel(Configuration.class, logLevel);
-                            async.complete();
+                    method.invoke(handler.result(), config, (Handler<AsyncResult<Configuration>>) aResult -> {
+                        if (aResult.failed()) {
+                            aContext.fail(aResult.cause());
+                        } else {
+                            aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
                         }
+
+                        System.clearProperty(UPLOADS_DIR_PROP);
+                        LoggingUtils.setLogLevel(Configuration.class, logLevel);
+                        async.complete();
                     });
                 } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException |
                         InvocationTargetException details) {
@@ -673,20 +650,16 @@ public class ConfigurationTest {
                     method.setAccessible(true);
                     LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
                     System.setProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR);
-                    method.invoke(handler.result(), config, new Handler<AsyncResult<Configuration>>() {
-
-                        @Override
-                        public void handle(final AsyncResult<Configuration> aResult) {
-                            if (aResult.failed()) {
-                                aContext.fail(aResult.cause());
-                            } else {
-                                aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
-                            }
-
-                            System.clearProperty(UPLOADS_DIR_PROP);
-                            LoggingUtils.setLogLevel(Configuration.class, logLevel);
-                            async.complete();
+                    method.invoke(handler.result(), config, (Handler<AsyncResult<Configuration>>) aResult -> {
+                        if (aResult.failed()) {
+                            aContext.fail(aResult.cause());
+                        } else {
+                            aContext.assertEquals(DEFAULT_UPLOADS_DIR, aResult.result().getUploadsDir());
                         }
+
+                        System.clearProperty(UPLOADS_DIR_PROP);
+                        LoggingUtils.setLogLevel(Configuration.class, logLevel);
+                        async.complete();
                     });
                 } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException |
                         InvocationTargetException details) {

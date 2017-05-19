@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.RoutePatterns;
 import info.freelibrary.jiiify.handlers.DownloadHandler;
 import info.freelibrary.jiiify.handlers.FailureHandler;
@@ -30,7 +31,6 @@ import info.freelibrary.jiiify.handlers.PropertiesHandler;
 import info.freelibrary.jiiify.handlers.RefreshHandler;
 import info.freelibrary.jiiify.handlers.SearchHandler;
 import info.freelibrary.jiiify.handlers.StatusHandler;
-import info.freelibrary.jiiify.handlers.ThumbnailsHandler;
 import info.freelibrary.jiiify.templates.HandlebarsTemplateEngine;
 import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.StringUtils;
@@ -57,6 +57,11 @@ import io.vertx.ext.web.handler.UserSessionHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
 import io.vertx.ext.web.templ.TemplateEngine;
 
+/**
+ * The main Jiiify verticle that route and creates other verticles.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RoutePatterns {
 
     private Configuration myConfig;
@@ -168,7 +173,6 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         router.getWithRegex(iiif(IMAGE_INFO_DOC_RE)).handler(new ImageInfoHandler(myConfig));
         router.getWithRegex(iiif(IMAGE_REQUEST_RE)).handler(new ImageHandler(myConfig));
         router.getWithRegex(iiif(IMAGE_MANIFEST_RE)).handler(new ManifestHandler(myConfig));
-        router.getWithRegex(iiif(IMAGE_THUMBNAILS_RE)).handler(new ThumbnailsHandler(myConfig));
         // router.getWithRegex(iiif(BASE_URI)).handler(new RedirectHandler(myConfig));
         router.get(iiif(IIIF_URI)).failureHandler(new IIIFErrorHandler(myConfig));
 
@@ -252,23 +256,37 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
     }
 
     /**
-     * Loads the set of verticles that comprise "Jiiify". Jiiify verticles are used to create content that's then
-     * served by the Jiiify handlers.
+     * Loads the set of verticles that comprise "Jiiify". Jiiify verticles are used to create content that's then served
+     * by the Jiiify handlers.
      *
      * @param aConfig A Jiiify configuration
      */
     @SuppressWarnings("rawtypes")
     private void deployJiiifyVerticles(final Handler<AsyncResult<Void>> aHandler) {
-        final DeploymentOptions workerOptions = new DeploymentOptions().setWorker(true).setMultiThreaded(true);
+        final DeploymentOptions imgWorkerOptions = new DeploymentOptions().setWorker(true).setMultiThreaded(true);
         final DeploymentOptions options = new DeploymentOptions();
-        final List<Future> futures = new ArrayList<Future>();
+        final List<Future> futures = new ArrayList<>();
         final Future<Void> future = Future.future();
 
         if (aHandler != null) {
             future.setHandler(aHandler);
 
+            // Limit worker threads to a configurable value
+            try {
+                String coreCount = System.getProperty("jiiify.cores");
+
+                if (coreCount == null || coreCount.equals("")) {
+                    coreCount = getCoreCount();
+                }
+
+                imgWorkerOptions.setWorkerPoolName(ImageWorkerVerticle.class.getSimpleName());
+                imgWorkerOptions.setWorkerPoolSize(Integer.parseInt(coreCount));
+            } catch (final NumberFormatException details) {
+                LOGGER.error(details.getMessage(), details);
+            }
+
             futures.add(deployVerticle(WatchFolderVerticle.class.getName(), options, Future.future()));
-            futures.add(deployVerticle(ImageWorkerVerticle.class.getName(), workerOptions, Future.future()));
+            futures.add(deployVerticle(ImageWorkerVerticle.class.getName(), imgWorkerOptions, Future.future()));
             futures.add(deployVerticle(TileMasterVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(SolrServiceVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageIndexVerticle.class.getName(), options, Future.future()));
@@ -287,6 +305,34 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 }
             });
         }
+    }
+
+    /**
+     * Returns a default core count for the machine on which Jiiify is running.
+     *
+     * @return A default core count
+     */
+    private String getCoreCount() {
+        final double memory = Runtime.getRuntime().totalMemory() / (1024.0 * 1024.0 * 1024.0);
+        int coreCount = Runtime.getRuntime().availableProcessors() - 1;
+
+        // We have to have at least one core
+        if (coreCount < 1) {
+            coreCount = 1;
+        }
+
+        // Make sure system has resources and adjust core count if necessary
+        if (memory >= 1.9) { // Give the JVM a little fudge space for -Xmx2G
+            if (memory < coreCount) {
+                // Below should perhaps be the more conservative floor(), but accounting for JVM underestimates
+                coreCount = (int) Math.ceil(memory);
+                LOGGER.warn(MessageCodes.WARN_004, coreCount, memory);
+            }
+        } else {
+            LOGGER.warn(MessageCodes.WARN_003);
+        }
+
+        return Integer.toString(coreCount);
     }
 
     /**

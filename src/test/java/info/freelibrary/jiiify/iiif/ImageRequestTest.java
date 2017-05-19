@@ -12,6 +12,11 @@ import info.freelibrary.jiiify.util.LoggingUtils;
 
 import ch.qos.logback.classic.Level;
 
+/**
+ * A test of {@link info.freelibrary.jiiify.iiif.ImageRequest}
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageRequestTest {
 
     private static final String IMAGE_REQUEST = "/iiif/asdf/full/full/0/default.jpg";

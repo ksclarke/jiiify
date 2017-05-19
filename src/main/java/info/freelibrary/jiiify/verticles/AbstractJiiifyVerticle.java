@@ -4,9 +4,9 @@ package info.freelibrary.jiiify.verticles;
 import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
-import static info.freelibrary.jiiify.MessageCodes.DBG_000;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
@@ -17,6 +17,11 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * An abstract verticle class from which other Jiiify verticles can inherit some basic functionality.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass().getName(), MESSAGES);
@@ -24,7 +29,7 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
     @Override
     public void stop(final Future<Void> aFuture) {
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(DBG_000, getClass().getName(), deploymentID());
+            LOGGER.debug(MessageCodes.DBG_000, getClass().getName(), deploymentID());
         }
 
         aFuture.complete();
@@ -56,9 +61,9 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
         eventBus.send(aVerticleName, aJsonObject, options, response -> {
             if (response.failed()) {
                 if (response.cause() != null) {
-                    LOGGER.error(response.cause(), "Unable to send message to {}: {}", aVerticleName, aJsonObject);
+                    LOGGER.error(response.cause(), MessageCodes.EXC_039, aVerticleName, aJsonObject);
                 } else {
-                    LOGGER.error("Unable to send message to {}: {}", aVerticleName, aJsonObject);
+                    LOGGER.error(MessageCodes.EXC_039, aVerticleName, aJsonObject);
                 }
             }
         });

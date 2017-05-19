@@ -21,6 +21,8 @@ import io.vertx.core.json.JsonObject;
 
 /**
  * Solr service implementation.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class SolrServiceImpl implements SolrService {
 
@@ -34,7 +36,7 @@ public class SolrServiceImpl implements SolrService {
 
     /**
      * Creates a implementation of the {@see info.freelibrary.jiiify.services.SolrService}.
-     * 
+     *
      * @param aConfig A Jiiify configuration object
      * @param aVertx A reference to the Vertx object
      */

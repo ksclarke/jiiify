@@ -8,12 +8,15 @@ import java.io.FileWriter;
 import java.io.FilenameFilter;
 import java.io.IOException;
 
-import org.json.simple.parser.ParseException;
-
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.util.FileUtils;
 
+/**
+ * A temporary command line application that can create info.json(s).
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class InfoCreateCmdLine {
 
     private InfoCreateCmdLine() {
@@ -27,7 +30,7 @@ public class InfoCreateCmdLine {
      * @throws IOException
      * @throws ParseException
      */
-    public static void main(final String[] args) throws FileNotFoundException, IOException, ParseException {
+    public static void main(final String[] args) throws FileNotFoundException, IOException {
         if (args.length != 2) {
             System.err.println("Usage: \"/path/to/jp2s/dir\" \"0.04576576577\"");
         }

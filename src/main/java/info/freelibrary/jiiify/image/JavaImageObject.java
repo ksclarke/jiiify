@@ -17,6 +17,7 @@ import javax.imageio.stream.ImageOutputStream;
 
 import org.imgscalr.Scalr;
 
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.ImageQuality;
 import info.freelibrary.jiiify.iiif.ImageRegion;
@@ -28,6 +29,11 @@ import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.buffer.Buffer;
 
+/**
+ * A native Java image object.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class JavaImageObject implements ImageObject {
 
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir"));
@@ -49,7 +55,7 @@ public class JavaImageObject implements ImageObject {
         myImage = ImageIO.read(cacheStream);
 
         if (myImage == null) {
-            LOGGER.error("No registered image reader!"); // FIXME: externalize exception message
+            LOGGER.error(MessageCodes.EXC_038);
         }
     }
 

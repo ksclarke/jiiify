@@ -1,6 +1,11 @@
 
 package info.freelibrary.jiiify;
 
+/**
+ * Defines HTTP routing patterns used by the {@link info.freelibrary.jiiify.JiiifyMainVerticle}.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public interface RoutePatterns {
 
     /**
@@ -33,11 +38,6 @@ public interface RoutePatterns {
      * A manifest request.
      */
     public static final String IMAGE_MANIFEST_RE = "\\{}\\/.+\\/manifest";
-
-    /**
-     * A thumbnails request.
-     */
-    public static final String IMAGE_THUMBNAILS_RE = "\\{}\\/.+\\/manifest\\/thumbnails";
 
     /**
      * A catch-all path for the administrative browse.
@@ -113,5 +113,5 @@ public interface RoutePatterns {
      * A route pattern for serving static files.
      */
     public static final String STATIC_FILES_RE =
-            ".*(\\.js|\\.css|\\.ico|\\.png|\\.gif|\\.ttf|\\.eot|\\.svg|\\.woff|\\.txt)$";
+            ".*(\\.js|\\.css|\\.ico|\\.png|\\.gif|\\.ttf|\\.eot|\\.svg|\\.woff|\\.txt|translation\\.json)$";
 }

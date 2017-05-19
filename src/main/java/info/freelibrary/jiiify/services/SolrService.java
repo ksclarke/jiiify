@@ -17,6 +17,8 @@ import io.vertx.serviceproxy.ProxyHelper;
 
 /**
  * Solr service interface that is used to generate the handler, proxy code, etc.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 @ProxyGen
 @VertxGen
@@ -24,7 +26,7 @@ public interface SolrService {
 
     /**
      * Creates a service object from the {@see info.freelibrary.jiiify.services.impl.SolrServiceImpl} implementation.
-     * 
+     *
      * @param aVertx A reference to the Vertx object
      * @return A new Solr service object
      */
@@ -35,7 +37,7 @@ public interface SolrService {
 
     /**
      * Creates a proxy object for the Solr service.
-     * 
+     *
      * @param aVertx A reference to the Vertx object
      * @param aAddress A string address at which the proxy will respond
      * @return A Solr service proxy
@@ -46,7 +48,7 @@ public interface SolrService {
 
     /**
      * Searches Solr using the supplied JSON object for search and the handler for results.
-     * 
+     *
      * @param aJsonObject A Solr search configured in a JSON object
      * @param aHandler A handler to handle the results of the search
      */
@@ -54,7 +56,7 @@ public interface SolrService {
 
     /**
      * Indexes content from the supplied JSON object in Solr.
-     * 
+     *
      * @param aJsonObject The information to be indexed in Solr
      * @param aHandler A handler to handle the result of the indexing
      */

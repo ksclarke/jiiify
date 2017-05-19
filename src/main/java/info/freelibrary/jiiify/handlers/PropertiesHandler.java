@@ -24,6 +24,11 @@ import info.freelibrary.pairtree.PairtreeObject;
 
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * A handler that handles requests for property files.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class PropertiesHandler extends JiiifyHandler {
 
     /**

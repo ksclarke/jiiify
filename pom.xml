@@ -8,6 +8,36 @@
   <name>The Jiiify Image Server</name>
   <description>A Java-based IIIF Image Server</description>
 
+  <licenses>
+    <license>
+      <name>The 3-Clause BSD License</name>
+      <url>https://opensource.org/licenses/BSD-3-Clause</url>
+    </license>
+  </licenses>
+
+  <scm>
+    <connection>scm:git:git@github.com:ksclarke/jiiify.git</connection>
+    <developerConnection>scm:git:git@github.com:ksclarke/jiiify.git</developerConnection>
+    <url>git@github.com:ksclarke/jiiify.git</url>
+  </scm>
+
+  <issueManagement>
+    <system>GitHub</system>
+    <url>https://github.com/ksclarke/jiiify/issues</url>
+  </issueManagement>
+
+  <developers>
+    <developer>
+      <email>ksclarke@ksclarke.io</email>
+      <name>Kevin S. Clarke</name>
+      <url>http://kevinclarke.info</url>
+      <roles>
+        <role>developer</role>
+      </roles>
+      <timezone>America/New_York</timezone>
+    </developer>
+  </developers>
+
   <properties>
     <!-- Application properties -->
     <jiffy.service.prefix>/iiif</jiffy.service.prefix>
@@ -17,11 +47,12 @@
     <!-- A default value that can be overridden via Maven profile or on the command line -->
     <dev.tools />
     <jiiify.memory />
+    <jiiify.cores />
     <!-- These are samples for testing purposes only ... DO NOT USE THEM IN PRODUCTION!!! -->
     <jiiify.json.config.path>${basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
 
     <!-- Versions of dependencies managed in this POM -->
-    <vertx.version>3.3.2</vertx.version>
+    <vertx.version>3.4.1</vertx.version>
     <opencsv.version>3.7</opencsv.version>
     <javatuples.version>1.2</javatuples.version>
     <commons.cli.version>1.3.1</commons.cli.version>
@@ -32,10 +63,10 @@
     <handlebars.version>4.0.6</handlebars.version>
     <scribe.version>1.3.7</scribe.version>
     <json.path.version>2.1.0</json.path.version>
-    <vertx.pairtree.version>0.0.1-SNAPSHOT</vertx.pairtree.version>
+    <vertx.pairtree.version>0.0.2</vertx.pairtree.version>
 
     <!-- Versions of plugins managed in this POM -->
-    <maven.shade.plugin.version>2.4.1</maven.shade.plugin.version>
+    <maven.shade.plugin.version>3.0.0</maven.shade.plugin.version>
     <maven.compiler.plugin.version>3.3</maven.compiler.plugin.version>
     <maven.clean.plugin.version>2.6.1</maven.clean.plugin.version>
     <maven.keytool.plugin.version>1.5</maven.keytool.plugin.version>
@@ -46,13 +77,6 @@
   </properties>
 
   <dependencies>
-    <!-- FIXME: to remove, needed for temporary reasons -->
-    <dependency>
-      <groupId>com.googlecode.json-simple</groupId>
-      <artifactId>json-simple</artifactId>
-      <version>1.1.1</version>
-    </dependency>
-
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
@@ -94,6 +118,11 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-dropwizard-metrics</artifactId>
+      <version>${vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-camel-bridge</artifactId>
       <version>${vertx.version}</version>
     </dependency>
     <!-- Administrative UI dependencies -->
@@ -141,6 +170,13 @@
       <groupId>com.jayway.jsonpath</groupId>
       <artifactId>json-path</artifactId>
       <version>${json.path.version}</version>
+      <exclusions>
+        <!-- json-path's dependencies include duplicate classes, which causes a build warning without the below -->
+        <exclusion>
+          <groupId>net.minidev</groupId>
+          <artifactId>accessors-smart</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <!-- Image-oriented dependencies -->
     <dependency>
@@ -148,11 +184,8 @@
       <artifactId>imgscalr-lib</artifactId>
       <version>${imgscalr.version}</version>
     </dependency>
-    <dependency>
-      <groupId>info.freelibrary</groupId>
-      <artifactId>opencv</artifactId>
-      <version>${opencv.version}</version>
-    </dependency>
+    <!-- <dependency> <groupId>info.freelibrary</groupId> <artifactId>opencv</artifactId> <version>${opencv.version}</version> 
+      </dependency> -->
     <dependency>
       <groupId>com.twelvemonkeys.imageio</groupId>
       <artifactId>imageio-jpeg</artifactId>
@@ -168,11 +201,8 @@
       <artifactId>imageio-bmp</artifactId>
       <version>${twelvemonkeys.version}</version>
     </dependency>
-    <dependency>
-      <groupId>kdu_jni</groupId>
-      <artifactId>freelib-kakadu</artifactId>
-      <version>${kakadu.version}</version>
-    </dependency>
+    <!-- <dependency> <groupId>kdu_jni</groupId> <artifactId>freelib-kakadu</artifactId> <version>${kakadu.version}</version> 
+      </dependency> -->
     <!-- Below here are our testing dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -211,7 +241,6 @@
         <plugin>
           <groupId>info.freelibrary</groupId>
           <artifactId>freelib-utils</artifactId>
-          <version>${freelib.utils.version}</version>
           <executions>
             <execution>
               <id>set-key-pass</id>
@@ -250,19 +279,26 @@
           <configuration>
             <source>${maven.compiler.source}</source>
             <target>${maven.compiler.target}</target>
+            <!-- Don't change format of in/excludes values - https://issues.apache.org/jira/browse/MCOMPILER-98 -->
+            <includes>
+              <include>**/*.java</include>
+            </includes>
+            <excludes>
+              <exclude>**/NativeImageObject.java</exclude>
+            </excludes>
             <annotationProcessors>
               <annotationProcessor>io.vertx.codegen.CodeGenProcessor</annotationProcessor>
             </annotationProcessors>
             <generatedSourcesDirectory>${project.basedir}/src/main/generated</generatedSourcesDirectory>
             <compilerArgs>
-              <arg>-AoutputDirectory=${project.basedir}/src/main</arg>
+              <arg>-Acodegen.output=${project.basedir}/src/main</arg>
             </compilerArgs>
-            <!-- Fork so we can set JUL logging configuration for CodeGen; change to 'false' for debugging failures -->
+            <!-- Don't fork, so we can see CodeGen's logging -->
             <fork>false</fork>
             <properties>
+              <!-- CodeGen logging configuration -->
               <java.util.logging.config.file>src/main/resources/logging.properties</java.util.logging.config.file>
             </properties>
-            <!-- End of CodeGen logging configuration -->
           </configuration>
         </plugin>
       </plugins>
@@ -555,18 +591,9 @@
         </os>
       </activation>
       <dependencies>
-        <dependency>
-          <groupId>info.freelibrary</groupId>
-          <artifactId>opencv</artifactId>
-          <version>${opencv.version}</version>
-          <classifier>linux64</classifier>
-        </dependency>
-        <dependency>
-          <groupId>kdu_jni</groupId>
-          <artifactId>freelib-kakadu</artifactId>
-          <version>${kakadu.version}</version>
-          <classifier>linux64</classifier>
-        </dependency>
+        <!-- <dependency> <groupId>info.freelibrary</groupId> <artifactId>opencv</artifactId> <version>${opencv.version}</version> 
+          <classifier>linux64</classifier> </dependency> <dependency> <groupId>kdu_jni</groupId> <artifactId>freelib-kakadu</artifactId> 
+          <version>${kakadu.version}</version> <classifier>linux64</classifier> </dependency> -->
       </dependencies>
       <!-- Default "out-of-the-box" deployment options to be overridden -->
       <properties>
@@ -649,7 +676,7 @@
   <parent>
     <groupId>info.freelibrary</groupId>
     <artifactId>freelib-parent</artifactId>
-    <version>0.1.8</version>
+    <version>0.1.10</version>
   </parent>
 
 </project>

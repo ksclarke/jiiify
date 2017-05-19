@@ -10,6 +10,11 @@ import org.junit.Test;
 
 import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 
+/**
+ * A test of {@link info.freelibrary.jiiify.iiif.ImageRegion}
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageRegionTest {
 
     @Test

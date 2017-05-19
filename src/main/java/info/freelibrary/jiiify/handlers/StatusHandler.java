@@ -9,6 +9,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.dropwizard.MetricsService;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * A handler that handles status requests.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class StatusHandler extends JiiifyHandler {
 
     /* The critical flag as expected by our Nagios script */
@@ -41,8 +46,8 @@ public class StatusHandler extends JiiifyHandler {
         final HttpServerResponse response = aContext.response();
 
         if (statusCheck.equals("basic")) {
-            switch (metrics.getJsonObject("vertx.verticles." + JiiifyMainVerticle.class.getName(), new JsonObject()
-                    .put(COUNT, -1)).getInteger(COUNT)) {
+            switch (metrics.getJsonObject("vertx.verticles." + JiiifyMainVerticle.class.getName(), new JsonObject().put(
+                    COUNT, -1)).getInteger(COUNT)) {
                 case 0:
                     response.end(CRITICAL + "Jiiify Main Verticle is dead");
                     break;

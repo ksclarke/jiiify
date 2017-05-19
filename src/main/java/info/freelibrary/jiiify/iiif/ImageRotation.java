@@ -3,6 +3,11 @@ package info.freelibrary.jiiify.iiif;
 
 import info.freelibrary.jiiify.MessageCodes;
 
+/**
+ * IIIF image rotation.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageRotation {
 
     public boolean isMirrored;

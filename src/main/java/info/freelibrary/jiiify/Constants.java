@@ -3,6 +3,11 @@ package info.freelibrary.jiiify;
 
 import java.nio.charset.Charset;
 
+/**
+ * Defines constants used in Jiiify.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public interface Constants {
 
     public static final String UTF_8_ENCODING = Charset.forName("UTF-8").name();

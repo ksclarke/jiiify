@@ -8,12 +8,17 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.junit.Test;
 
-import ch.qos.logback.classic.Level;
-
 import info.freelibrary.jiiify.Constants;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+import ch.qos.logback.classic.Level;
+
+/**
+ * A test of {@link info.freelibrary.jiiify.util.LoggingUtils}
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class LoggingUtilsTest {
 
     // We're not logging this test but just grabbing the logger of the class that we want to test

@@ -8,6 +8,11 @@ import java.lang.reflect.InvocationTargetException;
 
 import org.junit.Test;
 
+/**
+ * A test class for the message codes.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class MessageCodesTest {
 
     @Test

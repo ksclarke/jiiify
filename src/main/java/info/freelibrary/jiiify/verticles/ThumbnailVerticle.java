@@ -22,6 +22,11 @@ import info.freelibrary.pairtree.PairtreeObject;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Thumbnail verticle requests thumbnail be created and triggers the manifest verticle.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ThumbnailVerticle extends AbstractJiiifyVerticle {
 
     @Override
@@ -48,8 +53,8 @@ public class ThumbnailVerticle extends AbstractJiiifyVerticle {
                         }
 
                         infoMessage.put(FILE_PATH_KEY, filePath).put(IIIF_PATH_KEY, request.toString());
-                        sendMessage(infoMessage, ImageWorkerVerticle.class.getName(), 0);
-                        sendMessage(infoMessage, ManifestVerticle.class.getName(), 0);
+                        sendMessage(infoMessage, ImageWorkerVerticle.class.getName());
+                        sendMessage(infoMessage, ManifestVerticle.class.getName());
                         messageHandler.reply(SUCCESS_RESPONSE);
                     } catch (final IOException details) {
                         LOGGER.error(details, MessageCodes.EXC_000, details.getMessage());

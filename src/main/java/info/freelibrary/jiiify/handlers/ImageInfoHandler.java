@@ -23,7 +23,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * A handler that handles requests for image info JSON files.
  *
- * @author Kevin S. Clarke <a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImageInfoHandler extends JiiifyHandler {
 

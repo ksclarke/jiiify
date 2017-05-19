@@ -15,6 +15,11 @@ import info.freelibrary.jiiify.util.PathUtils;
 
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler that handles requests for items from the administrative interface.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ItemHandler extends JiiifyHandler {
 
     /**

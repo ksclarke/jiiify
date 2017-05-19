@@ -3,6 +3,11 @@ package info.freelibrary.jiiify.iiif;
 
 import java.util.Locale;
 
+/**
+ * An exception thrown when there is an invalid IIIF format.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class UnsupportedFormatException extends IIIFException {
 
     /**

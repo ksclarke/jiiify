@@ -13,6 +13,11 @@ import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
+/**
+ * IIIF image request.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageRequest implements Cloneable {
 
     private final Logger LOGGER = LoggerFactory.getLogger(ImageRequest.class, MESSAGES);

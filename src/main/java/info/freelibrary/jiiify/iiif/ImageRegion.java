@@ -3,6 +3,11 @@ package info.freelibrary.jiiify.iiif;
 
 import info.freelibrary.jiiify.MessageCodes;
 
+/**
+ * IIIF image region.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageRegion {
 
     public static final String FULL = "full";
@@ -29,7 +34,7 @@ public class ImageRegion {
 
     /**
      * Creates a new image region object from the supplied X, Y, width and height.
-     * 
+     *
      * @param aX A X dimension for an image region
      * @param aY A Y dimension for an image region
      * @param aWidth A width for an image region
@@ -41,7 +46,7 @@ public class ImageRegion {
 
     /**
      * Creates a new image region object from the supplied IIIF URI image region string.
-     * 
+     *
      * @param aRegionString A region string from a IIIF URI
      * @throws InvalidRegionException If the supplied string isn't a valid representation of a IIIF region
      */
@@ -70,7 +75,7 @@ public class ImageRegion {
 
     /**
      * Gets the integer value for the supplied region coordinate.
-     * 
+     *
      * @param aRegionCoordinate A region coordinate
      * @return An integer value for the supplied region coordinate
      */
@@ -80,7 +85,7 @@ public class ImageRegion {
 
     /**
      * Gets the float value for the supplied region coordinate.
-     * 
+     *
      * @param aRegionCoordinate A region coordinate
      * @return A float value for the supplied region coordinate
      */
@@ -119,7 +124,7 @@ public class ImageRegion {
 
     /**
      * Returns whether this image region is represented with percentages.
-     * 
+     *
      * @return True if this image region is represented with percentages
      */
     public boolean usesPercentages() {
@@ -128,7 +133,7 @@ public class ImageRegion {
 
     /**
      * Returns whether this image region represents the full image.
-     * 
+     *
      * @return True if this image region represents the full image
      */
     public boolean isFullImage() {

@@ -12,6 +12,11 @@ import org.junit.Test;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.TestConstants;
 
+/**
+ * A test of {@link info.freelibrary.jiiify.iiif.InvalidSizeException}.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class InvalidSizeExceptionTest {
 
     private Locale myDefaultLocale;

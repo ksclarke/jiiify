@@ -11,6 +11,11 @@ import org.javatuples.KeyValue;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * A utilities class for dealing with Solr requests and responses.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class SolrUtils {
 
     public static final String ADD = "add";
@@ -34,7 +39,7 @@ public class SolrUtils {
 
     /**
      * Returns simple indexing JSON document.
-     * 
+     *
      * @param aKeyValues A list of key values that will be indexed
      * @return A JSON object encoding what should be indexed
      */
@@ -55,7 +60,7 @@ public class SolrUtils {
 
     /**
      * Add a new list of key values to an existing index update.
-     * 
+     *
      * @param aUpdate A JSON object that encodes an index update
      * @param aKeyValues Additional key values that should be added to the index
      * @return An encoding of the updated indexing request
@@ -76,7 +81,7 @@ public class SolrUtils {
 
     /**
      * Gets a simple index update document.
-     * 
+     *
      * @param aKeyValues A list of key values to add to an index update
      * @return A JSON object with the index update encoded
      */
@@ -96,7 +101,7 @@ public class SolrUtils {
 
     /**
      * Add a commit to a Solr index update.
-     * 
+     *
      * @param aUpdate An update to perform against a Solr index
      * @return The index update with the commit added
      */

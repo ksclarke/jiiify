@@ -5,8 +5,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.StringUtils;
 
+/**
+ * IIIF image format.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageFormat {
 
     /* Image extensions */
@@ -59,8 +65,8 @@ public class ImageFormat {
 
     /* Initialization of the extension to MIME type maps */
     static {
-        final HashMap<String, String> formatExtMap = new HashMap<String, String>(7);
-        final HashMap<String, String> formatMTMap = new HashMap<String, String>(7);
+        final HashMap<String, String> formatExtMap = new HashMap<>(7);
+        final HashMap<String, String> formatMTMap = new HashMap<>(7);
 
         formatExtMap.put(JPG_EXT, JPG_MIME_TYPE);
         formatExtMap.put(TIF_EXT, TIF_MIME_TYPE);
@@ -95,13 +101,14 @@ public class ImageFormat {
     /**
      * Creates a new <code>ImageFormat</code> from the supplied query string.
      *
-     * @param aFormatString The format part of a IIIF query
+     * @param aFormat The format part of a IIIF query
      */
-    public ImageFormat(final String aFormatString) throws UnsupportedFormatException {
-        if (EXT2MIME_MAP.containsKey(aFormatString)) {
-            myFormat = MIME2EXT_MAP.get(EXT2MIME_MAP.get(aFormatString));
+    public ImageFormat(final String aFormat) throws UnsupportedFormatException {
+        if (EXT2MIME_MAP.containsKey(aFormat)) {
+            myFormat = MIME2EXT_MAP.get(EXT2MIME_MAP.get(aFormat));
         } else {
-            throw new UnsupportedFormatException("EXC-011", aFormatString, StringUtils.joinKeys(EXT2MIME_MAP, ' '));
+            final String availFormats = StringUtils.joinKeys(EXT2MIME_MAP, ' ');
+            throw new UnsupportedFormatException(MessageCodes.EXC_011, aFormat, availFormats);
         }
     }
 

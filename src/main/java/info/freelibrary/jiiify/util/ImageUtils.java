@@ -1,8 +1,7 @@
 
 package info.freelibrary.jiiify.util;
 
-import static info.freelibrary.jiiify.MessageCodes.EXC_026;
-import static info.freelibrary.jiiify.iiif.ImageFormat.JP2_MIME_TYPE;
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 
 import java.awt.Dimension;
 import java.io.File;
@@ -17,18 +16,13 @@ import java.util.List;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
-
-import org.xml.sax.InputSource;
-import org.xml.sax.XMLReader;
 
 import info.freelibrary.jiiify.Constants;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.image.ImageObject;
 import info.freelibrary.jiiify.image.JavaImageObject;
-import info.freelibrary.jiiify.image.NativeImageObject;
 import info.freelibrary.util.FileUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -37,9 +31,14 @@ import info.freelibrary.util.StringUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 
+/**
+ * A utility class for some common image processing needs.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageUtils {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ImageUtils.class, Constants.MESSAGES);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageUtils.class, MESSAGES);
 
     private static boolean useNativeLibs = false;
 
@@ -155,8 +154,6 @@ public class ImageUtils {
         }
 
         if (LOGGER.isDebugEnabled()) {
-            new StringBuilder();
-
             LOGGER.debug("{} tiles needed for {}", list.size(), aID);
 
             for (final Object path : list.toArray()) {
@@ -164,7 +161,7 @@ public class ImageUtils {
             }
         }
 
-        // FIXME: tiles that are requested first should be at the top of the list
+        Collections.reverse(list);
         return Collections.unmodifiableList(list);
     }
 
@@ -193,132 +190,23 @@ public class ImageUtils {
      * @return An image dimension
      */
     public static Dimension getImageDimension(final File aImageFile) throws IOException {
-        // FIXME: Workaround for JP2 until it's supported by our ImageIO libraries
-        if (JP2_MIME_TYPE.equals(ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getAbsolutePath())))) {
-            final String[] command = new String[] { System.getProperty("java.io.tmpdir") + "/kdu_jp2info", "-i",
-                aImageFile.getAbsolutePath() };
-            final int height;
-            final int width;
+        final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getName()));
+        final Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mimeType);
+
+        if (readers.hasNext()) {
+            final ImageReader reader = readers.next();
+            final ImageInputStream inStream = ImageIO.createImageInputStream(aImageFile);
 
             try {
-                final Process process = Runtime.getRuntime().exec(command);
-                final int exitCode = process.waitFor();
-
-                if (exitCode == 0) {
-                    final SAXParserFactory saxParserFactory = SAXParserFactory.newInstance();
-
-                    saxParserFactory.setNamespaceAware(true);
-
-                    final SAXParser saxParser = saxParserFactory.newSAXParser();
-                    final XMLReader xmlReader = saxParser.getXMLReader();
-                    final KduWidthHeightHandler whHandler = new KduWidthHeightHandler();
-
-                    xmlReader.setContentHandler(whHandler);
-                    xmlReader.parse(new InputSource(process.getInputStream()));
-
-                    height = whHandler.myHeight;
-                    width = whHandler.myWidth;
-                } else {
-                    throw new IOException("kdu_jp2info exit code: " + exitCode);
-                }
-            } catch (final Exception details) {
-                throw new IOException(details);
+                reader.setInput(inStream);
+                return new Dimension(reader.getWidth(0), reader.getHeight(0));
+            } finally {
+                inStream.close();
+                reader.dispose();
             }
-
-            // Cross-platform (RHEL/Ubuntu) issues so commenting out for now
-            // if (JP2_MIME_TYPE.equals(ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getAbsolutePath())))) {
-            // final int height;
-            // final int width;
-            //
-            // try {
-            // final Jp2_source inputSource = new Jp2_source();
-            // final Jp2_family_src jp2_family_in = new Jp2_family_src();
-            // final Jp2_locator loc = new Jp2_locator();
-            //
-            // jp2_family_in.Open(aImageFile.getAbsolutePath(), true);
-            // inputSource.Open(jp2_family_in, loc);
-            // inputSource.Read_header();
-            //
-            // final Kdu_compressed_source kduIn = inputSource;
-            // final Kdu_codestream codestream = new Kdu_codestream();
-            //
-            // codestream.Create(kduIn);
-            //
-            // final Kdu_channel_mapping channels = new Kdu_channel_mapping();
-            //
-            // if (inputSource.Exists()) {
-            // channels.Configure(inputSource, false);
-            // } else {
-            // channels.Configure(codestream);
-            // }
-            //
-            // final int ref_component = channels.Get_source_component(0);
-            // final Kdu_dims image_dims = new Kdu_dims();
-            //
-            // codestream.Get_dims(ref_component, image_dims);
-            //
-            // final Kdu_coords imageSize = image_dims.Access_size();
-            //
-            // width = imageSize.Get_x();
-            // height = imageSize.Get_y();
-            //
-            // channels.Native_destroy();
-            //
-            // if (codestream.Exists()) {
-            // codestream.Destroy();
-            // }
-            //
-            // kduIn.Native_destroy();
-            // inputSource.Native_destroy();
-            // jp2_family_in.Native_destroy();
-            // } catch (final KduException details) {
-            // LOGGER.error(details.getMessage(), details);
-            // throw new IOException(details);
-            // } catch (final Throwable details) {
-            // LOGGER.error(details.getMessage(), details);
-            // throw new IOException(details);
-            // }
-
-            // // Using OpenCV
-            // final Buffer buffer = Buffer.buffer(IOUtils.readBytes(new FileInputStream(aImageFile)));
-            // final NativeImageObject image = new NativeImageObject(buffer);
-            //
-            // height = image.getHeight();
-            // width = image.getWidth();
-            //
-            // image.flush();
-
-            return new Dimension(width, height);
-        } else {
-            final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getName()));
-            final Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mimeType);
-
-            if (readers.hasNext()) {
-                final ImageReader reader = readers.next();
-                final ImageInputStream inStream = ImageIO.createImageInputStream(aImageFile);
-
-                try {
-                    reader.setInput(inStream);
-                    return new Dimension(reader.getWidth(0), reader.getHeight(0));
-                } finally {
-                    inStream.close();
-                    reader.dispose();
-                }
-            }
-
-            throw new RuntimeException(LOGGER.getMessage(EXC_026, mimeType));
         }
-    }
 
-    /**
-     * Gets the center of an image.
-     *
-     * @param aImageFile A source image file
-     * @return An image region representing the center of the image
-     * @throws IOException If there is trouble reading the source image file
-     */
-    public static ImageRegion getCenter(final File aImageFile) throws IOException {
-        return getCenter(getImageDimension(aImageFile));
+        throw new RuntimeException(LOGGER.getMessage(MessageCodes.EXC_026, mimeType));
     }
 
     /**
@@ -338,6 +226,17 @@ public class ImageUtils {
         }
 
         return scaleFactors;
+    }
+
+    /**
+     * Gets the center of an image.
+     *
+     * @param aImageFile A source image file
+     * @return An image region representing the center of the image
+     * @throws IOException If there is trouble reading the source image file
+     */
+    public static ImageRegion getCenter(final File aImageFile) throws IOException {
+        return getCenter(getImageDimension(aImageFile));
     }
 
     /**
@@ -398,7 +297,9 @@ public class ImageUtils {
         final ImageObject image;
 
         if (useNativeLibs) {
-            image = new NativeImageObject(aImageBuffer);
+            // FIXME:
+            // image = new NativeImageObject(aImageBuffer);
+            throw new RuntimeException("NativeImageObject not configured");
         } else {
             image = new JavaImageObject(aImageBuffer);
         }

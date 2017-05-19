@@ -7,7 +7,9 @@ import java.io.FilenameFilter;
 import info.freelibrary.util.FileUtils;
 
 /**
- * @author kevin
+ * A temporary command line application that renames Pairtrees to be S3 friendly.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class PairtreeRenamer {
 

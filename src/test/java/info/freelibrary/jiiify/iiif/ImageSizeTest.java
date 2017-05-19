@@ -8,6 +8,11 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
+/**
+ * A test of {@link info.freelibrary.jiiify.iiif.ImageSize}
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageSizeTest {
 
     @Test

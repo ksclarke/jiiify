@@ -28,6 +28,11 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * A verticle that ingests images.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageIngestVerticle extends AbstractJiiifyVerticle {
 
     @Override
@@ -59,8 +64,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
                         ingest(file, id, new Properties(), message);
                     }
                 } else {
-                    // FIXME: EXC_032 is wrong exception -- fix ALL its occurrences everywhere!
-                    LOGGER.error(fsHandler.cause(), MessageCodes.EXC_032, file);
+                    LOGGER.error(fsHandler.cause(), MessageCodes.EXC_037, file);
                     message.reply(FAILURE_RESPONSE);
                 }
             });
@@ -93,12 +97,12 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
                         id = props.getProperty(ID_KEY, FileUtils.stripExt(aImageFile.getName()));
                         ingest(aImageFile, id, props, aMessage);
                     } catch (final IOException details) {
-                        LOGGER.error(details, MessageCodes.EXC_032, aImageFile);
+                        LOGGER.error(details, MessageCodes.EXC_037, aImageFile);
                         aMessage.reply(FAILURE_RESPONSE);
                     }
                 });
             } else {
-                LOGGER.error(fileHandler.cause(), MessageCodes.EXC_032, aImageFile);
+                LOGGER.error(fileHandler.cause(), MessageCodes.EXC_037, aImageFile);
                 aMessage.reply(FAILURE_RESPONSE);
             }
         });
@@ -128,6 +132,14 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         }
     }
 
+    /**
+     * Dispatches messages for activities requested by the user at point of ingest.
+     *
+     * @param aProperties A properties file
+     * @param aImageFile An image file for ingest
+     * @param aID An ID for the image to ingest
+     * @param aJsonObject A configuration file for the ingest activity
+     */
     private void messageIngestListeners(final Properties aProperties, final File aImageFile, final String aID,
             final JsonObject aJsonObject) {
         final Object ts = aProperties.getOrDefault(TILE_SIZE_PROP, getConfig().getTileSize());
@@ -139,6 +151,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         jsonMessage.put(TILE_SIZE_PROP, ts instanceof String ? Integer.parseInt((String) ts) : ts);
         jsonMessage.put(FILE_PATH_KEY, aImageFile.getAbsolutePath());
 
+        // These are the tasks we trigger, according to user's ingest request
         if (!aJsonObject.getBoolean("skiptiles", false)) {
             sendMessage(jsonMessage, TileMasterVerticle.class.getName());
         } else if (LOGGER.isDebugEnabled()) {

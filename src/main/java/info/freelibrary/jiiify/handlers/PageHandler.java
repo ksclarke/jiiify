@@ -9,7 +9,11 @@ import info.freelibrary.jiiify.Configuration;
 
 import io.vertx.ext.web.RoutingContext;
 
-
+/**
+ * A generic page request handler.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class PageHandler extends JiiifyHandler {
 
     /**

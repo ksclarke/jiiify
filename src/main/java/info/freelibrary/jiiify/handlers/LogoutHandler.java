@@ -1,3 +1,4 @@
+
 package info.freelibrary.jiiify.handlers;
 
 import static info.freelibrary.jiiify.RoutePatterns.LOGIN;
@@ -9,7 +10,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
-
+/**
+ * A handler that handles administrative interface logout attempts.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class LogoutHandler extends JiiifyHandler {
 
     /**

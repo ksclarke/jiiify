@@ -61,7 +61,7 @@ import io.vertx.core.shareddata.Shareable;
 /**
  * A developer-friendly wrapper around the default Vertx configuration JsonObject.
  *
- * @author Kevin S. Clarke <a href="mailto:ksclarke@ksclarke.io">ksclarke@ksclarke.io</a>
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class Configuration implements Shareable {
 

@@ -4,6 +4,11 @@ package info.freelibrary.jiiify;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
+/**
+ * A test class for the Jiiify main verticle.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class JiiifyVerticleIT extends AbstractVerticleIT {
 
     /** Don't actually have debugging messages in the jiiify_messages bundle, but we need to use something */

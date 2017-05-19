@@ -51,11 +51,16 @@ import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler that handles downloads.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class DownloadHandler extends JiiifyHandler {
 
     private static final String DOWNLOAD_SERVER_PARAM = "server";
 
-    private static final Map<String, String> ENV = new HashMap<String, String>();
+    private static final Map<String, String> ENV = new HashMap<>();
     static {
         ENV.put("create", "true");
         ENV.put("encoding", "UTF-8");
@@ -123,8 +128,8 @@ public class DownloadHandler extends JiiifyHandler {
                     final int w = jsonObject.getInteger(ImageInfo.WIDTH);
                     final int h = jsonObject.getInteger(ImageInfo.HEIGHT);
                     final List<String> tilePaths = ImageUtils.getTilePaths(servicePrefix, aID, tileSize, w, h);
-                    final List<String> paths = new ArrayList<String>(tilePaths.size());
-                    final List<Future> futures = new ArrayList<Future>();
+                    final List<String> paths = new ArrayList<>(tilePaths.size());
+                    final List<Future> futures = new ArrayList<>();
 
                     for (final String path : tilePaths) {
                         final Future<Void> future = Future.future();
@@ -202,7 +207,7 @@ public class DownloadHandler extends JiiifyHandler {
             final String server = aContext.request().getParam(DOWNLOAD_SERVER_PARAM);
             final FileSystem zipFS = FileSystems.newFileSystem(createZip(zipPath, aImageInfo, server, id), null);
             final HttpServerResponse response = aContext.response();
-            final List<Future> futures = new ArrayList<Future>();
+            final List<Future> futures = new ArrayList<>();
 
             // Cycle through all our tile paths and add them to the zip file
             for (final String path : aPathsList) {

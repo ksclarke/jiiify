@@ -20,7 +20,7 @@ var Vertx = require('vertx-js/vertx');
 
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
-var JSolrService = info.freelibrary.jiiify.services.SolrService;
+var JSolrService = Java.type('info.freelibrary.jiiify.services.SolrService');
 
 /**
  Solr service interface that is used to generate the handler, proxy code, etc.
@@ -78,6 +78,25 @@ var SolrService = function(j_val) {
   this._jdel = j_solrService;
 };
 
+SolrService._jclass = utils.getJavaClass("info.freelibrary.jiiify.services.SolrService");
+SolrService._jtype = {
+  accept: function(obj) {
+    return SolrService._jclass.isInstance(obj._jdel);
+  },
+  wrap: function(jdel) {
+    var obj = Object.create(SolrService.prototype, {});
+    SolrService.apply(obj, arguments);
+    return obj;
+  },
+  unwrap: function(obj) {
+    return obj._jdel;
+  }
+};
+SolrService._create = function(jdel) {
+  var obj = Object.create(SolrService.prototype, {});
+  SolrService.apply(obj, arguments);
+  return obj;
+}
 /**
  Creates a service object from the  implementation.
 
@@ -88,7 +107,7 @@ var SolrService = function(j_val) {
 SolrService.create = function(aVertx) {
   var __args = arguments;
   if (__args.length === 1 && typeof __args[0] === 'object' && __args[0]._jdel) {
-    return utils.convReturnVertxGen(JSolrService["create(io.vertx.core.Vertx)"](aVertx._jdel), SolrService);
+    return utils.convReturnVertxGen(SolrService, JSolrService["create(io.vertx.core.Vertx)"](aVertx._jdel));
   } else throw new TypeError('function invoked with invalid arguments');
 };
 
@@ -103,9 +122,8 @@ SolrService.create = function(aVertx) {
 SolrService.createProxy = function(aVertx, aAddress) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'string') {
-    return utils.convReturnVertxGen(JSolrService["createProxy(io.vertx.core.Vertx,java.lang.String)"](aVertx._jdel, aAddress), SolrService);
+    return utils.convReturnVertxGen(SolrService, JSolrService["createProxy(io.vertx.core.Vertx,java.lang.String)"](aVertx._jdel, aAddress));
   } else throw new TypeError('function invoked with invalid arguments');
 };
 
-// We export the Constructor function
 module.exports = SolrService;

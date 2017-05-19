@@ -9,7 +9,6 @@ import org.junit.After;
 import org.junit.Before;
 
 import info.freelibrary.jiiify.Constants;
-import info.freelibrary.jiiify.verticles.WatchFolderVerticle;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
@@ -18,6 +17,11 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
 
+/**
+ * A test for {@link info.freelibrary.jiiify.verticles.WatchFolderVerticle}
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 //@RunWith(VertxUnitRunner.class)
 public class WatchFolderVerticleTest {
 

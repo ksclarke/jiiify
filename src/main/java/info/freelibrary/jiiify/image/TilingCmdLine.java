@@ -40,7 +40,9 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
 
 /**
- * Tiling command line tool.
+ * A temporary tiling command line tool.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class TilingCmdLine {
 

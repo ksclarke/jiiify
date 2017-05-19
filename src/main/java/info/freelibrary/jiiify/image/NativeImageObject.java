@@ -18,6 +18,12 @@ import info.freelibrary.jiiify.iiif.ImageSize;
 
 import io.vertx.core.buffer.Buffer;
 
+/**
+ * A native image object that uses OpenCV for image processing.
+ * 
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ *
+ */
 public class NativeImageObject implements ImageObject {
 
     private Mat myImage;

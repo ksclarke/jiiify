@@ -3,6 +3,11 @@ package info.freelibrary.jiiify.iiif;
 
 import java.util.Locale;
 
+/**
+ * An exception thrown when there is an invalid IIIF size.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class InvalidSizeException extends IIIFException {
 
     /**
@@ -48,7 +53,7 @@ public class InvalidSizeException extends IIIFException {
 
     /**
      * Creates an invalid size exception from the supplied underlying cause.
-     * 
+     *
      * @param aCause An underlying cause of the exception
      */
     public InvalidSizeException(final Throwable aCause) {
@@ -58,7 +63,7 @@ public class InvalidSizeException extends IIIFException {
     /**
      * Creates an invalid size exception from the supplied underlying exception with the message for the supplied
      * message key.
-     * 
+     *
      * @param aCause An underlying cause of the exception
      * @param aMessageKey A message key for the desired message
      */
@@ -69,7 +74,7 @@ public class InvalidSizeException extends IIIFException {
     /**
      * Creates an invalid size exception from the supplied underlying exception with the localized message for the
      * supplied message key.
-     * 
+     *
      * @param aCause An underlying cause of the exception
      * @param aLocale The locale for the exception's message
      * @param aMessageKey A message key for the desired message
@@ -81,7 +86,7 @@ public class InvalidSizeException extends IIIFException {
     /**
      * Creates an invalid size exception from the supplied underlying exception with the message and additional
      * details for the supplied message key.
-     * 
+     *
      * @param aCause An underlying cause of the exception
      * @param aMessageKey A message key for the desired message
      * @param aVarargs Additional details to include in the exception message
@@ -93,7 +98,7 @@ public class InvalidSizeException extends IIIFException {
     /**
      * Creates an invalid size exception from the supplied underlying exception with the message and additional
      * details for the supplied message key.
-     * 
+     *
      * @param aCause An underlying cause of the exception
      * @param aLocale A locale to use with the supplied message key
      * @param aMessageKey A message key for the desired message

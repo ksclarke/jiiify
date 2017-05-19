@@ -10,6 +10,11 @@ import info.freelibrary.util.LoggerFactory;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
 
+/**
+ * Handler that handles IIIF exceptions.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class IIIFErrorHandler extends JiiifyHandler {
 
     public static final String ERROR_HEADER = "error-header";

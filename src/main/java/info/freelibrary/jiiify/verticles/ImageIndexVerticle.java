@@ -22,12 +22,17 @@ import info.freelibrary.jiiify.util.SolrUtils;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * A verticle that indexes basic image metadata.
+ *
+ * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
+ */
 public class ImageIndexVerticle extends AbstractJiiifyVerticle {
 
     @Override
     public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
         final SolrService service = SolrService.createProxy(vertx, SOLR_SERVICE_KEY);
-        final List<KeyValue<String, ?>> fields = new ArrayList<KeyValue<String, ?>>();
+        final List<KeyValue<String, ?>> fields = new ArrayList<>();
 
         // We listen for new images that we should add to our browse list
         getJsonConsumer().handler(message -> {
