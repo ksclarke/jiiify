@@ -3,12 +3,17 @@ package info.freelibrary.jiiify.verticles;
 
 import static info.freelibrary.jiiify.Configuration.DEFAULT_SESSION_TIMEOUT;
 import static info.freelibrary.jiiify.Constants.JCEKS_PROP;
+import static info.freelibrary.jiiify.Constants.JIIIFY_CORES_PROP;
 import static info.freelibrary.jiiify.Constants.JKS_PROP;
 import static info.freelibrary.jiiify.Constants.KEY_PASS_PROP;
+import static info.freelibrary.jiiify.Metadata.CACHE_CONTROL;
+import static info.freelibrary.jiiify.Metadata.LOCATION_HEADER;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,18 +92,14 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
     private void initializeMainVerticle(final Future<Void> aFuture) {
         final SessionHandler sessionHandler = SessionHandler.create(LocalSessionStore.create(vertx));
-        final TemplateEngine templateEngine = HandlebarsTemplateEngine.create();
-        final TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
         final HttpServerOptions options = new HttpServerOptions();
         final Router router = Router.router(vertx);
-        final JWTAuth jwtAuth;
 
         // Set the port on which we want to listen for connections
         options.setPort(myConfig.getPort());
         options.setHost("0.0.0.0");
         options.setCompressionSupported(true);
 
-        // FIXME: Use https or http, but switching between them requires re-ingesting everything
         if (myConfig.usesHttps()) {
             final String jksProperty = System.getProperty(JKS_PROP, JKS_PROP);
             final String ksPassword = System.getProperty(KEY_PASS_PROP, "");
@@ -107,39 +108,78 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             final File jksFile = new File(jksProperty);
 
             jceksConfig.put("path", JCEKS_PROP).put("type", "jceks").put("password", ksPassword);
-            jwtAuth = JWTAuth.create(vertx, new JsonObject().put("keyStore", jceksConfig));
 
-            // Get JKS from an external configuration file
-            if (jksFile.exists()) {
-                LOGGER.info("Using a system JKS configuration: {}", jksFile);
-                jksOptions.setPath(jksFile.getAbsolutePath());
-            } else {
-                final InputStream inStream = getClass().getResourceAsStream("/" + jksProperty);
+            try {
+                /* This is where "Keystore was tampered with, or password was incorrect" is thrown */
+                final JWTAuth jwtAuth = JWTAuth.create(vertx, new JsonObject().put("keyStore", jceksConfig));
 
-                // Get JKS configuration from a configuration file in the jar file
-                if (inStream != null) {
-                    LOGGER.debug("Loading JKS configuration from jar file");
-
-                    try {
-                        jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
-                    } catch (final IOException details) {
-                        throw new RuntimeException(details);
-                    }
+                // Get JKS from an external configuration file
+                if (jksFile.exists()) {
+                    LOGGER.info(MessageCodes.INFO_004, jksFile);
+                    jksOptions.setPath(jksFile.getAbsolutePath());
                 } else {
-                    // Get JKS configuration from the Maven build's target directory
-                    LOGGER.debug("Trying to use the build's default JKS: {}", jksProperty);
-                    jksOptions.setPath("target/classes/" + jksProperty);
+                    final InputStream inStream = getClass().getResourceAsStream("/" + jksProperty);
+
+                    // Get JKS configuration from a configuration file in the jar file
+                    if (inStream != null) {
+                        LOGGER.debug(MessageCodes.DBG_019);
+                        jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
+                    } else {
+                        // Get JKS configuration from the Maven build's target directory
+                        LOGGER.debug(MessageCodes.DBG_018, jksProperty);
+                        jksOptions.setPath("target/classes/" + jksProperty);
+                    }
                 }
+
+                options.setSsl(true).setKeyStoreOptions(jksOptions);
+                sessionHandler.setCookieHttpOnlyFlag(true).setCookieSecureFlag(true);
+                sessionHandler.setSessionTimeout(DEFAULT_SESSION_TIMEOUT);
+
+                configureHttpRedirect(aFuture);
+                configureRouter(router, sessionHandler, jwtAuth);
+                startServer(router, options, aFuture);
+            } catch (final RuntimeException details) {
+                final String message = details.getCause().getMessage();
+
+                if (message.contains("password was incorrect")) {
+                    LOGGER.debug(MessageCodes.DBG_017, ksPassword);
+                }
+
+                LOGGER.error(MessageCodes.EXC_044, message);
+                aFuture.fail(message);
+            } catch (final IOException details) {
+                final String message = details.getMessage();
+
+                LOGGER.error(MessageCodes.EXC_043, message);
+                aFuture.fail(message);
             }
-
-            options.setSsl(true).setKeyStoreOptions(jksOptions);
-            sessionHandler.setCookieHttpOnlyFlag(true).setCookieSecureFlag(true);
-            sessionHandler.setSessionTimeout(DEFAULT_SESSION_TIMEOUT);
-
-            configureHttpRedirect(aFuture);
         } else {
-            jwtAuth = null;
+            configureRouter(router, sessionHandler);
+            startServer(router, options, aFuture);
         }
+    }
+
+    private void startServer(final Router aRouter, final HttpServerOptions aOptions, final Future<Void> aFuture) {
+        vertx.createHttpServer(aOptions).requestHandler(aRouter::accept).listen(response -> {
+            if (response.succeeded()) {
+                LOGGER.info(MessageCodes.INFO_003, JiiifyMainVerticle.class.getSimpleName(), deploymentID());
+                aFuture.complete();
+            } else {
+                final String message = response.cause().getMessage();
+
+                LOGGER.error(MessageCodes.EXC_042, aOptions.getHost(), aOptions.getPort(), message);
+                aFuture.fail(response.cause());
+            }
+        });
+    }
+
+    private void configureRouter(final Router aRouter, final SessionHandler aSessionHandler) {
+        configureRouter(aRouter, aSessionHandler, null);
+    }
+
+    private void configureRouter(final Router aRouter, final SessionHandler aSessionHandler, final JWTAuth aJWTAuth) {
+        final TemplateEngine templateEngine = HandlebarsTemplateEngine.create();
+        final TemplateHandler templateHandler = TemplateHandler.create(templateEngine);
 
         // Some reused handlers
         final FailureHandler failureHandler = new FailureHandler(myConfig, templateEngine);
@@ -148,71 +188,59 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         final IngestHandler ingestHandler = new IngestHandler(myConfig);
 
         // Configure some basics
-        router.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getUploadsDir()));
-        router.route().handler(CookieHandler.create());
-        router.route().handler(sessionHandler);
+        aRouter.route().handler(BodyHandler.create().setUploadsDirectory(myConfig.getUploadsDir()));
+        aRouter.route().handler(CookieHandler.create());
+        aRouter.route().handler(aSessionHandler);
 
         // Serve static files like images, scripts, css, etc.
-        router.getWithRegex(STATIC_FILES_RE).handler(StaticHandler.create());
+        aRouter.getWithRegex(STATIC_FILES_RE).handler(StaticHandler.create());
 
         // Put everything in the administrative interface behind an authentication check
-        if (jwtAuth != null) {
+        if (aJWTAuth != null) {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Using the JWT authentication handler");
+                LOGGER.debug(MessageCodes.DBG_020);
             }
 
-            router.route(ADMIN_UI).handler(UserSessionHandler.create(jwtAuth));
-            router.route(ADMIN_UI).handler(JWTAuthHandler.create(jwtAuth, LOGIN));
-            router.route(ADMIN_UI).handler(handler -> {
-                handler.response().headers().add("Cache-Control", "no-store, no-cache");
+            aRouter.route(ADMIN_UI).handler(UserSessionHandler.create(aJWTAuth));
+            aRouter.route(ADMIN_UI).handler(JWTAuthHandler.create(aJWTAuth, LOGIN));
+            aRouter.route(ADMIN_UI).handler(handler -> {
+                handler.response().headers().add(CACHE_CONTROL, "no-store, no-cache");
                 handler.next();
             });
+
+            aRouter.get(LOGOUT).handler(new LogoutHandler(myConfig));
+            aRouter.get(LOGIN).handler(new LoginHandler(myConfig, aJWTAuth));
+            aRouter.post(LOGIN).handler(new LoginHandler(myConfig, aJWTAuth));
+            aRouter.getWithRegex(LOGIN_RESPONSE_RE).handler(new LoginHandler(myConfig, aJWTAuth));
+            aRouter.getWithRegex(LOGIN_RESPONSE_RE).handler(templateHandler).failureHandler(failureHandler);
         }
 
         // Configure our IIIF specific handlers
-        router.getWithRegex(iiif(IMAGE_INFO_DOC_RE)).handler(new ImageInfoHandler(myConfig));
-        router.getWithRegex(iiif(IMAGE_REQUEST_RE)).handler(new ImageHandler(myConfig));
-        router.getWithRegex(iiif(IMAGE_MANIFEST_RE)).handler(new ManifestHandler(myConfig));
+        aRouter.getWithRegex(iiif(IMAGE_INFO_DOC_RE)).handler(new ImageInfoHandler(myConfig));
+        aRouter.getWithRegex(iiif(IMAGE_REQUEST_RE)).handler(new ImageHandler(myConfig));
+        aRouter.getWithRegex(iiif(IMAGE_MANIFEST_RE)).handler(new ManifestHandler(myConfig));
         // router.getWithRegex(iiif(BASE_URI)).handler(new RedirectHandler(myConfig));
-        router.get(iiif(IIIF_URI)).failureHandler(new IIIFErrorHandler(myConfig));
-
-        // Login and logout routes
-        router.get(LOGOUT).handler(new LogoutHandler(myConfig));
-        router.get(LOGIN).handler(new LoginHandler(myConfig, jwtAuth));
-        router.post(LOGIN).handler(new LoginHandler(myConfig, jwtAuth));
-        router.getWithRegex(LOGIN_RESPONSE_RE).handler(new LoginHandler(myConfig, jwtAuth));
-        router.getWithRegex(LOGIN_RESPONSE_RE).handler(templateHandler).failureHandler(failureHandler);
+        aRouter.get(iiif(IIIF_URI)).failureHandler(new IIIFErrorHandler(myConfig));
 
         // Then we have the plain old administrative UI patterns
-        router.getWithRegex(BROWSE_RE).handler(searchHandler);
-        router.getWithRegex(SEARCH_RE).handler(searchHandler);
-        router.getWithRegex(INGEST_RE).handler(ingestHandler);
-        router.postWithRegex(INGEST_RE).handler(ingestHandler);
-        router.postWithRegex(INGEST_RE).handler(templateHandler);
-        router.getWithRegex(METRICS_RE).handler(new MetricsHandler(myConfig));
-        router.get(ITEM).handler(new ItemHandler(myConfig));
-        router.get(PROPERTIES).handler(new PropertiesHandler(myConfig));
-        router.get(REFRESH).handler(new RefreshHandler(myConfig));
-        router.getWithRegex(DOWNLOAD_RE).handler(downloadHandler);
-        router.postWithRegex(DOWNLOAD_RE).handler(downloadHandler);
-        router.get(ADMIN_UI).handler(templateHandler).failureHandler(failureHandler);
+        aRouter.getWithRegex(BROWSE_RE).handler(searchHandler);
+        aRouter.getWithRegex(SEARCH_RE).handler(searchHandler);
+        aRouter.getWithRegex(INGEST_RE).handler(ingestHandler);
+        aRouter.postWithRegex(INGEST_RE).handler(ingestHandler);
+        aRouter.postWithRegex(INGEST_RE).handler(templateHandler);
+        aRouter.getWithRegex(METRICS_RE).handler(new MetricsHandler(myConfig));
+        aRouter.get(ITEM).handler(new ItemHandler(myConfig));
+        aRouter.get(PROPERTIES).handler(new PropertiesHandler(myConfig));
+        aRouter.get(REFRESH).handler(new RefreshHandler(myConfig));
+        aRouter.getWithRegex(DOWNLOAD_RE).handler(downloadHandler);
+        aRouter.postWithRegex(DOWNLOAD_RE).handler(downloadHandler);
+        aRouter.get(ADMIN_UI).handler(templateHandler).failureHandler(failureHandler);
 
         // Create a index handler just to test for session; this could go in template handler
-        router.get(ROOT).handler(new PageHandler(myConfig));
-        router.get(ROOT).handler(templateHandler).failureHandler(failureHandler);
+        aRouter.get(ROOT).handler(new PageHandler(myConfig));
+        aRouter.get(ROOT).handler(templateHandler).failureHandler(failureHandler);
 
-        router.get(STATUS).handler(new StatusHandler(myConfig));
-
-        // Start the server and start listening for connections
-        vertx.createHttpServer(options).requestHandler(router::accept).listen(response -> {
-            if (response.succeeded()) {
-                LOGGER.info("Successfully started {} [{}]", JiiifyMainVerticle.class.getSimpleName(), deploymentID());
-                aFuture.complete();
-            } else {
-                LOGGER.info("Server failed to start server at {}:{}", myConfig.getHost(), myConfig.getPort());
-                aFuture.fail(response.cause());
-            }
-        });
+        aRouter.get(STATUS).handler(new StatusHandler(myConfig));
     }
 
     /**
@@ -226,18 +254,18 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             final String httpsURL = "https://" + myConfig.getHost() + ":" + myConfig.getPort() + redirect.uri();
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Redirecting HTTP request to: {}", httpsURL);
+                LOGGER.debug(MessageCodes.DBG_016, httpsURL);
             }
 
-            response.setStatusCode(303).putHeader("Location", httpsURL).end();
+            response.setStatusCode(303).putHeader(LOCATION_HEADER, httpsURL).end();
             response.close();
         }).listen(myConfig.getRedirectPort(), response -> {
             if (response.failed()) {
                 if (response.cause() != null) {
-                    LOGGER.error("{}", response.cause(), response.cause());
+                    LOGGER.error(response.cause(), response.cause().getMessage());
                 }
 
-                aFuture.fail(LOGGER.getMessage("Could not configure redirect port: {}", myConfig.getRedirectPort()));
+                aFuture.fail(LOGGER.getMessage(MessageCodes.EXC_041, myConfig.getRedirectPort()));
             }
         });
 
@@ -264,6 +292,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
     @SuppressWarnings("rawtypes")
     private void deployJiiifyVerticles(final Handler<AsyncResult<Void>> aHandler) {
         final DeploymentOptions imgWorkerOptions = new DeploymentOptions().setWorker(true).setMultiThreaded(true);
+        final DeploymentOptions tileMasterOptions = new DeploymentOptions().setWorker(true).setMultiThreaded(true);
         final DeploymentOptions options = new DeploymentOptions();
         final List<Future> futures = new ArrayList<>();
         final Future<Void> future = Future.future();
@@ -271,11 +300,15 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         if (aHandler != null) {
             future.setHandler(aHandler);
 
-            // Limit worker threads to a configurable value
-            try {
-                String coreCount = System.getProperty("jiiify.cores");
+            // Limit tile master threads since it reads in a source image to cache it for image worker
+            tileMasterOptions.setWorkerPoolName(TileMasterVerticle.class.getSimpleName());
+            tileMasterOptions.setWorkerPoolSize(1);
 
-                if (coreCount == null || coreCount.equals("")) {
+            // Limit image worker threads to a configurable value
+            try {
+                String coreCount = System.getProperty(JIIIFY_CORES_PROP);
+
+                if (StringUtils.trimToNull(coreCount) == null) {
                     coreCount = getCoreCount();
                 }
 
@@ -287,7 +320,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
             futures.add(deployVerticle(WatchFolderVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageWorkerVerticle.class.getName(), imgWorkerOptions, Future.future()));
-            futures.add(deployVerticle(TileMasterVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(TileMasterVerticle.class.getName(), tileMasterOptions, Future.future()));
             futures.add(deployVerticle(SolrServiceVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageIndexVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageIngestVerticle.class.getName(), options, Future.future()));
@@ -324,12 +357,16 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         // Make sure system has resources and adjust core count if necessary
         if (memory >= 1.9) { // Give the JVM a little fudge space for -Xmx2G
             if (memory < coreCount) {
+                final DecimalFormat decimalFormat = new DecimalFormat("##.#");
+
+                decimalFormat.setRoundingMode(RoundingMode.CEILING);
+
                 // Below should perhaps be the more conservative floor(), but accounting for JVM underestimates
                 coreCount = (int) Math.ceil(memory);
-                LOGGER.warn(MessageCodes.WARN_004, coreCount, memory);
+                LOGGER.warn(MessageCodes.WARN_004, coreCount, decimalFormat.format(memory));
             }
         } else {
-            LOGGER.warn(MessageCodes.WARN_003);
+            LOGGER.warn(MessageCodes.WARN_003, memory);
         }
 
         return Integer.toString(coreCount);
@@ -345,13 +382,13 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             final Future<Void> aFuture) {
         vertx.deployVerticle(aVerticleName, aOptions, response -> {
             try {
-                final String name = Class.forName(aVerticleName).getSimpleName();
+                final String verticleName = Class.forName(aVerticleName).getSimpleName();
 
                 if (response.succeeded()) {
-                    LOGGER.debug("Successfully deployed {} [{}]", name, response.result());
+                    LOGGER.debug(MessageCodes.DBG_015, verticleName, response.result());
                     aFuture.complete();
                 } else {
-                    LOGGER.error("Failed to launch {}", name, response.cause());
+                    LOGGER.error(MessageCodes.EXC_032, verticleName, response.cause());
                     aFuture.fail(response.cause());
                 }
             } catch (final ClassNotFoundException details) {

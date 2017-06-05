@@ -53,8 +53,8 @@ public class ThumbnailVerticle extends AbstractJiiifyVerticle {
                         }
 
                         infoMessage.put(FILE_PATH_KEY, filePath).put(IIIF_PATH_KEY, request.toString());
-                        sendMessage(infoMessage, ImageWorkerVerticle.class.getName());
-                        sendMessage(infoMessage, ManifestVerticle.class.getName());
+                        sendMessage(infoMessage, ManifestVerticle.class.getName(), INGEST_TIMEOUT);
+                        sendMessage(infoMessage, ImageWorkerVerticle.class.getName(), INGEST_TIMEOUT);
                         messageHandler.reply(SUCCESS_RESPONSE);
                     } catch (final IOException details) {
                         LOGGER.error(details, MessageCodes.EXC_000, details.getMessage());

@@ -23,8 +23,7 @@
   <entry key="EXC-029">Failed to add new image file '{}' to watch list</entry>
   <entry key="EXC-030">Failed to add new folder '{}' to watch list</entry>
   <entry key="EXC-031">The polled WatchKey does not correspond to a watched directory</entry>
-  <!-- FIXME: 032 can be reused for a different error message -->
-  <entry key="EXC-032"></entry>
+  <entry key="EXC-032">Failed to launch {}</entry>
   <entry key="EXC-033">Tile size from {} wasn't valid so using the default '{}' instead</entry>
   <entry key="EXC-034">Unable to send tile path ({}) to image worker [{} attempts]: {}</entry>
   <entry key="EXC-035">Cannot write to the data directory: {}</entry>
@@ -32,16 +31,33 @@
   <entry key="EXC-037">FileSystem exists checked failed: {}</entry>
   <entry key="EXC-038">Image buffer is null because there wasn't an appropriate reader</entry>
   <entry key="EXC-039">Unable to send message to {}: {}</entry>
+  <entry key="EXC-040">OutOfMemoryError: {}</entry>
+  <entry key="EXC-041">Could not configure redirect port: {}</entry>
+  <entry key="EXC-042">Server failed to start at {}:{} - {}</entry>
+  <entry key="EXC-043">Failed to start server - couldn't read JKS configuration file: {}</entry>
+  <entry key="EXC-044">Failed to start server: {}</entry>
+  <entry key="EXC-045">Failed to set the shared tile counter for: {}</entry>
+  <entry key="EXC-046">Height and/or width not found in image info file</entry>
+  <entry key="EXC-047">Failed to read image info file</entry>
+  <entry key="EXC-048">Image file not found: {}</entry>
+  <entry key="EXC-049">Failed to process non-cached image: {}</entry>
 
   <!-- Info messages -->
-  <entry key="INFO-001">Ingesting added or updated image file: {}</entry>
+  <entry key="INFO-001">Ingesting an added or updated image file: {}</entry>
   <entry key="INFO-002">Watching '{}' for new images to ingest</entry>
+  <entry key="INFO-003">Successfully started '{}' [{}]</entry>
+  <entry key="INFO-004">Using a system JKS configuration: {}</entry>
+  <entry key="INFO-005">Invalid ImageInfo JSON</entry>
+  <entry key="INFO-006">Not ready for download</entry>
+  <entry key="INFO-007">Requested image file not found: {}</entry>
 
   <!-- Warn messages -->
   <entry key="WARN-001">Failed to send tile path ({}) so trying again</entry>
   <entry key="WARN-002">Failed to send image path '{}' so trying again</entry>
-  <entry key="WARN-003">It's not recommended to run with less than 2 GB RAM available</entry>
-  <entry key="WARN-004">Set image processing cores to '{}'; available memory ({} GiB)</entry>
+  <entry key="WARN-003">It's not recommended to run with less than 2 GB RAM available: {} GiB</entry>
+  <entry key="WARN-004">Scaling down image processing cores to '{}' [available memory: {} GiB]</entry>
+  <entry key="WARN-005">Our sleeping {} thread was interrupted: {}</entry>
+  <entry key="WARN-006">Waiting for tile source image cache took longer than expected: {}</entry>
 
   <!-- Messages for debugging -->
   <entry key="DBG-000">Successfully undeployed {} [{}]</entry>
@@ -52,6 +68,33 @@
   <entry key="DBG-005">Checking for new watch folder events</entry>
   <entry key="DBG-006">Successfully deployed {} [{}]</entry>
   <entry key="DBG-007">Server failed to start at port '{}'</entry>
+  <entry key="DBG-008">Removing tiling image buffer for {}: {}</entry>
+  <entry key="DBG-009">Ignoring cache and reading source file for tile generation: {}</entry>
+  <entry key="DBG-010">Reading non-cached source image '{}' for: </entry>
+  <entry key="DBG-011">Creating derivative image for: {}</entry>
+  <entry key="DBG-012">Removing tiling image buffer for {}: {}</entry>
+  <entry key="DBG-013">Reading cached tile source image: {}</entry>
+  <entry key="DBG-014">Caching source image for tiles: {}</entry>
+  <entry key="DBG-015">Successfully deployed {} [{}]</entry>
+  <entry key="DBG-016">Redirecting HTTP request to: {}</entry>
+  <entry key="DBG-017">Attempted keystore password: {}</entry>
+  <entry key="DBG-018">Trying to use the build's default JKS: {}</entry>
+  <entry key="DBG-019">Loading JKS configuration from Jiiify's Jar file</entry>
+  <entry key="DBG-020">Using the JWT authentication handler</entry>
+  <entry key="DBG-021">Set '{}' counter to tile count: {}</entry>
+  <entry key="DBG-022">Download resource file found: {}</entry>
+  <entry key="DBG-023">Download resource file not found: {}</entry>
+  <entry key="DBG-024">Zipping up an object for download: {}</entry>
+  <entry key="DBG-025">Number of tiles to be zipped: {}</entry>
+  <entry key="DBG-026">Sending file for browser download: {}</entry>
+  <entry key="DBG-027">IIIF Image request: {}</entry>
+  <entry key="DBG-028">Checking whether cached image file '{}' exists</entry>
+  <entry key="DBG-029">Served image file: {}</entry>
+  <entry key="DBG-030">Checking for default rotation: {}</entry>
+  <entry key="DBG-031">Got an unexpected rotation value: {}</entry>
+  <entry key="DBG-032">Didn't find unrotated cache file: {}</entry>
+  <entry key="DBG-033">Filesystem check for unrotated cache file failed: {}</entry>
+  <entry key="DBG-034">Served image file: {}</entry>
 
   <!-- Messages for testing package specific exceptions -->
   <entry key="TEST-001">test message</entry>

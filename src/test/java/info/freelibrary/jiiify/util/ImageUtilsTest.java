@@ -3,6 +3,8 @@ package info.freelibrary.jiiify.util;
 
 import static org.junit.Assert.assertEquals;
 
+import java.util.List;
+
 import org.junit.Test;
 
 import info.freelibrary.util.Logger;
@@ -19,7 +21,7 @@ public class ImageUtilsTest {
 
     @Test
     public void testGetTilePaths() {
-
+        final List<String> tilePaths = ImageUtils.getTilePaths("/iiif", "test-1", 1024, 7613, 10557);
     }
 
     @Test

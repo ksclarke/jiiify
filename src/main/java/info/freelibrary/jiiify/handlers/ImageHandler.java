@@ -1,6 +1,7 @@
 
 package info.freelibrary.jiiify.handlers;
 
+import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.awt.image.BufferedImage;
@@ -14,6 +15,7 @@ import javax.imageio.stream.MemoryCacheImageInputStream;
 import org.imgscalr.Scalr;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.ImageRequest;
@@ -49,7 +51,7 @@ public class ImageHandler extends JiiifyHandler {
         final String uri = request.uri();
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("IIIF Image request: {}", uri);
+            LOGGER.debug(MessageCodes.DBG_027, uri);
         }
 
         try {
@@ -59,7 +61,7 @@ public class ImageHandler extends JiiifyHandler {
             final String requestPath = ptObj.getPath(imageRequest.getPath());
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Checking whether cached image file '{}' exists", requestPath);
+                LOGGER.debug(MessageCodes.DBG_028, requestPath);
             }
 
             ptObj.find(imageRequest.getPath(), findHandler -> {
@@ -69,14 +71,14 @@ public class ImageHandler extends JiiifyHandler {
                     } else if (imageRequest.getRotation().isRotated()) {
                         checkUnrotatedSource(ptObj, imageRequest, aContext);
                     } else {
-                        LOGGER.info("Requested image file not found: {}", requestPath);
+                        LOGGER.info(MessageCodes.INFO_007, requestPath);
                         aContext.fail(404);
-                        aContext.put(ERROR_MESSAGE, msg("Image file not found: {}", requestPath));
+                        aContext.put(ERROR_MESSAGE, msg(MessageCodes.EXC_048, requestPath));
                     }
                 } else {
-                    LOGGER.info("Requested image file not found: {}", requestPath);
+                    LOGGER.info(MessageCodes.INFO_007, requestPath);
                     aContext.fail(404);
-                    aContext.put(ERROR_MESSAGE, msg("Image file not found: {}", requestPath));
+                    aContext.put(ERROR_MESSAGE, msg(MessageCodes.EXC_048, requestPath));
                 }
             });
         } catch (final Exception details) {
@@ -115,7 +117,7 @@ public class ImageHandler extends JiiifyHandler {
                     response.close();
 
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Served image file: {}", request.uri());
+                        LOGGER.debug(MessageCodes.DBG_029, request.uri());
                     }
                 } catch (final Exception details) {
                     LOGGER.error(details.getMessage(), details);
@@ -136,7 +138,7 @@ public class ImageHandler extends JiiifyHandler {
 
         try {
             imageRequest.setRotation(new ImageRotation(0f));
-            LOGGER.debug("Checking for default rotation: {}", imageRequest.toString());
+            LOGGER.debug(MessageCodes.DBG_030, imageRequest.toString());
         } catch (final InvalidRotationException details) {
             throw new RuntimeException(details); // This should never happen
         }
@@ -158,21 +160,21 @@ public class ImageHandler extends JiiifyHandler {
                         serveRotatedImage(aPtObj, imageRequest, rotation, aContext);
                     } else {
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Got an unexpected rotation value: {}", degrees);
+                            LOGGER.debug(MessageCodes.DBG_031, degrees);
                         }
 
                         aContext.fail(404);
                     }
                 } else {
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Didn't find unrotated cache file: {}", aPtObj.getPath(imageRequest.getPath()));
+                        LOGGER.debug(MessageCodes.DBG_032, aPtObj.getPath(imageRequest.getPath()));
                     }
 
                     aContext.fail(404);
                 }
             } else {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Filesystem check for unrotated cache file failed: {}", aPtObj.getPath(imageRequest
+                    LOGGER.debug(MessageCodes.DBG_033, aPtObj.getPath(imageRequest
                             .getPath()));
                 }
 
@@ -188,14 +190,12 @@ public class ImageHandler extends JiiifyHandler {
 
         aPtObj.get(aResourcePath, getHandler -> {
             if (getHandler.succeeded()) {
-                final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(request.uri()));
-
-                response.putHeader(Metadata.CONTENT_TYPE, mimeType);
+                response.putHeader(CONTENT_TYPE, ImageFormat.getMIMEType(FileUtils.getExt(request.uri())));
                 response.end(getHandler.result());
                 response.close();
 
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Served image file: {}", request.uri());
+                    LOGGER.debug(MessageCodes.DBG_034, request.uri());
                 }
             } else {
                 fail(aContext, getHandler.cause());

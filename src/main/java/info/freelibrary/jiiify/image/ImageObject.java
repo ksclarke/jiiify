@@ -34,7 +34,7 @@ public interface ImageObject {
     /**
      * Frees resources associated with the image.
      */
-    public void flush();
+    public void free();
 
     /**
      * Changes the image object by extracting a region from the whole.

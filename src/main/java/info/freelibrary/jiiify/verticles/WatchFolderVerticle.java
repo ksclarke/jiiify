@@ -86,7 +86,7 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
             final String filePath = file.getAbsolutePath();
 
             // Sends an ingest request which will be ignored if it exists already
-            sendMessage(json.put(FILE_PATH_KEY, filePath), ImageIngestVerticle.class.getName());
+            sendMessage(json.put(FILE_PATH_KEY, filePath), ImageIngestVerticle.class.getName(), INGEST_TIMEOUT);
         }
 
         aFuture.complete();
@@ -145,8 +145,10 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
 
                     LOGGER.info(MessageCodes.INFO_001, childPath);
 
+                    json.put(FILE_PATH_KEY, childPath);
+
                     // Notify our tiling verticle that we have an image that needs to be (re)tiled
-                    sendMessage(json.put(FILE_PATH_KEY, childPath), ImageIngestVerticle.class.getName());
+                    sendMessage(json, ImageIngestVerticle.class.getName(), INGEST_TIMEOUT);
                 } else if (kind == ENTRY_CREATE) {
                     try {
                         if (Files.isDirectory(child, NOFOLLOW_LINKS)) {

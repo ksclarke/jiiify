@@ -152,28 +152,28 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         jsonMessage.put(FILE_PATH_KEY, aImageFile.getAbsolutePath());
 
         // These are the tasks we trigger, according to user's ingest request
-        if (!aJsonObject.getBoolean("skiptiles", false)) {
-            sendMessage(jsonMessage, TileMasterVerticle.class.getName());
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Skipping tile generation for: {}", aID);
-        }
-
-        if (!aJsonObject.getBoolean("skipindexing", false)) {
-            sendMessage(jsonMessage, ImageIndexVerticle.class.getName());
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Skipping indexing  for: {}", aID);
-        }
-
         if (!aJsonObject.getBoolean("skipthumbs", false)) {
-            sendMessage(jsonMessage, ThumbnailVerticle.class.getName());
+            sendMessage(jsonMessage, ThumbnailVerticle.class.getName(), INGEST_TIMEOUT);
         } else if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Skipping thumbnail generation for: {}", aID);
         }
 
+        if (!aJsonObject.getBoolean("skipindexing", false)) {
+            sendMessage(jsonMessage, ImageIndexVerticle.class.getName(), INGEST_TIMEOUT);
+        } else if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Skipping indexing  for: {}", aID);
+        }
+
         if (!aJsonObject.getBoolean("skipproperties", false)) {
-            sendMessage(jsonMessage, ImagePropertiesVerticle.class.getName());
+            sendMessage(jsonMessage, ImagePropertiesVerticle.class.getName(), INGEST_TIMEOUT);
         } else if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Skipping property file generation for: {}", aID);
+        }
+
+        if (!aJsonObject.getBoolean("skiptiles", false)) {
+            sendMessage(jsonMessage, TileMasterVerticle.class.getName(), INGEST_TIMEOUT);
+        } else if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Skipping tile generation for: {}", aID);
         }
     }
 

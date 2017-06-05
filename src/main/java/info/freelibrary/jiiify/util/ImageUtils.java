@@ -24,11 +24,11 @@ import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.image.ImageObject;
 import info.freelibrary.jiiify.image.JavaImageObject;
 import info.freelibrary.util.FileUtils;
+import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 
 /**
@@ -116,15 +116,14 @@ public class ImageUtils {
                     region = StringUtils.format(REGION, x, y, xTileSize, yTileSize);
                     size = getSize(multiplier, xTileSize, yTileSize);
 
-                    // Support the canonical 2.0 Image API URI syntax
-                    if (ratio(xTileSize, yTileSize).equals(ratio(size))) {
-                        size = size.substring(0, size.indexOf(',') + 1);
-                    }
+                    // Tiles always maintain the aspect ratio so use the canonical URI syntax
+                    size = size.substring(0, size.indexOf(',') + 1);
 
                     path = StringUtils.toString('/', aService, id, region, size, LABEL);
 
                     if (!list.add(path)) {
                         LOGGER.warn("Tile path '{}' could not be added to queue", path);
+                        LOGGER.warn("{}", StringUtils.toString('/', aService, id, region, size, LABEL));
                     }
                 }
 
@@ -136,10 +135,8 @@ public class ImageUtils {
                         region = StringUtils.format(REGION, x, y, xTileSize, yTileSize);
                         size = getSize(multiplier, xTileSize, yTileSize);
 
-                        // Support the canonical 2.0 Image API URI syntax
-                        if (ratio(xTileSize, yTileSize).equals(ratio(size))) {
-                            size = size.substring(0, size.indexOf(',') + 1);
-                        }
+                        // Tiles always maintain the aspect ratio so use the canonical URI syntax
+                        size = size.substring(0, size.indexOf(',') + 1);
 
                         path = StringUtils.toString('/', aService, id, region, size, LABEL);
 
@@ -193,6 +190,8 @@ public class ImageUtils {
         final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getName()));
         final Iterator<ImageReader> readers = ImageIO.getImageReadersByMIMEType(mimeType);
 
+        LOGGER.debug("Getting dimensions of '{}'", aImageFile);
+
         if (readers.hasNext()) {
             final ImageReader reader = readers.next();
             final ImageInputStream inStream = ImageIO.createImageInputStream(aImageFile);
@@ -201,7 +200,7 @@ public class ImageUtils {
                 reader.setInput(inStream);
                 return new Dimension(reader.getWidth(0), reader.getHeight(0));
             } finally {
-                inStream.close();
+                IOUtils.closeQuietly(inStream);
                 reader.dispose();
             }
         }
@@ -289,11 +288,11 @@ public class ImageUtils {
     /**
      * Gets an <code>ImageObject</code> for the supplied image {@link io.vertx.core.buffer.Buffer}.
      *
-     * @param aImageBuffer An <code>ImageBuffer</code> to convert into an <code>ImageObject</code>
-     * @return An <code>ImageBuffer</code> for the supplied <code>Buffer</code>
-     * @throws IOException If there is trouble reading the supplied <code>Buffer</code>
+     * @param aImage An image in an array of bytes
+     * @return An <code>ImageObject</code> for the supplied byte array
+     * @throws IOException If there is trouble reading the supplied byte array
      */
-    public static ImageObject getImage(final Buffer aImageBuffer) throws IOException {
+    public static ImageObject getImage(final byte[] aImage) throws IOException {
         final ImageObject image;
 
         if (useNativeLibs) {
@@ -301,7 +300,7 @@ public class ImageUtils {
             // image = new NativeImageObject(aImageBuffer);
             throw new RuntimeException("NativeImageObject not configured");
         } else {
-            image = new JavaImageObject(aImageBuffer);
+            image = new JavaImageObject(aImage);
         }
 
         return image;

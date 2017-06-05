@@ -4,9 +4,13 @@ package info.freelibrary.jiiify.verticles;
 import static info.freelibrary.jiiify.Constants.FAILURE_RESPONSE;
 import static info.freelibrary.jiiify.Constants.FILE_PATH_KEY;
 import static info.freelibrary.jiiify.Constants.IIIF_PATH_KEY;
+import static info.freelibrary.jiiify.Constants.IMAGE_BUFFER_KEY;
+import static info.freelibrary.jiiify.Constants.IMAGE_TILE_COUNT;
 import static info.freelibrary.jiiify.Constants.SUCCESS_RESPONSE;
+import static info.freelibrary.jiiify.Constants.TILE_REQUEST_KEY;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import javax.naming.ConfigurationException;
 
@@ -14,13 +18,17 @@ import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageQuality;
 import info.freelibrary.jiiify.iiif.ImageRequest;
 import info.freelibrary.jiiify.image.ImageObject;
+import info.freelibrary.jiiify.image.ImmutableBytes;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.pairtree.PairtreeObject;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.SharedData;
 
 /**
  * A threaded verticle that handles image creation requests.
@@ -33,54 +41,66 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
     public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
         getJsonConsumer().handler(message -> {
             final JsonObject json = message.body();
+            final FileSystem fileSystem = getVertx().fileSystem();
+            final String filePath = json.getString(FILE_PATH_KEY);
 
             try {
                 final ImageRequest request = new ImageRequest(json.getString(IIIF_PATH_KEY));
                 final String id = request.getID();
-                final PairtreeObject ptObj = getConfig().getDataDir(id).getObject(id);
 
-                // FIXME: FILE_PATH_KEY can be s3 too?
-                final FileSystem fileSystem = getVertx().fileSystem();
-                final Buffer imageBuffer = fileSystem.readFileBlocking(json.getString(FILE_PATH_KEY));
-                final ImageObject image = ImageUtils.getImage(imageBuffer);
+                /* Check whether our image request is coming from the tile master */
+                if (json.containsKey(TILE_REQUEST_KEY)) {
+                    final String tileRequestKey = json.getString(TILE_REQUEST_KEY);
+                    final SharedData sharedData = vertx.sharedData();
 
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Creating derivative image for: {}", id);
-                }
+                    sharedData.getCounter(tileRequestKey, getCounter -> {
+                        if (getCounter.succeeded()) {
+                            getCounter.result().decrementAndGet(decrementAndGet -> {
+                                if (decrementAndGet.succeeded()) {
+                                    /* Change the tile count to be 1-based instead of 0-based */
+                                    final long tileCount = decrementAndGet.result() + 1;
+                                    final byte[] bytes = getCachedImage(sharedData, json, tileCount, filePath, id);
 
-                if (!request.getRegion().isFullImage()) {
-                    image.extractRegion(request.getRegion());
-                }
+                                    try {
+                                        final ImageObject image = ImageUtils.getImage(bytes);
 
-                if (!request.getSize().isFullSize()) {
-                    image.resize(request.getSize());
-                }
+                                        try {
+                                            processImage(request, image, message);
+                                        } catch (final Throwable details) {
+                                            LOGGER.error(details, details.getMessage());
+                                            image.free();
+                                            message.reply(FAILURE_RESPONSE);
+                                        }
+                                    } catch (final IOException details) {
+                                        LOGGER.error(details, details.getMessage());
+                                        message.reply(FAILURE_RESPONSE);
+                                    }
+                                } else {
+                                    LOGGER.error(decrementAndGet.cause(), decrementAndGet.cause().getMessage());
+                                    message.reply(FAILURE_RESPONSE);
+                                }
+                            });
+                        } else {
+                            LOGGER.error(getCounter.cause(), getCounter.cause().getMessage());
+                            message.reply(FAILURE_RESPONSE);
+                        }
+                    });
+                } else {
+                    final byte[] bytes = fileSystem.readFileBlocking(filePath).getBytes();
+                    final ImageObject image = ImageUtils.getImage(bytes);
 
-                if (request.getRotation().isRotated()) {
-                    image.rotate(request.getRotation());
-                }
+                    LOGGER.debug(MessageCodes.DBG_010, filePath);
 
-                if (!request.getQuality().equals(ImageQuality.DEFAULT)) {
-                    image.adjustQuality(request.getQuality());
-                }
-
-                ptObj.put(request.getPath(), image.toBuffer(request.getFormat().getExtension()), handler -> {
-                    image.flush();
-
-                    if (handler.succeeded()) {
-                        message.reply(SUCCESS_RESPONSE);
-                    } else {
-                        LOGGER.error(handler.cause(), MessageCodes.EXC_000, handler.cause().getMessage());
+                    try {
+                        processImage(request, image, message);
+                    } catch (final Throwable details) {
+                        LOGGER.error(details, MessageCodes.EXC_049, filePath);
+                        image.free();
                         message.reply(FAILURE_RESPONSE);
                     }
-                });
-            } catch (final Exception details) {
-                LOGGER.error(details, MessageCodes.EXC_000, details.getMessage());
-                message.reply(FAILURE_RESPONSE);
-            } catch (final OutOfMemoryError details) {
-                details.printStackTrace(System.out);
-                System.exit(1); // FIXME
-                LOGGER.error(details, "OutOfMemoryError: {}", json.getString(IIIF_PATH_KEY));
+                }
+            } catch (final Throwable details) {
+                LOGGER.error(details, details.getMessage() != null ? details.getMessage() : "");
                 message.reply(FAILURE_RESPONSE);
             }
         });
@@ -88,4 +108,93 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
         aFuture.complete();
     }
 
+    private byte[] getCachedImage(final SharedData aSharedData, final JsonObject aJson, final long aTileCount,
+            final String aFilePath, final String aID) {
+        final LocalMap<String, ImmutableBytes> dataMap = aSharedData.getLocalMap(IMAGE_BUFFER_KEY);
+        final String tileRequestKey = aJson.getString(TILE_REQUEST_KEY);
+        final int totalTileCount = aJson.getInteger(IMAGE_TILE_COUNT);
+        final FileSystem fileSystem = vertx.fileSystem();
+        final byte[] image;
+
+        boolean skipBuffer = false;
+
+        /* Check if we're processing the first tile from the batch */
+        if (totalTileCount == aTileCount) {
+            LOGGER.debug(MessageCodes.DBG_014, aFilePath);
+            image = fileSystem.readFileBlocking(aFilePath).getBytes();
+            dataMap.put(tileRequestKey, new ImmutableBytes(image));
+        } else {
+            /* Stall for a bit if we need to, so we're not double reading TIFF files */
+            for (int count = 0; !dataMap.keySet().contains(tileRequestKey); count++) {
+                try {
+                    Thread.sleep(TimeUnit.MILLISECONDS.convert(1, TimeUnit.SECONDS));
+
+                    /* This is just a wild unfounded amount of time based on nothing */
+                    if (count > 60 * 5) {
+                        LOGGER.warn(MessageCodes.WARN_006, aFilePath);
+                        skipBuffer = true;
+                        break;
+                    }
+                } catch (final InterruptedException details) {
+                    final String verticleName = getClass().getSimpleName();
+
+                    LOGGER.warn(MessageCodes.WARN_005, verticleName, details.getMessage());
+                }
+            }
+
+            if (skipBuffer) {
+                LOGGER.debug(MessageCodes.DBG_009, aFilePath);
+                image = fileSystem.readFileBlocking(aFilePath).getBytes();
+            } else {
+                LOGGER.debug(MessageCodes.DBG_013, aFilePath);
+
+                if (aTileCount == 1) {
+                    LOGGER.debug(MessageCodes.DBG_012, aID, aFilePath);
+                    image = dataMap.remove(tileRequestKey).getBytes();
+                } else {
+                    image = dataMap.get(tileRequestKey).getBytes();
+                }
+            }
+        }
+
+        return image;
+    }
+
+    private void processImage(final ImageRequest aRequest, final ImageObject aImage, final Message<JsonObject> aMessage)
+            throws IOException {
+        final PairtreeObject ptObj = getConfig().getDataDir(aRequest.getID()).getObject(aRequest.getID());
+        final Buffer imageBuffer;
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(MessageCodes.DBG_011, aRequest.getID());
+        }
+
+        if (!aRequest.getRegion().isFullImage()) {
+            aImage.extractRegion(aRequest.getRegion());
+        }
+
+        if (!aRequest.getSize().isFullSize()) {
+            aImage.resize(aRequest.getSize());
+        }
+
+        if (aRequest.getRotation().isRotated()) {
+            aImage.rotate(aRequest.getRotation());
+        }
+
+        if (!aRequest.getQuality().equals(ImageQuality.DEFAULT)) {
+            aImage.adjustQuality(aRequest.getQuality());
+        }
+
+        imageBuffer = aImage.toBuffer(aRequest.getFormat().getExtension());
+        aImage.free();
+
+        ptObj.put(aRequest.getPath(), imageBuffer, handler -> {
+            if (handler.succeeded()) {
+                aMessage.reply(SUCCESS_RESPONSE);
+            } else {
+                LOGGER.error(handler.cause(), MessageCodes.EXC_000, handler.cause().getMessage());
+                aMessage.reply(FAILURE_RESPONSE);
+            }
+        });
+    }
 }

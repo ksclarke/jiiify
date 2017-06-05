@@ -22,6 +22,8 @@ public interface Constants {
 
     public static final String HTTP_HOST_PROP = "jiiify.host";
 
+    public static final String JIIIFY_CORES_PROP = "jiiify.cores";
+
     public static final String URL_SCHEME_PROP = "jiiify.url.scheme";
 
     public static final String DATA_DIR_PROP = "jiiify.data.dir";
@@ -83,6 +85,14 @@ public interface Constants {
     public static final String THUMBNAIL_KEY = "jiiify_thumbnail_s";
 
     public static final String JIIIFY_ARRAY = "jiiify.json.array";
+
+    public static final String TILE_REQUEST_KEY = "jiiify.tile.request.id";
+
+    public static final String IMAGE_BUFFER_KEY = "jiiify.image.buffer";
+
+    public static final String IMAGE_COUNTER_KEY = "jiiify.image.counter";
+
+    public static final String IMAGE_TILE_COUNT = "jiiify.tile.count";
 
     /* Message values */
 

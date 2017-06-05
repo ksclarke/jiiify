@@ -7,8 +7,8 @@ set -e
 # This is a startup script for devs. It's not intended for production. See the supervisor config for that.
 #
 # And, a troubleshooting tip... this file is filtered by the Maven resources plugin. If your editor updates this
-# file in the "target" directory after you edit the one in "src/main/resources" without filtering it, you'll get
-# a "bad substitution" error when you run the script.
+# file in the "target" directory after you edit the one in "src/main/scripts" without filtering it, you'll get a
+# "bad substitution" error when you run the script.
 #
 
 # We're going to be opinionated about logging frameworks
@@ -16,7 +16,6 @@ LOG_DELEGATE="-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.S
 KEY_PASS_CONFIG="-Djiiify.key.pass=${jiiify.key.pass}"
 WATCH_FOLDER_DIR="-Djiiify.watch.folder=${jiiify.watch.folder}"
 JIIIFY_PORT="-Djiiify.port=${jiiify.port}"
-VERTX_OPTS=""
 DROPWIZARD_METRICS="-Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.registryName=jiiify.metrics"
 JMX_METRICS="-Dcom.sun.management.jmxremote -Dvertx.metrics.options.jmxEnabled=true"
 # For tools like Eclipse's Debugging
@@ -73,12 +72,12 @@ if hash docker 2>/dev/null; then
     PING="http://localhost:8983/solr/jiiify/admin/ping"
 
     # If container has never been created, create it and its Solr core
-    if [ -z "${CONTAINER_ID}" ]; then
+    if [ -z "$CONTAINER_ID" ]; then
       CONTAINER_ID=$(docker run --name jiiify_solr -d -p 8983:8983 -t solr)
 
       for INDEX in $(seq 1 10); do
         docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify >/dev/null 2>&1
-        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
+        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" -L $PING)
 
         if [ "$RESPONSE_CODE" == "200" ]; then
           break
@@ -114,5 +113,5 @@ if hash docker 2>/dev/null; then
   fi
 fi
 
-$AUTHBIND java $HEAP_DUMP_CONFIG $VERTX_OPTS $XMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR $JKS_CONFIG \
-$JIIIFY_PORT $TOOLING $JIIIFY_CORES $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG
+$AUTHBIND java $HEAP_DUMP_CONFIG $XMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR $JKS_CONFIG \
+  $JIIIFY_PORT $TOOLING $JIIIFY_CORES $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG

@@ -13,7 +13,6 @@ import info.freelibrary.util.LoggerFactory;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 
@@ -25,6 +24,8 @@ import io.vertx.core.json.JsonObject;
 public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
 
     protected final Logger LOGGER = LoggerFactory.getLogger(getClass().getName(), MESSAGES);
+
+    protected final int INGEST_TIMEOUT = Integer.MAX_VALUE;
 
     @Override
     public void stop(final Future<Void> aFuture) {
@@ -56,9 +57,8 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
      */
     protected void sendMessage(final JsonObject aJsonObject, final String aVerticleName, final long aTimeout) {
         final DeliveryOptions options = new DeliveryOptions().setSendTimeout(aTimeout);
-        final EventBus eventBus = vertx.eventBus();
 
-        eventBus.send(aVerticleName, aJsonObject, options, response -> {
+        vertx.eventBus().send(aVerticleName, aJsonObject, options, response -> {
             if (response.failed()) {
                 if (response.cause() != null) {
                     LOGGER.error(response.cause(), MessageCodes.EXC_039, aVerticleName, aJsonObject);

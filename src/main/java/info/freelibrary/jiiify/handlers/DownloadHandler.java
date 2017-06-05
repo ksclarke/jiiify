@@ -6,6 +6,8 @@ import static info.freelibrary.jiiify.Constants.HBS_PATH_SKIP_KEY;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
+import static info.freelibrary.jiiify.Metadata.CONTENT_DISPOSITION;
+import static info.freelibrary.jiiify.Metadata.CONTENT_LENGTH;
 import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
 import static info.freelibrary.jiiify.Metadata.HTML_MIME_TYPE;
 import static info.freelibrary.jiiify.Metadata.LOCATION_HEADER;
@@ -34,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.IIIFException;
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.iiif.ImageRequest;
@@ -143,10 +146,10 @@ public class DownloadHandler extends JiiifyHandler {
 
                             ptObj.find(resourcePath, findHandler -> {
                                 if (findHandler.succeeded()) {
-                                    LOGGER.debug("Download resource file found: {}", resourcePath);
+                                    LOGGER.debug(MessageCodes.DBG_022, resourcePath);
                                     future.complete();
                                 } else {
-                                    LOGGER.debug("Download resource file not found: {}", resourcePath);
+                                    LOGGER.debug(MessageCodes.DBG_023, resourcePath);
                                     future.fail(findHandler.cause());
                                 }
                             });
@@ -159,33 +162,37 @@ public class DownloadHandler extends JiiifyHandler {
                     final CompositeFuture future = CompositeFuture.all(futures).setHandler(futuresHandler -> {
                         if (futuresHandler.succeeded()) {
                             if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("Zipping up an object for download: {}", ptObj.getID());
+                                LOGGER.debug(MessageCodes.DBG_024, ptObj.getID());
                             }
 
                             try {
                                 startDownload(ptObj, paths, new ImageInfo(jsonObject), aContext);
                             } catch (final InvalidInfoException details) {
-                                LOGGER.debug("Invalid ImageInfo JSON");
-                                aContext.response().putHeader(CONTENT_TYPE, HTML_MIME_TYPE).end(
-                                        "Invalid ImageInfo JSON");
+                                final String message = LOGGER.getMessage(MessageCodes.INFO_005);
+
+                                LOGGER.info(message);
+                                aContext.response().putHeader(CONTENT_TYPE, HTML_MIME_TYPE).end(message);
                             }
                         } else {
-                            LOGGER.debug("Not ready for download");
-                            aContext.response().putHeader(CONTENT_TYPE, HTML_MIME_TYPE).end("Not ready for download");
+                            final String message = LOGGER.getMessage(MessageCodes.INFO_006);
+
+                            LOGGER.info(message);
+                            aContext.response().putHeader(CONTENT_TYPE, HTML_MIME_TYPE).end(message);
                         }
                     });
 
-                    LOGGER.debug("Number of tiles to be zipped: {}", future.size());
+                    LOGGER.debug(MessageCodes.DBG_025, future.size());
                 } else {
-                    final String message = "Height and/or width not found in image info file";
+                    final String message = LOGGER.getMessage(MessageCodes.EXC_046);
 
                     fail(aContext, new IIIFException(message));
-                    aContext.put(ERROR_HEADER, "Failed to read image info file");
+
+                    aContext.put(ERROR_HEADER, MessageCodes.EXC_047);
                     aContext.put(ERROR_MESSAGE, message);
                 }
             } else {
                 fail(aContext, handler.cause());
-                aContext.put(ERROR_HEADER, "Failed to read image info file");
+                aContext.put(ERROR_HEADER, MessageCodes.EXC_047);
             }
         });
     }
@@ -239,11 +246,11 @@ public class DownloadHandler extends JiiifyHandler {
 
                         // Set download headers so zip file will be named with the object ID
                         headers.add(CONTENT_TYPE, ZIP_MIME_TYPE);
-                        headers.add("Content-Disposition", "attachment; filename=" + fileName);
-                        headers.add("Content-Length", Long.toString(zipFS.supportedFileAttributeViews().size()));
+                        headers.add(CONTENT_DISPOSITION, "attachment; filename=" + fileName);
+                        headers.add(CONTENT_LENGTH, Long.toString(zipFS.supportedFileAttributeViews().size()));
 
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Sending file for browser download: {}", zipPath);
+                            LOGGER.debug(MessageCodes.DBG_026, zipPath);
                         }
 
                         // And, lastly, send the zip file to our downloader

@@ -6,13 +6,11 @@ import static info.freelibrary.jiiify.Constants.MESSAGES;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageWriter;
-import javax.imageio.stream.FileCacheImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 
 import org.imgscalr.Scalr;
@@ -24,6 +22,7 @@ import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 import info.freelibrary.jiiify.iiif.ImageRotation;
 import info.freelibrary.jiiify.iiif.ImageSize;
+import info.freelibrary.util.IOUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
@@ -36,7 +35,9 @@ import io.vertx.core.buffer.Buffer;
  */
 public class JavaImageObject implements ImageObject {
 
-    private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir"));
+    static {
+        ImageIO.setUseCache(true);
+    }
 
     private final Logger LOGGER = LoggerFactory.getLogger(JavaImageObject.class, MESSAGES);
 
@@ -45,18 +46,20 @@ public class JavaImageObject implements ImageObject {
     /**
      * Creates new image using the pure Java image processing.
      *
-     * @param aImgBuffer A source image in a Vertx {@link io.vertx.core.buffer.Buffer}
+     * @param aByteArray A source image in an array of bytes
      * @throws IOException If there is trouble reading the image file
      */
-    public JavaImageObject(final Buffer aImgBuffer) throws IOException {
-        final ByteArrayInputStream inStream = new ByteArrayInputStream(aImgBuffer.getBytes());
-        final FileCacheImageInputStream cacheStream = new FileCacheImageInputStream(inStream, TMP_DIR);
+    public JavaImageObject(final byte[] aByteArray) throws IOException {
+        final ByteArrayInputStream inStream = new ByteArrayInputStream(aByteArray);
 
-        myImage = ImageIO.read(cacheStream);
+        myImage = ImageIO.read(inStream);
 
         if (myImage == null) {
             LOGGER.error(MessageCodes.EXC_038);
+            throw new IOException("Unable to read byte array because there wasn't an appropriate reader");
         }
+
+        IOUtils.closeQuietly(inStream);
     }
 
     @Override
@@ -102,9 +105,6 @@ public class JavaImageObject implements ImageObject {
         final String mimeType = ImageFormat.getMIMEType(aFileExt);
         final Iterator<ImageWriter> iterator = ImageIO.getImageWritersByMIMEType(mimeType);
 
-        // TODO: test performance and resource usage differences
-        ImageIO.setUseCache(true);
-
         if (iterator.hasNext()) {
             final ImageWriter writer = iterator.next();
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -135,7 +135,8 @@ public class JavaImageObject implements ImageObject {
     }
 
     @Override
-    public void flush() {
+    public void free() {
         myImage.flush();
+        myImage.getGraphics().dispose();
     }
 }
