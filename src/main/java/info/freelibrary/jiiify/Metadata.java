@@ -30,4 +30,6 @@ public interface Metadata {
 
     public static final String LOCATION_HEADER = "Location";
 
+    public static final String DEFAULT_CACHE_CONTROL = "max-age=86400";
+
 }

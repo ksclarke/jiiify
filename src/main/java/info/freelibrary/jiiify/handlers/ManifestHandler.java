@@ -1,8 +1,6 @@
 
 package info.freelibrary.jiiify.handlers;
 
-import static info.freelibrary.jiiify.Metadata.CONTENT_LENGTH;
-import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.net.MalformedURLException;
@@ -68,8 +66,9 @@ public class ManifestHandler extends JiiifyHandler {
                             updateJsonObject(json, server, service);
                             buffer = Buffer.buffer(json.toString());
 
-                            response.putHeader(CONTENT_LENGTH, Integer.toString(buffer.length()));
-                            response.putHeader(CONTENT_TYPE, Metadata.JSON_MIME_TYPE);
+                            response.putHeader(Metadata.CONTENT_LENGTH, Integer.toString(buffer.length()));
+                            response.putHeader(Metadata.CACHE_CONTROL, Metadata.DEFAULT_CACHE_CONTROL);
+                            response.putHeader(Metadata.CONTENT_TYPE, Metadata.JSON_MIME_TYPE);
                             response.end(buffer);
                             response.close();
 

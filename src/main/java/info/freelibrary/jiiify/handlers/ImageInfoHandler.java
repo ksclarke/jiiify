@@ -1,8 +1,7 @@
 
 package info.freelibrary.jiiify.handlers;
 
-import static info.freelibrary.jiiify.Metadata.CONTENT_LENGTH;
-import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
+import static info.freelibrary.jiiify.Metadata.DEFAULT_CACHE_CONTROL;
 import static info.freelibrary.jiiify.Metadata.JSON_MIME_TYPE;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_HEADER;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
@@ -11,6 +10,7 @@ import java.net.URISyntaxException;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
+import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
@@ -71,8 +71,9 @@ public class ImageInfoHandler extends JiiifyHandler {
 
                             buffer = Buffer.buffer(json.toString());
 
-                            response.putHeader(CONTENT_LENGTH, Integer.toString(buffer.length()));
-                            response.putHeader(CONTENT_TYPE, JSON_MIME_TYPE);
+                            response.putHeader(Metadata.CONTENT_LENGTH, Integer.toString(buffer.length()));
+                            response.putHeader(Metadata.CACHE_CONTROL, DEFAULT_CACHE_CONTROL);
+                            response.putHeader(Metadata.CONTENT_TYPE, JSON_MIME_TYPE);
                             response.end(buffer);
                             response.close();
 

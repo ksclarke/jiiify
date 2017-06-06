@@ -1,7 +1,6 @@
 
 package info.freelibrary.jiiify.handlers;
 
-import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.awt.image.BufferedImage;
@@ -112,6 +111,7 @@ public class ImageHandler extends JiiifyHandler {
                     rotatedImage.flush();
 
                     response.putHeader(Metadata.CONTENT_TYPE, mimeType);
+                    response.putHeader(Metadata.CACHE_CONTROL, Metadata.DEFAULT_CACHE_CONTROL);
                     response.putHeader(Metadata.CONTENT_LENGTH, Integer.toString(bytes.length));
                     response.end(Buffer.buffer(bytes));
                     response.close();
@@ -190,7 +190,8 @@ public class ImageHandler extends JiiifyHandler {
 
         aPtObj.get(aResourcePath, getHandler -> {
             if (getHandler.succeeded()) {
-                response.putHeader(CONTENT_TYPE, ImageFormat.getMIMEType(FileUtils.getExt(request.uri())));
+                response.putHeader(Metadata.CONTENT_TYPE, ImageFormat.getMIMEType(FileUtils.getExt(request.uri())));
+                response.putHeader(Metadata.CACHE_CONTROL, Metadata.DEFAULT_CACHE_CONTROL);
                 response.end(getHandler.result());
                 response.close();
 
