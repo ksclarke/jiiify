@@ -10,6 +10,7 @@ import java.net.URL;
 import java.util.Iterator;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
@@ -112,7 +113,7 @@ public class ManifestHandler extends JiiifyHandler {
             try {
                 aJsonObject.put("logo", new URL(aServer + new URL(logo).getPath()).toExternalForm());
             } catch (final MalformedURLException details) {
-                LOGGER.error("Malformed logo URL: {}", logo, details);
+                LOGGER.error(MessageCodes.EXC_052, logo, details);
             }
         }
 

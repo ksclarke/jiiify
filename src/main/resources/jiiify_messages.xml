@@ -41,6 +41,17 @@
   <entry key="EXC-047">Failed to read image info file</entry>
   <entry key="EXC-048">Image file not found: {}</entry>
   <entry key="EXC-049">Failed to process non-cached image: {}</entry>
+  <entry key="EXC-050">Failed to update ImageInfo's @id on '{}'</entry>
+  <entry key="EXC-051">{} verification responded with: {} [{}]</entry>
+  <entry key="EXC-052">Malformed logo URL: {}</entry>
+  <entry key="EXC-053">Failed submitting '{}' to Solr: {}</entry>
+  <entry key="EXC-054">Unable to create object directory: {}</entry>
+  <entry key="EXC-055">Failed to write image info file: {}</entry>
+  <entry key="EXC-056">Unable to find or create object directory: {}</entry>
+  <entry key="EXC-057">Failed submitting thumbnail to Solr: {}</entry>
+  <entry key="EXC-058">Couldn't connect to Solr server: [{}]</entry>
+  <entry key="EXC-059">Couldn't connect to Solr server: [{}: {}]</entry>
+  <entry key="EXC-060">Failed to set default Jiiify data directory to: {}</entry>
 
   <!-- Info messages -->
   <entry key="INFO-001">Ingesting an added or updated image file: {}</entry>

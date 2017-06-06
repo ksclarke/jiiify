@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 import info.freelibrary.jiiify.util.PathUtils;
@@ -50,13 +51,14 @@ public class ImageInfoVerticle extends AbstractJiiifyVerticle {
 
                             message.reply(SUCCESS_RESPONSE);
                         } else {
-                            LOGGER.error(writeHandler.cause(), "Failed to write image info file: {}", ptObj.getPath(
-                                    ImageInfo.FILE_NAME));
+                            final String path = ptObj.getPath(ImageInfo.FILE_NAME);
+
+                            LOGGER.error(writeHandler.cause(), MessageCodes.EXC_055, path);
                             message.reply(FAILURE_RESPONSE);
                         }
                     });
                 } else {
-                    LOGGER.error("Unable to create object directory: {}", ptObj.getPath());
+                    LOGGER.error(MessageCodes.EXC_054, ptObj.getPath());
                     message.reply(FAILURE_RESPONSE);
                 }
             });

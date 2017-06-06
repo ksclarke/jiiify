@@ -6,6 +6,7 @@ import static info.freelibrary.jiiify.Constants.SOLR_SERVICE_KEY;
 import static info.freelibrary.jiiify.util.SolrUtils.SOLR_OK_STATUS;
 import static info.freelibrary.jiiify.util.SolrUtils.SOLR_STATUS;
 
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.jiiify.services.impl.SolrServiceImpl;
 
@@ -41,10 +42,10 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
             // Create a connection to see if Solr responds at the expected location
             request = client.getAbs(solr, response -> {
                 handlePingResponse(response, aFuture, client);
-            }).exceptionHandler(exceptionHandler -> {
-                LOGGER.error("Couldn't connect to Solr server: [" + exceptionHandler.getMessage() + "]");
+            }).exceptionHandler(handler -> {
+                LOGGER.error(MessageCodes.EXC_058, handler.getMessage());
                 client.close();
-                aFuture.fail(exceptionHandler.getMessage());
+                aFuture.fail(handler.getMessage());
             });
 
             request.end();
@@ -71,8 +72,7 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
                 }
             });
         } else {
-            LOGGER.error("Couldn't connect to Solr server: [" + aResponse.statusCode() + ": " + aResponse
-                    .statusMessage() + "]");
+            LOGGER.error(MessageCodes.EXC_059, aResponse.statusCode(), aResponse.statusMessage());
             aClient.close();
             aFuture.fail(aResponse.statusMessage() + " [" + aResponse.statusCode() + "]");
         }

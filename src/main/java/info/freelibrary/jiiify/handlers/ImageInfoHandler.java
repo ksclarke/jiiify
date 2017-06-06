@@ -10,6 +10,7 @@ import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 import java.net.URISyntaxException;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
@@ -65,7 +66,7 @@ public class ImageInfoHandler extends JiiifyHandler {
                             try {
                                 json.put(ImageInfo.ID, server + "/" + PathUtils.encodeIdentifier(id));
                             } catch (final URISyntaxException details) {
-                                LOGGER.error("Failed to update ImageInfo JSON's @id", details);
+                                LOGGER.error(details, MessageCodes.EXC_050, id);
                             }
 
                             buffer = Buffer.buffer(json.toString());

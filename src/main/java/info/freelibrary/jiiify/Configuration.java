@@ -783,12 +783,12 @@ public class Configuration implements Shareable {
         pairtree.create(handler -> {
             if (handler.succeeded()) {
                 LOGGER.info("Setting default Jiiify data directory to: {}", pairtree.getPath());
-
                 myDataDirs.put(DEFAULT_DATA_DIR_NAME, pairtree);
                 result.complete(this);
             } else {
                 final Throwable details = handler.cause();
-                LOGGER.error("Failed to set default Jiiify data directory to: {}", pairtree.getPath(), details);
+
+                LOGGER.error(MessageCodes.EXC_060, pairtree.getPath(), details);
                 result.fail(details);
             }
         });

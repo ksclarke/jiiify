@@ -12,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.util.IOUtils;
 
@@ -39,7 +40,7 @@ public class ImagePropertiesVerticle extends AbstractJiiifyVerticle {
                 if (createHandler.succeeded()) {
                     writePropertiesFile(ptObj, id, imageFilePath, message);
                 } else {
-                    LOGGER.error("Unable to find or create object directory: {}", ptObj.getPath());
+                    LOGGER.error(MessageCodes.EXC_056, ptObj.getPath());
                     message.reply(FAILURE_RESPONSE);
                 }
             });

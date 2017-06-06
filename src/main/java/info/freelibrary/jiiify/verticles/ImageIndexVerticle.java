@@ -16,6 +16,7 @@ import javax.naming.ConfigurationException;
 
 import org.javatuples.KeyValue;
 
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.jiiify.util.SolrUtils;
 
@@ -44,15 +45,15 @@ public class ImageIndexVerticle extends AbstractJiiifyVerticle {
 
             service.index(SolrUtils.getSimpleIndexDoc(fields), handler -> {
                 if (handler.failed()) {
-                    final String exceptionMessage;
+                    final String details;
 
                     if (handler.cause() != null) {
-                        exceptionMessage = handler.cause().getMessage();
+                        details = handler.cause().getMessage();
                     } else {
-                        exceptionMessage = "(No details)";
+                        details = "(No details)";
                     }
 
-                    LOGGER.error("Failed submitting '{}' to Solr: {}", message.body(), exceptionMessage);
+                    LOGGER.error(MessageCodes.EXC_053, message.body(), details);
                     message.reply(FAILURE_RESPONSE);
                 } else if (handler.succeeded()) {
                     if (LOGGER.isDebugEnabled()) {

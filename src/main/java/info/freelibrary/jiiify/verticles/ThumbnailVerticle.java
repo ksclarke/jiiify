@@ -61,7 +61,7 @@ public class ThumbnailVerticle extends AbstractJiiifyVerticle {
                         messageHandler.reply(FAILURE_RESPONSE);
                     }
                 } else {
-                    LOGGER.error("Unable to create object directory: {}", ptObj.getPath());
+                    LOGGER.error(MessageCodes.EXC_056, ptObj.getPath());
                     messageHandler.reply(FAILURE_RESPONSE);
                 }
             });

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.Handler;
@@ -120,7 +121,7 @@ public class LoginHandler extends JiiifyHandler {
                 final String statusMessage = handler.statusMessage();
                 final int statusCode = handler.statusCode();
 
-                LOGGER.error("{} verfication responded with: {} [{}]", site, statusMessage, statusCode);
+                LOGGER.error(MessageCodes.EXC_051, site, statusMessage, statusCode);
                 response.setStatusCode(statusCode).setStatusMessage(statusMessage).close();
                 aClient.close();
             }

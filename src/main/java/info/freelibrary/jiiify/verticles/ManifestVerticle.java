@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.Constants;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.jiiify.iiif.presentation.json.AbstractIiifResourceMixIn;
 import info.freelibrary.jiiify.iiif.presentation.json.ManifestMixIn;
@@ -83,7 +84,7 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
                         messageHandler.reply(FAILURE_RESPONSE);
                     }
                 } else {
-                    LOGGER.error("Unable to create object directory: {}", ptObj.getPath());
+                    LOGGER.error(MessageCodes.EXC_056, ptObj.getPath());
                     messageHandler.reply(FAILURE_RESPONSE);
                 }
             });
@@ -161,7 +162,7 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
 
                 service.index(SolrUtils.getSimpleUpdateDoc(fields), indexHandler -> {
                     if (indexHandler.failed()) {
-                        LOGGER.error("Failed submitting thumbnail to Solr: {}", indexHandler.result());
+                        LOGGER.error(MessageCodes.EXC_057, indexHandler.result());
                         aMessageHandler.reply(FAILURE_RESPONSE);
                     } else if (indexHandler.succeeded()) {
                         if (LOGGER.isDebugEnabled()) {
