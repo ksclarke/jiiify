@@ -49,16 +49,14 @@
     <jiiify.memory />
     <jiiify.cores />
     <!-- These are samples for testing purposes only ... DO NOT USE THEM IN PRODUCTION!!! -->
-    <jiiify.json.config.path>${basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
+    <jiiify.json.config.path>${project.basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
 
     <!-- Versions of dependencies managed in this POM -->
     <vertx.version>3.4.1</vertx.version>
-    <opencsv.version>3.7</opencsv.version>
     <javatuples.version>1.2</javatuples.version>
     <commons.cli.version>1.3.1</commons.cli.version>
-    <opencv.version>3.0.0-SNAPSHOT</opencv.version>
+    <opencsv.version>3.9</opencsv.version>
     <imgscalr.version>4.2</imgscalr.version>
-    <kakadu.version>7.8-SNAPSHOT</kakadu.version>
     <twelvemonkeys.version>3.2.1</twelvemonkeys.version>
     <handlebars.version>4.0.6</handlebars.version>
     <scribe.version>1.3.7</scribe.version>
@@ -68,9 +66,10 @@
 
     <!-- Versions of plug-ins managed in this POM -->
     <maven.shade.plugin.version>3.0.0</maven.shade.plugin.version>
-    <maven.compiler.plugin.version>3.3</maven.compiler.plugin.version>
     <maven.clean.plugin.version>2.6.1</maven.clean.plugin.version>
     <maven.keytool.plugin.version>1.5</maven.keytool.plugin.version>
+    <maven.compiler.plugin.version>3.3</maven.compiler.plugin.version>
+    <maven.download.plugin.version>1.3.0</maven.download.plugin.version>
 
     <!-- This project depends on JDK 8 -->
     <maven.compiler.source>1.8</maven.compiler.source>
@@ -191,8 +190,6 @@
       <artifactId>imgscalr-lib</artifactId>
       <version>${imgscalr.version}</version>
     </dependency>
-    <!-- <dependency> <groupId>info.freelibrary</groupId> <artifactId>opencv</artifactId> <version>${opencv.version}</version> 
-      </dependency> -->
     <dependency>
       <groupId>com.twelvemonkeys.imageio</groupId>
       <artifactId>imageio-jpeg</artifactId>
@@ -203,13 +200,6 @@
       <artifactId>imageio-tiff</artifactId>
       <version>${twelvemonkeys.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.twelvemonkeys.imageio</groupId>
-      <artifactId>imageio-bmp</artifactId>
-      <version>${twelvemonkeys.version}</version>
-    </dependency>
-    <!-- <dependency> <groupId>kdu_jni</groupId> <artifactId>freelib-kakadu</artifactId> <version>${kakadu.version}</version> 
-      </dependency> -->
     <!-- Below here are our testing dependencies -->
     <dependency>
       <groupId>junit</groupId>
@@ -326,6 +316,25 @@
       </plugins>
     </pluginManagement>
     <plugins>
+      <plugin>
+        <groupId>com.googlecode.maven-download-plugin</groupId>
+        <artifactId>download-maven-plugin</artifactId>
+        <version>${maven.download.plugin.version}</version>
+        <executions>
+          <execution>
+            <id>install-test-images</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>wget</goal>
+            </goals>
+            <configuration>
+              <url>https://s3.amazonaws.com/ksclarke-data/jiiify-test-images.zip</url>
+              <unpack>true</unpack>
+              <outputDirectory>${project.basedir}/src/test/resources/images</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>keytool-maven-plugin</artifactId>
@@ -444,10 +453,10 @@
             </goals>
             <configuration>
               <!-- On classpath so it will get bundled up in the executable jar -->
-              <outputDirectory>${basedir}/target/classes/webroot</outputDirectory>
+              <outputDirectory>${project.basedir}/target/classes/webroot</outputDirectory>
               <resources>
                 <resource>
-                  <directory>src/main/webapp</directory>
+                  <directory>${project.basedir}/src/main/webapp</directory>
                 </resource>
               </resources>
             </configuration>
@@ -486,7 +495,7 @@
             <!-- Let our testing framework know what version of PhantomJS we're using -->
             <phantomjs.binary>${phantomjs.binary}</phantomjs.binary>
             <!-- PhantomJS testing setup uses JUL (it's not used by Jiiify though) -->
-            <java.util.logging.config.file>${basedir}/src/test/resources/jul-logging.properties</java.util.logging.config.file>
+            <java.util.logging.config.file>${project.basedir}/src/test/resources/jul-logging.properties</java.util.logging.config.file>
             <!-- Have our tests use the SLF4J loggers -->
             <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.SLF4JLogDelegateFactory</vertx.logger-delegate-factory-class-name>
             <!-- Keystore password for testing -->
@@ -577,15 +586,15 @@
               <goal>exec</goal>
             </goals>
             <configuration>
-              <executable>${basedir}/src/test/scripts/pre-it-startup.sh</executable>
-              <workingDirectory>${basedir}/target</workingDirectory>
+              <executable>${project.basedir}/src/test/scripts/pre-it-startup.sh</executable>
+              <workingDirectory>${project.basedir}/target</workingDirectory>
               <arguments>
                 <argument>java</argument>
                 <argument>-Djiiify.file.uploads=java.io.tmpdir</argument>
                 <argument>-Djiiify.port=${http.port}</argument>
                 <argument>-Djiiify.service.prefix=/iiif</argument>
                 <argument>-jar</argument>
-                <argument>${basedir}/target/${project.artifactId}-${project.version}-exec.jar</argument>
+                <argument>${project.basedir}/target/${project.artifactId}-${project.version}-exec.jar</argument>
               </arguments>
             </configuration>
           </execution>
@@ -596,8 +605,8 @@
               <goal>exec</goal>
             </goals>
             <configuration>
-              <executable>${basedir}/src/test/scripts/post-it-shutdown.sh</executable>
-              <workingDirectory>${basedir}/target</workingDirectory>
+              <executable>${project.basedir}/src/test/scripts/post-it-shutdown.sh</executable>
+              <workingDirectory>${project.basedir}/target</workingDirectory>
             </configuration>
           </execution>
         </executions>
@@ -621,8 +630,8 @@
       <!-- Default "out-of-the-box" deployment options to be overridden -->
       <properties>
         <jiiify.user>${user.name}</jiiify.user>
-        <jiiify.deployment.dir>${basedir}/target</jiiify.deployment.dir>
-        <jiiify.logs.dir>${basedir}/target</jiiify.logs.dir>
+        <jiiify.deployment.dir>${project.basedir}/target</jiiify.deployment.dir>
+        <jiiify.logs.dir>${project.basedir}/target</jiiify.logs.dir>
         <jiiify.temp.dir>/tmp/jiiify-temp-dir</jiiify.temp.dir>
         <jiiify.watch.folder>/tmp/jiiify-watch-folder</jiiify.watch.folder>
       </properties>
@@ -641,8 +650,8 @@
       <!-- Default "out-of-the-box" deployment options to be overridden -->
       <properties>
         <jiiify.user>${user.name}</jiiify.user>
-        <jiiify.deployment.dir>${basedir}/target</jiiify.deployment.dir>
-        <jiiify.logs.dir>${basedir}/target</jiiify.logs.dir>
+        <jiiify.deployment.dir>${project.basedir}/target</jiiify.deployment.dir>
+        <jiiify.logs.dir>${project.basedir}/target</jiiify.logs.dir>
         <jiiify.temp.dir>/tmp/jiiify-temp-dir</jiiify.temp.dir>
         <jiiify.watch.folder>/tmp/jiiify-watch-folder</jiiify.watch.folder>
       </properties>
