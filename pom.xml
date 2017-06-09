@@ -63,6 +63,7 @@
     <json.path.version>2.1.0</json.path.version>
     <java.assist.version>3.21.0-GA</java.assist.version>
     <vertx.pairtree.version>0.0.2</vertx.pairtree.version>
+    <netty.tcnative.version>1.1.33.Fork26</netty.tcnative.version>
 
     <!-- Versions of plug-ins managed in this POM -->
     <maven.shade.plugin.version>3.0.0</maven.shade.plugin.version>
@@ -125,11 +126,18 @@
       <artifactId>vertx-camel-bridge</artifactId>
       <version>${vertx.version}</version>
     </dependency>
-    <!-- For better Netty performance -->
+    <!-- Netty dependencies -->
     <dependency>
       <groupId>org.javassist</groupId>
       <artifactId>javassist</artifactId>
       <version>${java.assist.version}</version>
+    </dependency>
+    <!-- See http://netty.io/wiki/forked-tomcat-native.html for details on below -->
+    <dependency>
+      <groupId>io.netty</groupId>
+      <artifactId>netty-tcnative-boringssl-static</artifactId>
+      <!-- TODO: Put this in a Maven profile and make it system dependent? -->
+      <version>${netty.tcnative.version}</version>
     </dependency>
     <!-- Administrative UI dependencies -->
     <dependency>

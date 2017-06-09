@@ -174,8 +174,7 @@ public class ImageHandler extends JiiifyHandler {
                 }
             } else {
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug(MessageCodes.DBG_033, aPtObj.getPath(imageRequest
-                            .getPath()));
+                    LOGGER.debug(MessageCodes.DBG_033, aPtObj.getPath(imageRequest.getPath()));
                 }
 
                 aContext.fail(404);

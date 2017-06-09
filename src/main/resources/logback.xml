@@ -28,28 +28,30 @@
   <logger name="info.freelibrary.jiiify.Configuration" level="INFO">
     <appender-ref ref="STDOUT" />
   </logger>
-  <logger name="info.freelibrary.jiiify.verticles.JiiifyMainVerticle" level="INFO">
+  <logger name="info.freelibrary.jiiify.verticles.JiiifyMainVerticle" level="DEBUG">
     <appender-ref ref="STDOUT" />
   </logger>
 
-  <logger name="io.vertx.core.impl.BlockedThreadChecker" level="OFF"/>
+  <logger name="io.vertx.core.impl.BlockedThreadChecker" level="OFF" />
 
-  <!--<logger name="info.freelibrary.jiiify" level="DEBUG"/>-->
-  <logger name="info.freelibrary.jiiify.handlers.IngestHandler" level="DEBUG"/>
-  <logger name="info.freelibrary.jiiify.verticles.ImageIngestVerticle" level="WARN"/>
+  <!--<logger name="info.freelibrary.jiiify" level="DEBUG"/> -->
+  <logger name="info.freelibrary.jiiify.handlers.IngestHandler" level="DEBUG" />
+  <logger name="info.freelibrary.jiiify.verticles.ImageIngestVerticle" level="WARN" />
 
   <!-- Things we don't ever want to see below WARN level output on, unless we do -->
-  <logger name="info.freelibrary.jiiify.templates.impl.HandlebarsTemplateEngineImpl" level="WARN"/>
-  <logger name="io.netty.handler.ssl.SslHandler" level="WARN"/>
-  <logger name="com.github.jknack.handlebars.internal.HbsParserFactory" level="WARN"/>
-  <logger name="io.vertx.ext.auth.jwt.JWT" level="WARN"/>
-  <logger name="io.netty.util.Recycler" level="WARN"/>
-  <logger name="io.netty.handler.ssl.JdkSslContext" level="WARN"/>
-  <logger name="io.netty.resolver.dns.DnsQueryContext" level="WARN"/>
-  <logger name="io.netty.resolver.dns.DnsNameResolver" level="WARN"/>
-  <logger name="io.netty.util.ResourceLeakDetectorFactory" level="WARN"/>
+  <logger name="info.freelibrary.jiiify.templates.impl.HandlebarsTemplateEngineImpl" level="WARN" />
+  <logger name="io.netty.handler.ssl.SslHandler" level="WARN" />
+  <logger name="com.github.jknack.handlebars.internal.HbsParserFactory" level="WARN" />
+  <logger name="io.vertx.ext.auth.jwt.JWT" level="WARN" />
+  <logger name="io.netty.util.Recycler" level="WARN" />
+  <logger name="io.netty.handler.ssl.JdkSslContext" level="WARN" />
+  <logger name="io.netty.resolver.dns.DnsQueryContext" level="WARN" />
+  <logger name="io.netty.resolver.dns.DnsNameResolver" level="WARN" />
+  <logger name="io.netty.util.ResourceLeakDetectorFactory" level="WARN" />
+  <logger name="io.netty.handler.ssl.CipherSuiteConverter" level="WARN" />
+  <logger name="io.netty.util.internal.JavassistTypeParameterMatcherGenerator" level="WARN" />
 
-  <logger name="info.freelibrary.jiiify.util.KakaduCmdLineUtils" level="DEBUG"/>
+  <logger name="info.freelibrary.jiiify.util.KakaduCmdLineUtils" level="DEBUG" />
 
   <root level="DEBUG">
     <appender-ref ref="FILE" />

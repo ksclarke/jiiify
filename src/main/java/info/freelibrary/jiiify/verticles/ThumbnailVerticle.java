@@ -69,5 +69,4 @@ public class ThumbnailVerticle extends AbstractJiiifyVerticle {
 
         aFuture.complete();
     }
-
 }

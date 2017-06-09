@@ -99,6 +99,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         options.setPort(myConfig.getPort());
         options.setHost("0.0.0.0");
         options.setCompressionSupported(true);
+        // options.setUseAlpn(true);
 
         if (myConfig.usesHttps()) {
             final String jksProperty = System.getProperty(JKS_PROP, JKS_PROP);
@@ -120,12 +121,12 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 } else {
                     final InputStream inStream = getClass().getResourceAsStream("/" + jksProperty);
 
-                    // Get JKS configuration from a configuration file in the jar file
+                    /* Get JKS configuration from a configuration file in the jar file */
                     if (inStream != null) {
                         LOGGER.debug(MessageCodes.DBG_019);
                         jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
                     } else {
-                        // Get JKS configuration from the Maven build's target directory
+                        /* Get JKS configuration from the Maven build's target directory */
                         LOGGER.debug(MessageCodes.DBG_018, jksProperty);
                         jksOptions.setPath("target/classes/" + jksProperty);
                     }
@@ -139,10 +140,19 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 configureRouter(router, sessionHandler, jwtAuth);
                 startServer(router, options, aFuture);
             } catch (final RuntimeException details) {
-                final String message = details.getCause().getMessage();
+                final Throwable cause = details.getCause();
+                final String message;
 
-                if (message.contains("password was incorrect")) {
-                    LOGGER.debug(MessageCodes.DBG_017, ksPassword);
+                /* Let's report the underlying cause if there is one */
+                if (cause != null) {
+                    message = cause.getMessage();
+
+                    /* If issue is keystore password and we're running in debug mode, log password */
+                    if (message != null && message.contains("password was incorrect")) {
+                        LOGGER.debug(MessageCodes.DBG_017, ksPassword);
+                    }
+                } else {
+                    message = details.getMessage();
                 }
 
                 LOGGER.error(MessageCodes.EXC_044, message);
