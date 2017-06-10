@@ -20,7 +20,6 @@ import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.util.FileUtils;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.AsyncFile;
@@ -36,7 +35,7 @@ import io.vertx.core.json.JsonObject;
 public class ImageIngestVerticle extends AbstractJiiifyVerticle {
 
     @Override
-    public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+    public void start() throws ConfigurationException, IOException {
         final FileSystem fileSystem = vertx.fileSystem();
 
         getJsonConsumer().handler(message -> {
@@ -69,8 +68,6 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
                 }
             });
         });
-
-        aFuture.complete();
     }
 
     private void useObjectConfig(final FileSystem aFileSystem, final File aImageFile, final String aConfigPath,

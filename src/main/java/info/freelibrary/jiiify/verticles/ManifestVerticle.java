@@ -49,7 +49,6 @@ import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.jiiify.util.SolrUtils;
 import info.freelibrary.pairtree.PairtreeObject;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -62,7 +61,7 @@ import io.vertx.core.json.JsonObject;
 public class ManifestVerticle extends AbstractJiiifyVerticle {
 
     @Override
-    public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+    public void start() throws ConfigurationException, IOException {
         getJsonConsumer().handler(messageHandler -> {
             final JsonObject jsonMessage = messageHandler.body();
             final String id = jsonMessage.getString(ID_KEY);
@@ -89,8 +88,6 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
                 }
             });
         });
-
-        aFuture.complete();
     }
 
     private Manifest createManifest(final JsonObject aJsonObject) throws IOException, URISyntaxException {

@@ -17,7 +17,6 @@ import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
@@ -29,7 +28,7 @@ import io.vertx.core.json.JsonObject;
 public class ImageInfoVerticle extends AbstractJiiifyVerticle {
 
     @Override
-    public void start(final Future<Void> aFuture) throws IOException {
+    public void start() throws IOException {
         getJsonConsumer().handler(message -> {
             final JsonObject json = message.body();
             final String id = json.getString(ID_KEY);
@@ -63,8 +62,6 @@ public class ImageInfoVerticle extends AbstractJiiifyVerticle {
                 }
             });
         });
-
-        aFuture.complete();
     }
 
     // This is pretty simple now but perhaps it needs more complexity in the near future

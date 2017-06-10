@@ -22,7 +22,6 @@ import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 import info.freelibrary.jiiify.util.ImageUtils;
 
-import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.SharedData;
@@ -35,7 +34,7 @@ import io.vertx.core.shareddata.SharedData;
 public class TileMasterVerticle extends AbstractJiiifyVerticle {
 
     @Override
-    public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+    public void start() throws ConfigurationException, IOException {
         getJsonConsumer().handler(message -> {
             final SharedData sharedData = vertx.sharedData();
             final JsonObject json = message.body();
@@ -51,7 +50,6 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
                 final String tileRequestKey = UUID.randomUUID().toString();
                 final List<String> tiles = ImageUtils.getTilePaths(prefix, id, tileSize, dim.width, dim.height);
 
-                /* Metadata needed for tile generation */
                 newMessage.put(FILE_PATH_KEY, filePath);
                 newMessage.put(TILE_REQUEST_KEY, tileRequestKey);
 
@@ -65,30 +63,30 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
                                     queueImageInfo(newMessage, dim, id, tileSize);
                                     queueTileCreation(newMessage.copy(), tiles, message);
 
-                                    // FIXME: This is not actually checking for the success of the message sending so
-                                    // could be higher in the code (or could check the success of queuing tasks)
                                     message.reply(SUCCESS_RESPONSE);
                                 } else {
                                     LOGGER.error(MessageCodes.EXC_045, id);
                                     message.reply(FAILURE_RESPONSE);
                                 }
                             } else {
-                                LOGGER.error(compareAndSet.cause(), compareAndSet.cause().getMessage());
+                                final Throwable cause = compareAndSet.cause();
+
+                                LOGGER.error(cause, cause.getMessage());
                                 message.reply(FAILURE_RESPONSE);
                             }
                         });
                     } else {
-                        LOGGER.error(getCounter.cause(), getCounter.cause().getMessage());
+                        final Throwable cause = getCounter.cause();
+
+                        LOGGER.error(cause, cause.getMessage());
                         message.reply(FAILURE_RESPONSE);
                     }
                 });
             } catch (final IOException details) {
-                LOGGER.error(details, MessageCodes.EXC_000, details.getMessage());
+                LOGGER.error(details, details.getMessage());
                 message.reply(FAILURE_RESPONSE);
             }
         });
-
-        aFuture.complete();
     }
 
     private void queueImageInfo(final JsonObject aMessage, final Dimension aDim, final String aID,

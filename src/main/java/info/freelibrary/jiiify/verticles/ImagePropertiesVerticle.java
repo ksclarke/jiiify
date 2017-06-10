@@ -16,7 +16,6 @@ import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.util.IOUtils;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -29,7 +28,7 @@ import io.vertx.core.json.JsonObject;
 public class ImagePropertiesVerticle extends AbstractJiiifyVerticle {
 
     @Override
-    public void start(final Future<Void> aFuture) throws IOException {
+    public void start() throws IOException {
         getJsonConsumer().handler(message -> {
             final JsonObject json = message.body();
             final String id = json.getString(ID_KEY);
@@ -45,8 +44,6 @@ public class ImagePropertiesVerticle extends AbstractJiiifyVerticle {
                 }
             });
         });
-
-        aFuture.complete();
     }
 
     private void writePropertiesFile(final PairtreeObject aPtObj, final String aID, final String aImageFilePath,

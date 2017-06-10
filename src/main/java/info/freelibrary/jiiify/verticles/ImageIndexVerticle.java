@@ -20,7 +20,6 @@ import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.jiiify.util.SolrUtils;
 
-import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -31,7 +30,7 @@ import io.vertx.core.json.JsonObject;
 public class ImageIndexVerticle extends AbstractJiiifyVerticle {
 
     @Override
-    public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+    public void start() throws ConfigurationException, IOException {
         final SolrService service = SolrService.createProxy(vertx, SOLR_SERVICE_KEY);
         final List<KeyValue<String, ?>> fields = new ArrayList<>();
 
@@ -66,9 +65,6 @@ public class ImageIndexVerticle extends AbstractJiiifyVerticle {
         }).exceptionHandler(exceptionHandler -> {
             LOGGER.error(exceptionHandler.getMessage(), exceptionHandler);
         });
-
-        // Debugging notification that we've successfully started is handled in the JiiifyMainVerticle
-        aFuture.complete();
     }
 
 }

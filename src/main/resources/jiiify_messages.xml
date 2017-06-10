@@ -86,7 +86,6 @@
   <entry key="DBG-012">Removing tiling image buffer for {}: {}</entry>
   <entry key="DBG-013">Reading cached tile source image: {}</entry>
   <entry key="DBG-014">Caching source image for tiles: {}</entry>
-  <entry key="DBG-015">Successfully deployed {} [{}]</entry>
   <entry key="DBG-016">Redirecting HTTP request to: {}</entry>
   <entry key="DBG-017">Attempted keystore password: {}</entry>
   <entry key="DBG-018">Trying to use the build's default JKS: {}</entry>

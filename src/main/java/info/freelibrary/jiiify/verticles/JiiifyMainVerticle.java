@@ -279,7 +279,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             }
         });
 
-        // FIXME: Accidentally connecting to http port with a https connection fails badly
+        // FIXME: Accidentally connecting to HTTP port with a HTTPS connection fails badly
         // https://bugs.eclipse.org/bugs/show_bug.cgi?id=479488
     }
 
@@ -301,20 +301,15 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
      */
     @SuppressWarnings("rawtypes")
     private void deployJiiifyVerticles(final Handler<AsyncResult<Void>> aHandler) {
-        final DeploymentOptions imgWorkerOptions = new DeploymentOptions().setWorker(true).setMultiThreaded(true);
-        final DeploymentOptions tileMasterOptions = new DeploymentOptions().setWorker(true).setMultiThreaded(true);
+        final DeploymentOptions imgWorkerOptions = new DeploymentOptions().setWorker(true);
         final DeploymentOptions options = new DeploymentOptions();
         final List<Future> futures = new ArrayList<>();
         final Future<Void> future = Future.future();
+        final int maxCores;
 
         if (aHandler != null) {
             future.setHandler(aHandler);
 
-            // Limit tile master threads since it reads in a source image to cache it for image worker
-            tileMasterOptions.setWorkerPoolName(TileMasterVerticle.class.getSimpleName());
-            tileMasterOptions.setWorkerPoolSize(1);
-
-            // Limit image worker threads to a configurable value
             try {
                 String coreCount = System.getProperty(JIIIFY_CORES_PROP);
 
@@ -322,15 +317,18 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                     coreCount = getCoreCount();
                 }
 
+                maxCores = Integer.parseInt(coreCount);
+
+                imgWorkerOptions.setInstances(maxCores);
+                imgWorkerOptions.setWorkerPoolSize(maxCores);
                 imgWorkerOptions.setWorkerPoolName(ImageWorkerVerticle.class.getSimpleName());
-                imgWorkerOptions.setWorkerPoolSize(Integer.parseInt(coreCount));
             } catch (final NumberFormatException details) {
                 LOGGER.error(details.getMessage(), details);
             }
 
             futures.add(deployVerticle(WatchFolderVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageWorkerVerticle.class.getName(), imgWorkerOptions, Future.future()));
-            futures.add(deployVerticle(TileMasterVerticle.class.getName(), tileMasterOptions, Future.future()));
+            futures.add(deployVerticle(TileMasterVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(SolrServiceVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageIndexVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageIngestVerticle.class.getName(), options, Future.future()));
@@ -395,7 +393,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                 final String verticleName = Class.forName(aVerticleName).getSimpleName();
 
                 if (response.succeeded()) {
-                    LOGGER.debug(MessageCodes.DBG_015, verticleName, response.result());
+                    LOGGER.debug(MessageCodes.DBG_006, verticleName, response.result());
                     aFuture.complete();
                 } else {
                     LOGGER.error(MessageCodes.EXC_032, verticleName, response.cause());

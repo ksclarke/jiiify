@@ -92,6 +92,21 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
         aFuture.complete();
     }
 
+    @Override
+    public void stop(final Future<Void> aFuture) {
+        try {
+            myWatcher.close();
+        } catch (final IOException details) {
+            LOGGER.error(details, details.getMessage());
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(MessageCodes.DBG_000, getClass().getName(), deploymentID());
+        }
+
+        aFuture.complete();
+    }
+
     /**
      * Check our watch folder for any new additions or modifications.
      */

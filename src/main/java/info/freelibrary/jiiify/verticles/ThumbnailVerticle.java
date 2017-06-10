@@ -19,7 +19,6 @@ import info.freelibrary.jiiify.iiif.ImageSize;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.pairtree.PairtreeObject;
 
-import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -30,7 +29,7 @@ import io.vertx.core.json.JsonObject;
 public class ThumbnailVerticle extends AbstractJiiifyVerticle {
 
     @Override
-    public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+    public void start() throws ConfigurationException, IOException {
         getJsonConsumer().handler(messageHandler -> {
             final JsonObject ingestMessage = messageHandler.body();
             final String id = ingestMessage.getString(ID_KEY);
@@ -66,7 +65,5 @@ public class ThumbnailVerticle extends AbstractJiiifyVerticle {
                 }
             });
         });
-
-        aFuture.complete();
     }
 }

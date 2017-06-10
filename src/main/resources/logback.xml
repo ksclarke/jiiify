@@ -28,7 +28,7 @@
   <logger name="info.freelibrary.jiiify.Configuration" level="INFO">
     <appender-ref ref="STDOUT" />
   </logger>
-  <logger name="info.freelibrary.jiiify.verticles.JiiifyMainVerticle" level="DEBUG">
+  <logger name="info.freelibrary.jiiify.verticles.JiiifyMainVerticle" level="INFO">
     <appender-ref ref="STDOUT" />
   </logger>
 

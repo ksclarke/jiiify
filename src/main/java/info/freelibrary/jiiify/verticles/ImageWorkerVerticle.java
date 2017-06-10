@@ -22,7 +22,6 @@ import info.freelibrary.jiiify.image.ImmutableBytes;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.pairtree.PairtreeObject;
 
-import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
@@ -38,7 +37,7 @@ import io.vertx.core.shareddata.SharedData;
 public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
 
     @Override
-    public void start(final Future<Void> aFuture) throws ConfigurationException, IOException {
+    public void start() throws ConfigurationException, IOException {
         getJsonConsumer().handler(message -> {
             final JsonObject json = message.body();
             final FileSystem fileSystem = getVertx().fileSystem();
@@ -76,12 +75,16 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
                                         message.reply(FAILURE_RESPONSE);
                                     }
                                 } else {
-                                    LOGGER.error(decrementAndGet.cause(), decrementAndGet.cause().getMessage());
+                                    final Throwable cause = decrementAndGet.cause();
+
+                                    LOGGER.error(cause, cause.getMessage());
                                     message.reply(FAILURE_RESPONSE);
                                 }
                             });
                         } else {
-                            LOGGER.error(getCounter.cause(), getCounter.cause().getMessage());
+                            final Throwable cause = getCounter.cause();
+
+                            LOGGER.error(cause, cause.getMessage());
                             message.reply(FAILURE_RESPONSE);
                         }
                     });
@@ -100,12 +103,10 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
                     }
                 }
             } catch (final Throwable details) {
-                LOGGER.error(details, details.getMessage() != null ? details.getMessage() : "");
+                LOGGER.error(details, details.getMessage());
                 message.reply(FAILURE_RESPONSE);
             }
         });
-
-        aFuture.complete();
     }
 
     private byte[] getCachedImage(final SharedData aSharedData, final JsonObject aJson, final long aTileCount,
@@ -192,7 +193,9 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
             if (handler.succeeded()) {
                 aMessage.reply(SUCCESS_RESPONSE);
             } else {
-                LOGGER.error(handler.cause(), MessageCodes.EXC_000, handler.cause().getMessage());
+                final Throwable cause = handler.cause();
+
+                LOGGER.error(cause, MessageCodes.EXC_000, cause.getMessage());
                 aMessage.reply(FAILURE_RESPONSE);
             }
         });
