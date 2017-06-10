@@ -4,7 +4,7 @@
 
   <artifactId>jiiify</artifactId>
   <packaging>jar</packaging>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.2-SNAPSHOT</version>
   <name>The Jiiify Image Server</name>
   <description>A Java-based IIIF Image Server</description>
 
