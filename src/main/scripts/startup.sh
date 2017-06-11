@@ -21,8 +21,8 @@ JMX_METRICS="-Dcom.sun.management.jmxremote -Dvertx.metrics.options.jmxEnabled=t
 # For tools like Eclipse's Debugging
 JDWP_AGENTLIB="-agentlib:jdwp=transport=dt_socket,address=9003,server=y,suspend=n"
 # For tools like VisualVM or JConsole (Note: only for use on dev's localhost since there is no configured security)
-JMXREMOTE="-Dcom.sun.management.jmxremote.port=9001 -Dcom.sun.management.jmxremote.authenticate=false"
-JMXREMOTE="$JMXREMOTE -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9001"
+JMX_REMOTE="-Dcom.sun.management.jmxremote.port=9001 -Dcom.sun.management.jmxremote.authenticate=false"
+JMX_REMOTE="$JMX_REMOTE -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=true"
 TOOLING="$DROPWIZARD_METRICS $JMX_METRICS"
 AUTHBIND=""
 JIIIFY_CONFIG=""
@@ -95,7 +95,7 @@ if hash docker 2>/dev/null; then
       CONTAINER_ID=$(docker start ${CONTAINER_ID})
 
       for INDEX in $(seq 1 10); do
-#        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
+        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
 
         if [ "$RESPONSE_CODE" == "200" ]; then
           break
