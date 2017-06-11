@@ -48,7 +48,7 @@ public class ImageInfoHandler extends JiiifyHandler {
         final PairtreeObject ptObj = myConfig.getDataDir(id).getObject(id);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Checking for IIIF image info file: {}", ptObj.getPath(ImageInfo.FILE_NAME));
+            LOGGER.debug(MessageCodes.DBG_035, ptObj.getPath(ImageInfo.FILE_NAME));
         }
 
         // FIXME: put this centrally for all IIIF routes(?)
@@ -78,7 +78,7 @@ public class ImageInfoHandler extends JiiifyHandler {
                             response.close();
 
                             if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("Served image info: {}", request.uri());
+                                LOGGER.debug(MessageCodes.DBG_036, request.uri());
                             }
                         } else {
                             fail(aContext, existsResult.cause());

@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.util.StringUtils;
@@ -68,7 +69,7 @@ public class SearchHandler extends JiiifyHandler {
         solrQuery.put("query", query).put("limit", count).put("offset", start).put("filter", TYPE_FIELD + ":" + type);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Constructing new Solr query: {}", solrQuery);
+            LOGGER.debug(MessageCodes.DBG_063, solrQuery);
         }
 
         service.search(solrQuery, handler -> {
@@ -79,7 +80,7 @@ public class SearchHandler extends JiiifyHandler {
                 solrJson.put("path", aContext.request().path());
 
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Solr response: {}", solrJson.toString());
+                    LOGGER.debug(MessageCodes.DBG_064, solrJson.toString());
                 }
 
                 try {
@@ -90,8 +91,8 @@ public class SearchHandler extends JiiifyHandler {
                 }
             } else {
                 fail(aContext, handler.cause());
-                aContext.put(ERROR_HEADER, "Search Error");
-                aContext.put(ERROR_MESSAGE, msg("Solr search failed: {}", handler.cause().getMessage()));
+                aContext.put(ERROR_HEADER, msg(MessageCodes.EXC_068));
+                aContext.put(ERROR_MESSAGE, msg(MessageCodes.EXC_069, handler.cause().getMessage()));
             }
         });
     }
@@ -132,24 +133,18 @@ public class SearchHandler extends JiiifyHandler {
         } else if (getFilter(filter).equals("manifest")) {
             jsonNode.put("manifestType", "yes");
             jsonNode.put("filter", "manifest");
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Unexpected filter value on browse page: {}", filter);
+        } else {
+            LOGGER.debug(MessageCodes.DBG_065, filter);
         }
 
         jsonNode.put("total", total);
         jsonNode.put("start", start);
 
         if (aJsonObject.getString("path").endsWith("browse")) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Passing a browse query: {}", query);
-            }
-
+            LOGGER.debug(MessageCodes.DBG_066, query);
             jsonNode.put("browseQuery", query);
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Passing a search query: {}", query);
-            }
-
+            LOGGER.debug(MessageCodes.DBG_067, query);
             jsonNode.put("searchQuery", query.equals("*:*") ? "" : query);
         }
 
@@ -168,9 +163,7 @@ public class SearchHandler extends JiiifyHandler {
                 jsonNode.put("count50", count);
                 break;
             default:
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Unexpected count on browse page: {}", count);
-                }
+                LOGGER.debug(MessageCodes.DBG_068, count);
         }
 
         // Note our count to make constructing URLs easier
@@ -194,7 +187,7 @@ public class SearchHandler extends JiiifyHandler {
         for (int index = 0, pageNumber = 0; index < total; index += count) {
             if (start >= index && start < index + count) {
                 currentPage = currentPage + 1;
-                LOGGER.debug("Current page: {}", currentPage);
+                LOGGER.debug(MessageCodes.DBG_069, currentPage);
             }
 
             pairs.add(Pair.with(Integer.valueOf(index), Integer.valueOf(++pageNumber)));
@@ -247,7 +240,7 @@ public class SearchHandler extends JiiifyHandler {
         try {
             return Integer.parseInt(aIntString);
         } catch (final NumberFormatException details) {
-            LOGGER.warn("Supplied Solr query parameter is not an integer as expected: {}", aIntString);
+            LOGGER.warn(MessageCodes.WARN_013, aIntString);
             return aDefaultInt;
         }
     }

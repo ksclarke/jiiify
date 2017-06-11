@@ -5,6 +5,7 @@ import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
 import static info.freelibrary.jiiify.Metadata.JSON_MIME_TYPE;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
@@ -29,7 +30,7 @@ public class MetricsHandler extends JiiifyHandler {
 
     @Override
     public void handle(final RoutingContext aContext) {
-        LOGGER.debug("Requested: {}", aContext.request().uri());
+        LOGGER.debug(MessageCodes.DBG_057, aContext.request().uri());
 
         final MetricsService metricsService = MetricsService.create(aContext.vertx());
         final JsonObject metrics = metricsService.getMetricsSnapshot(aContext.vertx());

@@ -1,3 +1,4 @@
+
 package info.freelibrary.jiiify.handlers;
 
 import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
@@ -7,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.util.PathUtils;
 
 import io.vertx.ext.web.RoutingContext;
@@ -34,9 +36,7 @@ public class RefreshHandler extends JiiifyHandler {
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode jsonNode = mapper.createObjectNode();
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Using RefreshHandler: {}", aContext.request().uri());
-        }
+        LOGGER.debug(MessageCodes.DBG_062, aContext.request().uri());
 
         /* To drop the ID from the path for template processing */
         aContext.data().put(HBS_PATH_SKIP_KEY, 2 + slashCount(id));

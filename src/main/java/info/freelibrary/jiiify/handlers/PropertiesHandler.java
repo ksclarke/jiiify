@@ -6,6 +6,7 @@ import static info.freelibrary.jiiify.Constants.HBS_PATH_SKIP_KEY;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
+import static info.freelibrary.jiiify.Metadata.PROPERTIES_FILE;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.io.ByteArrayInputStream;
@@ -18,7 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
-import info.freelibrary.jiiify.Metadata;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
 
@@ -47,13 +48,13 @@ public class PropertiesHandler extends JiiifyHandler {
         final PairtreeObject ptObj = myConfig.getDataDir(id).getObject(id);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Checking for properties file: {}", ptObj.getPath(Metadata.PROPERTIES_FILE));
+            LOGGER.debug(MessageCodes.DBG_060, ptObj.getPath(PROPERTIES_FILE));
         }
 
-        ptObj.find(Metadata.PROPERTIES_FILE, findHandler -> {
+        ptObj.find(PROPERTIES_FILE, findHandler -> {
             if (findHandler.succeeded()) {
                 if (findHandler.result()) {
-                    ptObj.get(Metadata.PROPERTIES_FILE, getHandler -> {
+                    ptObj.get(PROPERTIES_FILE, getHandler -> {
                         if (getHandler.succeeded()) {
                             processProperties(aContext, getHandler.result().getBytes(), id);
                         } else {
@@ -62,8 +63,7 @@ public class PropertiesHandler extends JiiifyHandler {
                     });
                 } else {
                     aContext.fail(404);
-                    aContext.put(ERROR_MESSAGE, msg("Image properties file not found: {}", Paths.get(ptObj.getPath(),
-                            Metadata.PROPERTIES_FILE)));
+                    aContext.put(ERROR_MESSAGE, msg(MessageCodes.EXC_067, Paths.get(ptObj.getPath(), PROPERTIES_FILE)));
                 }
             } else {
                 fail(aContext, findHandler.cause());

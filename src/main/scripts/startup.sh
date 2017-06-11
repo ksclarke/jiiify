@@ -22,7 +22,7 @@ JMX_METRICS="-Dcom.sun.management.jmxremote -Dvertx.metrics.options.jmxEnabled=t
 JDWP_AGENTLIB="-agentlib:jdwp=transport=dt_socket,address=9003,server=y,suspend=n"
 # For tools like VisualVM or JConsole (Note: only for use on dev's localhost since there is no configured security)
 JMXREMOTE="-Dcom.sun.management.jmxremote.port=9001 -Dcom.sun.management.jmxremote.authenticate=false"
-JMXREMOTE="$JMXREMOTE -Dcom.sun.management.jmxremote.ssl=false"
+JMXREMOTE="$JMXREMOTE -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=9001"
 TOOLING="$DROPWIZARD_METRICS $JMX_METRICS"
 AUTHBIND=""
 JIIIFY_CONFIG=""
@@ -76,6 +76,7 @@ if hash docker 2>/dev/null; then
       CONTAINER_ID=$(docker run --name jiiify_solr -d -p 8983:8983 -t solr)
 
       for INDEX in $(seq 1 10); do
+    	# Create the solr core
         docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify >/dev/null 2>&1
         RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" -L $PING)
 
@@ -94,7 +95,7 @@ if hash docker 2>/dev/null; then
       CONTAINER_ID=$(docker start ${CONTAINER_ID})
 
       for INDEX in $(seq 1 10); do
-        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
+#        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
 
         if [ "$RESPONSE_CODE" == "200" ]; then
           break

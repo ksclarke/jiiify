@@ -88,17 +88,14 @@ public class LoginHandler extends JiiifyHandler {
                 final HttpClientOptions options = new HttpClientOptions().setSsl(true);
                 final HttpClient client = aContext.vertx().createHttpClient(options);
 
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Processing {} login token: {}", site, token);
-                }
-
+                LOGGER.debug(MessageCodes.DBG_048, site, token);
                 checkOAuthToken(client, aContext, site, token);
             } else {
-                LOGGER.warn("Received a login POST message without a token");
+                LOGGER.warn(MessageCodes.WARN_008);
                 aContext.fail(500);
             }
         } else {
-            LOGGER.warn("Received a {} request but only POST and GET are supported", method.name());
+            LOGGER.warn(MessageCodes.WARN_009, method.name());
             aContext.response().headers().add("Allow", "GET, POST");
             aContext.fail(405);
         }
@@ -110,7 +107,7 @@ public class LoginHandler extends JiiifyHandler {
         final String site = StringUtils.upcase(aSite);
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Verifying user login token with {}: {}", site, aToken);
+            LOGGER.debug(MessageCodes.DBG_049, site, aToken);
         }
 
         final HttpClientRequest request = aClient.get(443, hostPath.getValue0(), hostPath.getValue1(), handler -> {
@@ -158,31 +155,26 @@ public class LoginHandler extends JiiifyHandler {
 
         @Override
         public void handle(final Buffer aBody) {
-            LOGGER.debug("{} handling body: {}", getClass().getSimpleName(), aBody.toString());
+            LOGGER.debug(MessageCodes.DBG_050, getClass().getSimpleName(), aBody.toString());
 
             try {
                 final JsonObject jwt = extractJWT(new JsonObject(aBody.toString()));
                 final JWTOptions jwtOptions = new JWTOptions();
                 final String token = myJwtAuth.generateToken(jwt, jwtOptions);
 
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Token's decoded JSON contents: {}", aBody.toString());
-                }
+                LOGGER.debug(MessageCodes.DBG_051, aBody.toString());
 
                 // Authenticating will give us a user which we can put into the session
                 myJwtAuth.authenticate(new JsonObject().put("jwt", token), authHandler -> {
                     final HttpServerResponse response = myContext.response();
 
                     if (authHandler.succeeded()) {
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("User successfully validated");
-                        }
-
+                        LOGGER.debug(MessageCodes.DBG_052);
                         myContext.setUser(authHandler.result());
                         response.putHeader(CONTENT_TYPE, TEXT_MIME_TYPE);
                         response.end(SUCCESS_RESPONSE);
                     } else {
-                        LOGGER.error(authHandler.cause(), "Authentication did not succeed");
+                        LOGGER.error(authHandler.cause(), MessageCodes.EXC_062);
                         response.putHeader(CONTENT_TYPE, TEXT_MIME_TYPE);
                         response.end(FAILURE_RESPONSE);
                     }
@@ -218,9 +210,9 @@ public class LoginHandler extends JiiifyHandler {
 
                 if (!found) {
                     if (email.equals("")) {
-                        throw new FailedLoginException("No email was retrieved from OAuth");
+                        throw new FailedLoginException(msg(MessageCodes.EXC_063));
                     } else {
-                        throw new FailedLoginException("Not an allowed email: " + email);
+                        throw new FailedLoginException(msg(MessageCodes.EXC_064, email));
                     }
                 }
             }
@@ -230,7 +222,7 @@ public class LoginHandler extends JiiifyHandler {
             if (aJsonObject.containsKey("name")) {
                 jsonObject.put("name", aJsonObject.getString("name"));
             } else {
-                LOGGER.warn("User login JWT does not contain a name");
+                LOGGER.warn(MessageCodes.WARN_010);
             }
 
             return jsonObject;

@@ -109,7 +109,7 @@ public class IngestHandler extends JiiifyHandler {
                     if (findHandler.succeeded()) {
                         if (findHandler.result()) {
                             if (shouldOverwrite) {
-                                LOGGER.debug("Manifest upload overwriting existing manifest [{}]", aID);
+                                LOGGER.debug(MessageCodes.DBG_037, aID);
                                 writeManifestFile(aFilePath, ptObj, aContext, aJsonNode);
                             } else {
                                 aJsonNode.put("upload-message",
@@ -121,7 +121,7 @@ public class IngestHandler extends JiiifyHandler {
                                 toTemplate(aContext, aJsonNode);
                             }
                         } else {
-                            LOGGER.debug("New manifest upload [{}]", aID);
+                            LOGGER.debug(MessageCodes.DBG_038, aID);
                             writeManifestFile(aFilePath, ptObj, aContext, aJsonNode);
                         }
                     } else {
@@ -145,7 +145,7 @@ public class IngestHandler extends JiiifyHandler {
                 aPtObj.put(MANIFEST_FILE, readHandler.result(), putHandler -> {
                     if (putHandler.succeeded()) {
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Successfully uploaded manifest: {}", aPtObj.getPath(MANIFEST_FILE));
+                            LOGGER.debug(MessageCodes.DBG_039, aPtObj.getPath(MANIFEST_FILE));
                         }
                     } else {
                         fail(aContext, putHandler.cause());
@@ -164,11 +164,11 @@ public class IngestHandler extends JiiifyHandler {
             final ObjectNode aJsonNode) {
         final HttpServerRequest request = aContext.request();
         final String overwrite = request.getParam("overwrite");
-        final boolean overwriteValue = overwrite != null && overwrite.equals("overwrite");
         final String skipTiles = request.getParam("skiptiles");
         final String skipThumbs = request.getParam("skipthumbs");
         final String skipIndexing = request.getParam("skipindexing");
         final String skipProperties = request.getParam("skipproperties");
+        final boolean overwriteValue = overwrite != null && overwrite.equals("overwrite");
 
         CSVReader reader = null;
         String[] line;
@@ -202,17 +202,17 @@ public class IngestHandler extends JiiifyHandler {
                     }
 
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("To be ingested: {} ({})", line[1], aFileName);
+                        LOGGER.debug(MessageCodes.DBG_040, line[1], aFileName);
                     }
 
                     sendMessage(aContext, json, ImageIngestVerticle.class.getName(), 0);
 
                     if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Added to ingest queue: {}", line[1]);
+                        LOGGER.debug(MessageCodes.DBG_041, line[1]);
                     }
                 } else {
                     if (LOGGER.isWarnEnabled()) {
-                        LOGGER.warn("Invalid CSV values detected: {}", Arrays.toString(line));
+                        LOGGER.warn(MessageCodes.DBG_042, Arrays.toString(line));
                     }
                 }
             }
@@ -247,23 +247,22 @@ public class IngestHandler extends JiiifyHandler {
         // Slow down timeout expectations if we're taking a long time processing images
         if (aCount > 0) {
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Slowing down the {}'s timeout to: {}", getClass().getSimpleName(), sendTimeout);
+                LOGGER.debug(MessageCodes.DBG_043, getClass().getSimpleName(), sendTimeout);
             }
 
             options.setSendTimeout(sendTimeout);
         }
 
-        LOGGER.debug("Sending message [sendTimeout: {}] from IngestHandler: {}", sendTimeout, aJsonObject);
+        LOGGER.debug(MessageCodes.DBG_044, sendTimeout, aJsonObject);
 
         eventBus.send(aVerticleName, aJsonObject, options, response -> {
             if (response.failed()) {
                 if (aCount < retryCount) {
-                    LOGGER.warn("Unable to send message to {}; retrying: {}", aVerticleName, aJsonObject);
+                    LOGGER.warn(MessageCodes.WARN_007, aVerticleName, aJsonObject);
                     sendMessage(aContext, aJsonObject, aVerticleName, aCount + 1);
                 } else {
                     if (response.cause() != null) {
-                        LOGGER.error(response.cause(), "Exception trying to send message to {}: {}", aVerticleName,
-                                aJsonObject);
+                        LOGGER.error(response.cause(), MessageCodes.EXC_061, aVerticleName, aJsonObject);
                     } else {
                         LOGGER.error(MessageCodes.EXC_039, aVerticleName, aJsonObject);
                     }

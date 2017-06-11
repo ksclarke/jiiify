@@ -8,6 +8,7 @@ import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.JsonNodeValueResolver;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
@@ -42,9 +43,7 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
      * @return A Handlebars context that can be passed to the template engine
      */
     Context toHbsContext(final ObjectNode aJsonObject, final RoutingContext aContext) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("{} JSON passed to template page: {}", getClass().getSimpleName(), aJsonObject.toString());
-        }
+        LOGGER.debug(MessageCodes.DBG_046, getClass().getSimpleName(), aJsonObject.toString());
 
         // Are we logged into the administrative interface?
         if (aContext.user() == null) {
@@ -105,9 +104,7 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
      * @param aMessage A more detailed message to supplement the exception message
      */
     void fail(final RoutingContext aContext, final Throwable aThrowable, final String aMessage) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("{} is failing this RoutingContext", getClass().getName());
-        }
+        LOGGER.debug(MessageCodes.DBG_047, getClass().getName());
 
         aContext.fail(500);
 
@@ -126,9 +123,7 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
      * @param aMessage A more detailed message to supplement the exception message
      */
     void fail(final RoutingContext aContext, final int aFailCode, final String aMessage) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("{} is failing this RoutingContext", getClass().getName());
-        }
+        LOGGER.debug(MessageCodes.DBG_047, getClass().getName());
 
         aContext.fail(aFailCode);
         aContext.put(FailureHandler.ERROR_MESSAGE, aMessage);

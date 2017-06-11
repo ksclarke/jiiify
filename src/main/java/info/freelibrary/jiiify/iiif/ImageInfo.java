@@ -65,9 +65,7 @@ public class ImageInfo {
      * @param aID The image ID of the image info object
      */
     public ImageInfo(final String aID) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Constructing image info from ID: {}", aID);
-        }
+        LOGGER.debug("Constructing image info from ID: {}", aID);
 
         // TODO: put a check in here that checks for JSON to throw exception?
         setID(aID);

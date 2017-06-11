@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -30,14 +31,14 @@ public class PageHandler extends JiiifyHandler {
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode jsonNode = mapper.createObjectNode();
 
-        LOGGER.debug("Handling {}", aContext.request().uri());
+        LOGGER.debug(MessageCodes.DBG_058, aContext.request().uri());
 
         aContext.request().params().forEach(param -> {
-            LOGGER.debug("Param: " + param.getKey() + " " + param.getValue());
+            LOGGER.debug(MessageCodes.DBG_059, param.getKey(), param.getValue());
         });
 
         aContext.request().headers().forEach(header -> {
-            LOGGER.debug("Header: " + header.getKey() + " " + header.getValue());
+            LOGGER.debug(MessageCodes.DBG_060, header.getKey(), header.getValue());
         });
 
         // This inserts a session check to toggle our login/logout option

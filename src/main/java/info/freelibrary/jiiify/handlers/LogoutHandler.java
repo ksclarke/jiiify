@@ -1,9 +1,11 @@
 
 package info.freelibrary.jiiify.handlers;
 
+import static info.freelibrary.jiiify.Metadata.LOCATION_HEADER;
 import static info.freelibrary.jiiify.RoutePatterns.LOGIN;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
@@ -36,11 +38,11 @@ public class LogoutHandler extends JiiifyHandler {
             final String user = principal.getString("name");
             final String email = principal.getString("email");
 
-            LOGGER.debug("Logging out of session '{}': {} ({})", session.id(), user, email);
+            LOGGER.debug(MessageCodes.DBG_053, session.id(), user, email);
         }
 
         aContext.clearUser();
-        response.setStatusCode(303).putHeader("Location", LOGIN).end();
+        response.setStatusCode(303).putHeader(LOCATION_HEADER, LOGIN).end();
     }
 
 }

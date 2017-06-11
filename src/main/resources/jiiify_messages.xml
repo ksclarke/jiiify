@@ -52,6 +52,15 @@
   <entry key="EXC-058">Couldn't connect to Solr server: [{}]</entry>
   <entry key="EXC-059">Couldn't connect to Solr server: [{}: {}]</entry>
   <entry key="EXC-060">Failed to set default Jiiify data directory to: {}</entry>
+  <entry key="EXC-061">Exception trying to send message to {}: {}</entry>
+  <entry key="EXC-062">Authentication did not succeed</entry>
+  <entry key="EXC-063">No email was retrieved from OAuth</entry>
+  <entry key="EXC-064">Not an allowed email: {}</entry>
+  <entry key="EXC-065">Failed to serve image manifest: {}</entry>
+  <entry key="EXC-066">Image manifest file not found: {}</entry>
+  <entry key="EXC-067">Image properties file not found: {}</entry>
+  <entry key="EXC-068">Search Error</entry>
+  <entry key="EXC-069">Solr search failed: {}</entry>
 
   <!-- Info messages -->
   <entry key="INFO-001">Ingesting an added or updated image file: {}</entry>
@@ -69,6 +78,13 @@
   <entry key="WARN-004">Scaling down image processing cores to '{}' [available memory: {} GiB]</entry>
   <entry key="WARN-005">Our sleeping {} thread was interrupted: {}</entry>
   <entry key="WARN-006">Waiting for tile source image cache took longer than expected: {}</entry>
+  <entry key="WARN-007">Unable to send message to {}; retrying: {}</entry>
+  <entry key="WARN-008">Received a login POST message without a token</entry>
+  <entry key="WARN-009">Received a {} request but only POST and GET are supported</entry>
+  <entry key="WARN-010">User login JWT does not contain a name</entry>
+  <entry key="WARN-011">Redirecting unexpectedly to webroot... why?!</entry>
+  <entry key="WARN-012">Using RefreshHandler: {}</entry>
+  <entry key="WARN-013">Supplied Solr query parameter is not an integer as expected: {}</entry>
 
   <!-- Messages for debugging -->
   <entry key="DBG-000">Successfully undeployed {} [{}]</entry>
@@ -105,6 +121,43 @@
   <entry key="DBG-032">Didn't find unrotated cache file: {}</entry>
   <entry key="DBG-033">Filesystem check for unrotated cache file failed: {}</entry>
   <entry key="DBG-034">Served image file: {}</entry>
+  <entry key="DBG-035">Checking for IIIF image info file: {}</entry>
+  <entry key="DBG-036">Served image info: {}</entry>
+  <entry key="DBG-037">Manifest upload overwriting existing manifest [{}]</entry>
+  <entry key="DBG-038">New manifest upload [{}]</entry>
+  <entry key="DBG-039">Successfully uploaded manifest: {}</entry>
+  <entry key="DBG-040">To be ingested: {} ({})</entry>
+  <entry key="DBG-041">Added to ingest queue: {}</entry>
+  <entry key="DBG-042">Invalid CSV values detected: {}</entry>
+  <entry key="DBG-043">Slowing down the {}'s timeout to: {}</entry>
+  <entry key="DBG-044">Sending message [sendTimeout: {}] from IngestHandler: {}</entry>
+  <entry key="DBG-045">Getting item page for : {}</entry>
+  <entry key="DBG-046">{} JSON passed to template page: {}</entry>
+  <entry key="DBG-047">{} is failing this RoutingContext</entry>
+  <entry key="DBG-048">Processing {} login token: {}</entry>
+  <entry key="DBG-049">Verifying user login token with {}: {}</entry>
+  <entry key="DBG-050">{} handling body: {}</entry>
+  <entry key="DBG-051">Token's decoded JSON contents: {}</entry>
+  <entry key="DBG-052">User successfully validated</entry>
+  <entry key="DBG-053">Logging out of session '{}': {} ({})</entry>
+  <entry key="DBG-054">Checking for IIIF manifest file: {}</entry>
+  <entry key="DBG-055">Served IIIF manifest file: {}</entry>
+  <entry key="DBG-056">Something other than a JsonObject found: {}</entry>
+  <entry key="DBG-057">Requested: {}</entry>
+  <entry key="DBG-058">Handling: {}</entry>
+  <entry key="DBG-059">Param: {} = {}</entry>
+  <entry key="DBG-060">Header: {} = {}</entry>
+  <entry key="DBG-060">Checking for properties file: {}</entry>
+  <entry key="DBG-061">Redirecting to image info request path: {}</entry>
+  <entry key="DBG-062">Using RefreshHandler: {}</entry>
+  <entry key="DBG-063">Constructing new Solr query: {}</entry>
+  <entry key="DBG-064">Solr response: {}</entry>
+  <entry key="DBG-065">Unexpected filter value on browse page: {}</entry>
+  <entry key="DBG-066">Passing a browse query: {}</entry>
+  <entry key="DBG-067">Passing a search query: {}</entry>
+  <entry key="DBG-068">Unexpected count on browse page: {}</entry>
+  <entry key="DBG-069">Current page: {}</entry>
+  <entry key="DBG-070">Constructing image info from ID: {}</entry>
 
   <!-- Messages for testing package specific exceptions -->
   <entry key="TEST-001">test message</entry>

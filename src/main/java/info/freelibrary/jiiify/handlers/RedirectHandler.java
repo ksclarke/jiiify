@@ -2,8 +2,10 @@
 package info.freelibrary.jiiify.handlers;
 
 import static info.freelibrary.jiiify.Constants.MESSAGES;
+import static info.freelibrary.jiiify.Metadata.LOCATION_HEADER;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -46,14 +48,14 @@ public class RedirectHandler implements Handler<RoutingContext> {
             }
 
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Redirecting to image info request path: {}", redirectURI);
+                LOGGER.debug(MessageCodes.DBG_061, redirectURI);
             }
         } else {
-            LOGGER.warn("Redirecting unexpectedly to webroot... why?!");
+            LOGGER.warn(MessageCodes.WARN_011);
             redirectURI = "/";
         }
 
-        response.putHeader("Location", redirectURI).end();
+        response.putHeader(LOCATION_HEADER, redirectURI).end();
     }
 
 }

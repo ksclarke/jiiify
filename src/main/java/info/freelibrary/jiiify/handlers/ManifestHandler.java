@@ -46,9 +46,7 @@ public class ManifestHandler extends JiiifyHandler {
         final String id = PathUtils.decode(request.uri().split("\\/")[2]);
         final PairtreeObject ptObj = myConfig.getDataDir(id).getObject(id);
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Checking for IIIF manifest file: {}", ptObj.getPath(Metadata.MANIFEST_FILE));
-        }
+        LOGGER.debug(MessageCodes.DBG_054, ptObj.getPath(Metadata.MANIFEST_FILE));
 
         // FIXME: put this centrally for all IIIF routes(?)
         response.headers().set("Access-Control-Allow-Origin", "*");
@@ -72,21 +70,19 @@ public class ManifestHandler extends JiiifyHandler {
                             response.end(buffer);
                             response.close();
 
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("Served IIIF manifest file: {}", request.uri());
-                            }
+                            LOGGER.debug(MessageCodes.DBG_055, request.uri());
                         } else {
                             fail(aContext, getResult.cause());
-                            aContext.put(ERROR_MESSAGE, msg("Failed to serve image manifest: {}", request.uri()));
+                            aContext.put(ERROR_MESSAGE, msg(MessageCodes.EXC_065, request.uri()));
                         }
                     });
                 } else {
                     aContext.fail(404);
-                    aContext.put(ERROR_MESSAGE, msg("Image manifest file not found: " + request.uri()));
+                    aContext.put(ERROR_MESSAGE, msg(MessageCodes.EXC_066, request.uri()));
                 }
             } else {
                 fail(aContext, findResult.cause());
-                aContext.put(ERROR_MESSAGE, msg("Failed to serve image manifest: {}", request.uri()));
+                aContext.put(ERROR_MESSAGE, msg(MessageCodes.EXC_065, request.uri()));
             }
         });
     }
@@ -149,7 +145,7 @@ public class ManifestHandler extends JiiifyHandler {
             if (obj instanceof JsonObject) {
                 updateJsonObject((JsonObject) obj, aServer, aService);
             } else if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Something other than a JsonObject found: {}", obj.getClass().getName());
+                LOGGER.debug(MessageCodes.DBG_056, obj.getClass().getName());
             }
         }
     }
