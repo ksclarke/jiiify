@@ -51,13 +51,18 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
                 final Dimension dim = ImageUtils.getImageDimension(file);
                 final String prefix = getConfig().getServicePrefix();
                 final String tileRequestKey = UUID.randomUUID().toString();
+                /* Get tiles */
                 final List<String> tiles = ImageUtils.getTilePaths(prefix, id, tileSize, dim.width, dim.height);
+                /* Get thumbnail */
                 final ImageRegion region = ImageUtils.getCenter(file);
                 final ImageSize size = new ImageSize(150); // TODO: make this configurable
                 final String thumbnailPath = new ImageRequest(id, prefix, region, size).toString();
 
                 /* Add a thumbnail to the requested tiles */
                 tiles.add(thumbnailPath);
+
+                /* Add a full-sized image to the requested tiles */
+                tiles.add(new ImageRequest(id, prefix, new ImageRegion(), new ImageSize()).toString());
 
                 newMessage.put(FILE_PATH_KEY, filePath);
                 newMessage.put(TILE_REQUEST_KEY, tileRequestKey);
