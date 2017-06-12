@@ -58,18 +58,15 @@ public class ImagePropertiesVerticle extends AbstractJiiifyVerticle {
 
             aPtObj.put(propFilePath, Buffer.buffer(stream.toByteArray()), writeHandler -> {
                 if (writeHandler.succeeded()) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Wrote image properties file: {}", propFilePath);
-                    }
-
+                    LOGGER.debug(MessageCodes.DBG_107, propFilePath);
                     aMessage.reply(SUCCESS_RESPONSE);
                 } else {
-                    LOGGER.error(writeHandler.cause(), "Failed to write image properties file: {}", propFilePath);
+                    LOGGER.error(writeHandler.cause(), MessageCodes.EXC_074, propFilePath);
                     aMessage.reply(FAILURE_RESPONSE);
                 }
             });
         } catch (final IOException details) {
-            LOGGER.error(details, "Failed to write image properties files: {}", propFilePath);
+            LOGGER.error(details, MessageCodes.EXC_074, propFilePath);
             aMessage.reply(FAILURE_RESPONSE);
         } finally {
             IOUtils.closeQuietly(stream);

@@ -240,33 +240,23 @@ public class ImageSize {
 
         if (myHeight == 0) {
             if (isPercentage) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Resizing based on a percentage: {}", myPercentage);
-                }
-
+                LOGGER.debug(MessageCodes.DBG_073, myPercentage);
                 height = myPercentage / 100 * aImageHeight;
             } else {
                 height = Math.round(scale(myWidth, aImageWidth) * aImageHeight);
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Resizing height is scaled height: {}", height);
-                }
+                LOGGER.debug(MessageCodes.DBG_074, height);
             }
         } else {
             height = aImageHeight < myHeight ? aImageHeight : myHeight;
 
-            if (LOGGER.isDebugEnabled()) {
-                if (height == myHeight) {
-                    LOGGER.debug("Resizing height set to ImageRequest height: {}", myHeight);
-                } else {
-                    LOGGER.debug("Resizing height set to actual image height: {}", aImageHeight);
-                }
+            if (height == myHeight) {
+                LOGGER.debug(MessageCodes.DBG_075, myHeight);
+            } else {
+                LOGGER.debug(MessageCodes.DBG_076, aImageHeight);
             }
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Resize height: {} [Original: {}]", height, aImageHeight);
-        }
+        LOGGER.debug(MessageCodes.DBG_077, height, aImageHeight);
 
         return height;
     }
@@ -285,33 +275,23 @@ public class ImageSize {
 
         if (myWidth == 0) {
             if (isPercentage) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Resizing based on a percentage: {}", myPercentage);
-                }
-
+                LOGGER.debug(MessageCodes.DBG_078, myPercentage);
                 width = myPercentage / 100 * aImageWidth;
             } else {
                 width = Math.round(scale(myHeight, aImageHeight) * aImageWidth);
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Resizing width is scaled width: {}", width);
-                }
+                LOGGER.debug(MessageCodes.DBG_079, width);
             }
         } else {
             width = aImageWidth < myWidth ? aImageWidth : myWidth;
 
-            if (LOGGER.isDebugEnabled()) {
-                if (width == myWidth) {
-                    LOGGER.debug("Resizing width set to ImageRequest width: {}", myWidth);
-                } else {
-                    LOGGER.debug("Resizing width set to actual image width: {}", aImageWidth);
-                }
+            if (width == myWidth) {
+                LOGGER.debug(MessageCodes.DBG_080, myWidth);
+            } else {
+                LOGGER.debug(MessageCodes.DBG_081, aImageWidth);
             }
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Resize width: {} [Original: {}]", width, aImageWidth);
-        }
+        LOGGER.debug(MessageCodes.DBG_082, width, aImageWidth);
 
         return width;
     }
@@ -325,9 +305,7 @@ public class ImageSize {
             scale = (float) aSizeValue / (float) aImageValue;
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Scaling resize value by: {}", scale);
-        }
+        LOGGER.debug(MessageCodes.DBG_083, scale);
 
         return scale;
     }

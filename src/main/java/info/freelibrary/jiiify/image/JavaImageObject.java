@@ -56,7 +56,7 @@ public class JavaImageObject implements ImageObject {
 
         if (myImage == null) {
             LOGGER.error(MessageCodes.EXC_038);
-            throw new IOException("Unable to read byte array because there wasn't an appropriate reader");
+            throw new IOException(LOGGER.getMessage(MessageCodes.EXC_072));
         }
 
         IOUtils.closeQuietly(inStream);
@@ -69,10 +69,7 @@ public class JavaImageObject implements ImageObject {
         final int width = aRegion.getInt(Region.WIDTH);
         final int height = aRegion.getInt(Region.HEIGHT);
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Cropping {} to {},{},{},{}", myImage, x, y, width, height);
-        }
-
+        LOGGER.debug(MessageCodes.DBG_084, myImage, x, y, width, height);
         myImage = Scalr.crop(myImage, x, y, width, height, Scalr.OP_ANTIALIAS);
     }
 
@@ -82,10 +79,7 @@ public class JavaImageObject implements ImageObject {
             final int height = aSize.getHeight(myImage.getHeight(), myImage.getWidth());
             final int width = aSize.getWidth(myImage.getWidth(), myImage.getHeight());
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Resizing [{}] to {},{}", myImage, width, height);
-            }
-
+            LOGGER.debug(MessageCodes.DBG_085, myImage, width, height);
             myImage = Scalr.resize(myImage, width, height, Scalr.OP_ANTIALIAS);
         }
     }
@@ -120,7 +114,7 @@ public class JavaImageObject implements ImageObject {
                 writer.dispose();
             }
         } else {
-            throw new IOException(LOGGER.getMessage("Could not find a writer for {}", mimeType));
+            throw new IOException(LOGGER.getMessage(MessageCodes.EXC_071, mimeType));
         }
     }
 

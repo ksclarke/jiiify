@@ -151,26 +151,26 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         // These are the tasks we trigger, according to user's ingest request
         if (!aJsonObject.getBoolean("skipthumbs", false)) {
             sendMessage(jsonMessage, ThumbnailVerticle.class.getName(), INGEST_TIMEOUT);
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Skipping thumbnail generation for: {}", aID);
+        } else {
+            LOGGER.debug(MessageCodes.DBG_103, aID);
         }
 
         if (!aJsonObject.getBoolean("skipindexing", false)) {
             sendMessage(jsonMessage, ImageIndexVerticle.class.getName(), INGEST_TIMEOUT);
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Skipping indexing  for: {}", aID);
+        } else {
+            LOGGER.debug(MessageCodes.DBG_104, aID);
         }
 
         if (!aJsonObject.getBoolean("skipproperties", false)) {
             sendMessage(jsonMessage, ImagePropertiesVerticle.class.getName(), INGEST_TIMEOUT);
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Skipping property file generation for: {}", aID);
+        } else {
+            LOGGER.debug(MessageCodes.DBG_105, aID);
         }
 
         if (!aJsonObject.getBoolean("skiptiles", false)) {
             sendMessage(jsonMessage, TileMasterVerticle.class.getName(), INGEST_TIMEOUT);
-        } else if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Skipping tile generation for: {}", aID);
+        } else {
+            LOGGER.debug(MessageCodes.DBG_106, aID);
         }
     }
 

@@ -24,9 +24,7 @@ public class JiiifyVerticleIT extends AbstractVerticleIT {
     public void testBaseURL303() {
         final String url = myBaseURL + "/asdf";
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Checking base URL 303: {}", url);
-        }
+        LOGGER.debug("Checking base URL 303: {}", url);
 
         // assertEquals("303|/iiif/asdf/info.json", getResponse(url));
     }

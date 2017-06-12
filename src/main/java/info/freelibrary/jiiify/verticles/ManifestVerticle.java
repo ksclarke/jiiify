@@ -76,10 +76,10 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
 
                         writeManifest(ptObj, buffer, id, thumbnail, messageHandler);
                     } catch (final JsonProcessingException | URISyntaxException details) {
-                        LOGGER.error(details, "Unexpected exception thrown");
+                        LOGGER.error(details, MessageCodes.EXC_075);
                         messageHandler.reply(FAILURE_RESPONSE);
                     } catch (final IOException details) {
-                        LOGGER.error(details, "Exception thrown while reading height and width");
+                        LOGGER.error(details, MessageCodes.EXC_076);
                         messageHandler.reply(FAILURE_RESPONSE);
                     }
                 } else {
@@ -151,7 +151,7 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
                 final List<KeyValue<String, ?>> fields = new ArrayList<>();
 
                 if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Wrote manifest file: {}", aPtObj.getPath(MANIFEST_FILE));
+                    LOGGER.debug(MessageCodes.DBG_108, aPtObj.getPath(MANIFEST_FILE));
                 }
 
                 fields.add(KeyValue.with(ID_KEY, aID));
@@ -162,15 +162,12 @@ public class ManifestVerticle extends AbstractJiiifyVerticle {
                         LOGGER.error(MessageCodes.EXC_057, indexHandler.result());
                         aMessageHandler.reply(FAILURE_RESPONSE);
                     } else if (indexHandler.succeeded()) {
-                        if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug("Succeeded submitting thumbnail to Solr");
-                        }
-
+                        LOGGER.debug(MessageCodes.DBG_109);
                         aMessageHandler.reply(SUCCESS_RESPONSE);
                     }
                 });
             } else {
-                LOGGER.error(putHandler.cause(), "Failed to write manifest file: {}", aPtObj.getPath(MANIFEST_FILE));
+                LOGGER.error(putHandler.cause(), MessageCodes.EXC_077, aPtObj.getPath(MANIFEST_FILE));
             }
         });
     }

@@ -55,10 +55,7 @@ public class ImageIndexVerticle extends AbstractJiiifyVerticle {
                     LOGGER.error(MessageCodes.EXC_053, message.body(), details);
                     message.reply(FAILURE_RESPONSE);
                 } else if (handler.succeeded()) {
-                    if (LOGGER.isDebugEnabled()) {
-                        LOGGER.debug("Succeeded submitting '{}' to Solr", message.body());
-                    }
-
+                    LOGGER.debug(MessageCodes.DBG_101, message.body());
                     message.reply(SUCCESS_RESPONSE);
                 }
             });

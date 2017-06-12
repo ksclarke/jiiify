@@ -35,9 +35,7 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
             final HttpClient client = vertx.createHttpClient();
             final HttpClientRequest request;
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Trying to connect to Solr server: {}", solr);
-            }
+            LOGGER.debug(MessageCodes.DBG_110, solr);
 
             // Create a connection to see if Solr responds at the expected location
             request = client.getAbs(solr, response -> {
@@ -68,7 +66,7 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
                     aFuture.complete();
                 } else {
                     aClient.close();
-                    aFuture.fail("Unexpected Solr server status response: " + status);
+                    aFuture.fail(LOGGER.getMessage(MessageCodes.EXC_078, status));
                 }
             });
         } else {

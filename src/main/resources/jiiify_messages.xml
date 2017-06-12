@@ -61,6 +61,16 @@
   <entry key="EXC-067">Image properties file not found: {}</entry>
   <entry key="EXC-068">Search Error</entry>
   <entry key="EXC-069">Solr search failed: {}</entry>
+  <entry key="EXC-070">A physical scale unit must be supplied</entry>
+  <entry key="EXC-071">Could not find a writer for {}</entry>
+  <entry key="EXC-072">Unable to read byte array because there wasn't an appropriate reader</entry>
+  <entry key="EXC-073">Argument is not a comma delimited size: {}</entry>
+  <entry key="EXC-074">Failed to write image properties file: {}</entry>
+  <entry key="EXC-075">Unexpected exception thrown</entry>
+  <entry key="EXC-076">Exception thrown while reading height and width</entry>
+  <entry key="EXC-077">Failed to write manifest file: {}</entry>
+  <entry key="EXC-078">Unexpected Solr server status response: </entry>
+  <entry key="EXC-079">Solr server URL is not well-formed: </entry>
 
   <!-- Info messages -->
   <entry key="INFO-001">Ingesting an added or updated image file: {}</entry>
@@ -70,6 +80,17 @@
   <entry key="INFO-005">Invalid ImageInfo JSON</entry>
   <entry key="INFO-006">Not ready for download</entry>
   <entry key="INFO-007">Requested image file not found: {}</entry>
+  <entry key="INFO-008">Setting Jiiify URL scheme to: {}</entry>
+  <entry key="INFO-009">Setting Jiiify HTTP host to: {}</entry>
+  <entry key="INFO-010">Setting Jiiify HTTP port to: {}</entry>
+  <entry key="INFO-011">Setting Jiiify HTTP redirect port to: {}</entry>
+  <entry key="INFO-012">Setting Jiiify tile size to: {}</entry>
+  <entry key="INFO-013">Setting Jiiify service prefix to: {}</entry>
+  <entry key="INFO-014">Setting Jiiify file uploads directory to: {}</entry>
+  <entry key="INFO-015">Setting AWS credentials: {}</entry>
+  <entry key="INFO-016">Setting S3 endpoint: {}</entry>
+  <entry key="INFO-017">Setting default Jiiify data directory to: {}</entry>
+  <entry key="INFO-018">Setting Jiiify ingest watch folder to: {}</entry>
 
   <!-- Warn messages -->
   <entry key="WARN-001">Failed to send tile path ({}) so trying again</entry>
@@ -85,6 +106,14 @@
   <entry key="WARN-011">Redirecting unexpectedly to webroot... why?!</entry>
   <entry key="WARN-012">Using RefreshHandler: {}</entry>
   <entry key="WARN-013">Supplied Solr query parameter is not an integer as expected: {}</entry>
+  <entry key="WARN-014">Identifier contains characters invalid for a URI: {}</entry>
+  <entry key="WARN-015">Tile path '{}' could not be added to queue</entry>
+  <entry key="WARN-016">Found {} set in system properties but its value ({}) isn't value so using: {}</entry>
+  <entry key="WARN-017">Supplied port isn't valid so trying to use {} instead</entry>
+  <entry key="WARN-018">Supplied redirect port isn't valid so trying to use {} instead</entry>
+  <entry key="WARN-019">Supplied tile size isn't valid so trying to use {} instead</entry>
+  <entry key="WARN-020">Prefix '{}' isn't valid so using '{}' instead</entry>
+  <entry key="WARN-021">Didn't write manifest because it already existed: {}</entry>
 
   <!-- Messages for debugging -->
   <entry key="DBG-000">Successfully undeployed {} [{}]</entry>
@@ -158,6 +187,50 @@
   <entry key="DBG-068">Unexpected count on browse page: {}</entry>
   <entry key="DBG-069">Current page: {}</entry>
   <entry key="DBG-070">Constructing image info from ID: {}</entry>
+  <entry key="DBG-071">Constructing image request from: {}</entry>
+  <entry key="DBG-072">Request [Prefix: {}], [ID: {}], [Region: {}], [Size: {}], [Rotation: {}], [File: {}]</entry>
+  <entry key="DBG-073">Resizing based on a percentage: {}</entry>
+  <entry key="DBG-074">Resizing height is scaled height: {}</entry>
+  <entry key="DBG-075">Resizing height set to ImageRequest height: {}</entry>
+  <entry key="DBG-076">Resizing height set to actual image height: {}</entry>
+  <entry key="DBG-077">Resize height: {} [Original: {}]</entry>
+  <entry key="DBG-078">Resizing based on a percentage: {}</entry>
+  <entry key="DBG-079">Resizing width is scaled width: {}</entry>
+  <entry key="DBG-080">Resizing width set to ImageRequest width: {}</entry>
+  <entry key="DBG-081">Resizing width set to actual image width: {}</entry>
+  <entry key="DBG-082">Resize width: {} [Original: {}]</entry>
+  <entry key="DBG-083">Scaling resize value by: {}</entry>
+  <entry key="DBG-084">Cropping {} to {},{},{},{}</entry>
+  <entry key="DBG-085">Resizing [{}] to {},{}</entry>
+  <entry key="DBG-086">Sending Solr query to: {}</entry>
+  <entry key="DBG-087">Handlebars template engine created</entry>
+  <entry key="DBG-088">Setting Handlebars template extension: {}</entry>
+  <entry key="DBG-089">Setting Handlebars max cache size: {}</entry>
+  <entry key="DBG-090">Using skip paths ({}) to get template file: {}</entry>
+  <entry key="DBG-091">No skip paths, using passed template file: {}</entry>
+  <entry key="DBG-092">Loading Handlebars template '{}' into cache</entry>
+  <entry key="DBG-093">Handlebars template output: {}</entry>
+  <entry key="DBG-094">Generating tile paths [ID: {}; Tile Size: {}; Width: {}; Height: {}]</entry>
+  <entry key="DBG-095">Creating tiles using multiplier of {}</entry>
+  <entry key="DBG-096">{} tiles needed for {}</entry>
+  <entry key="DBG-097">Tile path: {}</entry>
+  <entry key="DBG-098">Getting dimensions of '{}'</entry>
+  <entry key="DBG-099">Setting new logging level: {}</entry>
+  <entry key="DBG-100">Decoded '{}' to '{}'</entry>
+  <entry key="DBG-101">Succeeded submitting '{}' to Solr</entry>
+  <entry key="DBG-102">Wrote JSON image info file: {}</entry>
+  <entry key="DBG-103">Skipping thumbnail generation for: {}</entry>
+  <entry key="DBG-104">Skipping indexing  for: {}</entry>
+  <entry key="DBG-105">Skipping property file generation for: {}</entry>
+  <entry key="DBG_106">Skipping tile generation for: {}</entry>
+  <entry key="DBG-107">Wrote image properties file: {}</entry>
+  <entry key="DBG-108">Wrote manifest file: {}</entry>
+  <entry key="DBG-109">Succeeded submitting thumbnail to Solr</entry>
+  <entry key="DBG-110">Trying to connect to Solr server: {}</entry>
+  <entry key="DBG-111">Found {} set in system properties</entry>
+  <entry key="DBG-112">Found {} set in system properties as: {}</entry>
+  <entry key="DBG-113">Using a temporary directory {} for file uploads</entry>
+  <entry key="DBG-114">Using a user supplied file uploads directory: {}</entry>
 
   <!-- Messages for testing package specific exceptions -->
   <entry key="TEST-001">test message</entry>

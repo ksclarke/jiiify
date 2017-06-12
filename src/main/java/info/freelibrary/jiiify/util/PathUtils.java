@@ -11,6 +11,7 @@ import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 
 import info.freelibrary.jiiify.Constants;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
 
@@ -81,7 +82,7 @@ public class PathUtils {
         }
 
         if (LOGGER.isDebugEnabled() && !aURIString.equals(decodedString)) {
-            LOGGER.debug("Decoded {} to {}", aURIString, decodedString);
+            LOGGER.debug(MessageCodes.DBG_100, aURIString, decodedString);
         }
 
         return decodedString;
@@ -166,6 +167,4 @@ public class PathUtils {
 
         return builder.toString();
     }
-
-    // final Configuration config = (Configuration) aVertx.sharedData().getLocalMap(SHARED_DATA_KEY).get(CONFIG_KEY);
 }

@@ -1,11 +1,12 @@
 
 package info.freelibrary.jiiify.util;
 
-import ch.qos.logback.classic.Level;
-
 import info.freelibrary.jiiify.Constants;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
+
+import ch.qos.logback.classic.Level;
 
 public class LoggingUtils {
 
@@ -15,8 +16,8 @@ public class LoggingUtils {
     }
 
     /**
-     * We're opinionated about loggers, and are using Logback, so can set logging levels at runtime. We could get
-     * fancy and make it not dependent on Logback (handle LOG4J and JUL too).
+     * We're opinionated about loggers, and are using Logback, so can set logging levels at runtime. We could get fancy
+     * and make it not dependent on Logback (handle LOG4J and JUL too).
      *
      * @param aLogger A logger whose level we want to change
      * @param aLevel A string version of the desired level
@@ -26,16 +27,13 @@ public class LoggingUtils {
         final Level currentLevel = logger.getLevel();
         final Level newLevel = Level.toLevel(aLevel, currentLevel);
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Setting new logging level: {}", newLevel.levelStr);
-        }
-
+        LOGGER.debug(MessageCodes.DBG_099, newLevel.levelStr);
         logger.setLevel(newLevel);
     }
 
     /**
-     * We're opinionated about loggers, and are using Logback, so can set logging levels at runtime. We could get
-     * fancy and make it not dependent on Logback (handle LOG4J and JUL too).
+     * We're opinionated about loggers, and are using Logback, so can set logging levels at runtime. We could get fancy
+     * and make it not dependent on Logback (handle LOG4J and JUL too).
      *
      * @param aClassToLog A logger whose level we want to change
      * @param aLevel A string version of the desired level

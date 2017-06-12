@@ -44,10 +44,7 @@ public class ImageInfoVerticle extends AbstractJiiifyVerticle {
 
                     ptObj.put(ImageInfo.FILE_NAME, buffer, writeHandler -> {
                         if (writeHandler.succeeded()) {
-                            if (LOGGER.isDebugEnabled()) {
-                                LOGGER.debug("Wrote JSON image info file: {}", ptObj.getPath(ImageInfo.FILE_NAME));
-                            }
-
+                            LOGGER.debug(MessageCodes.DBG_102, ptObj.getPath(ImageInfo.FILE_NAME));
                             message.reply(SUCCESS_RESPONSE);
                         } else {
                             final String path = ptObj.getPath(ImageInfo.FILE_NAME);

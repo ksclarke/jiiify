@@ -26,6 +26,7 @@ import com.github.jknack.handlebars.Handlebars;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.templates.HandlebarsTemplateEngine;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -54,28 +55,19 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
     public HandlebarsTemplateEngineImpl() {
         super(HandlebarsTemplateEngine.DEFAULT_TEMPLATE_EXTENSION, HandlebarsTemplateEngine.DEFAULT_MAX_CACHE_SIZE);
         myHandlebars = new Handlebars(new ClassPathTemplateLoader("/webroot"));
-
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Handlebars template engine created");
-        }
+        LOGGER.debug(MessageCodes.DBG_087);
     }
 
     @Override
     public HandlebarsTemplateEngine setExtension(final String aExtension) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Setting Handlebars template extension: {}", aExtension);
-        }
-
+        LOGGER.debug(MessageCodes.DBG_088, aExtension);
         doSetExtension(aExtension);
         return this;
     }
 
     @Override
     public HandlebarsTemplateEngine setMaxCacheSize(final int aMaxCacheSize) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Setting Handlebars max cache size: {}", aMaxCacheSize);
-        }
-
+        LOGGER.debug(MessageCodes.DBG_089, aMaxCacheSize);
         this.cache.setMaxSize(aMaxCacheSize);
         return null;
     }
@@ -95,15 +87,9 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
             }
 
             templateFileName = pathBuilder.deleteCharAt(pathBuilder.length() - 1).toString();
-
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Using skip paths ({}) to get template file: {}", skip, aTemplateFileName);
-            }
+            LOGGER.debug(MessageCodes.DBG_090, skip, aTemplateFileName);
         } else {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("No skip paths, using passed template file: {}", aTemplateFileName);
-            }
-
+            LOGGER.debug(MessageCodes.DBG_091, aTemplateFileName);
             // FIXME: Seems some paths are coming in with /admin/ and some aren't... related to POST(?!)
             templateFileName = aTemplateFileName.replaceAll("\\/admin\\/", "/");
         }
@@ -112,9 +98,7 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
             Template template = cache.get(templateFileName);
 
             if (template == null) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Loading Handlebars template '{}' into cache", templateFileName);
-                }
+                LOGGER.debug(MessageCodes.DBG_092, templateFileName);
 
                 synchronized (this) {
                     template = myHandlebars.compile(templateFileName);
@@ -125,10 +109,7 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
             final Map<String, Object> dataMap = aContext.data();
             final String templateOutput = template.apply(dataMap.get(HBS_DATA_KEY));
 
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Handlebars template output: {}", templateOutput);
-            }
-
+            LOGGER.debug(MessageCodes.DBG_093, templateOutput);
             aHandler.handle(Future.succeededFuture(Buffer.buffer(templateOutput)));
         } catch (final Exception details) {
             LOGGER.error(details, details.getMessage());

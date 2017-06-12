@@ -5,6 +5,7 @@ import static info.freelibrary.jiiify.Constants.MESSAGES;
 
 import java.util.Objects;
 
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.util.Logger;
 import info.freelibrary.util.LoggerFactory;
@@ -65,9 +66,7 @@ public class ImageInfo {
      * @param aID The image ID of the image info object
      */
     public ImageInfo(final String aID) {
-        LOGGER.debug("Constructing image info from ID: {}", aID);
-
-        // TODO: put a check in here that checks for JSON to throw exception?
+        LOGGER.debug(MessageCodes.DBG_070, aID);
         setID(aID);
     }
 
@@ -221,7 +220,7 @@ public class ImageInfo {
      * @return The image info object with the physical scale set
      */
     public ImageInfo setPhysicalScale(final double aScale, final String aUnit) {
-        Objects.requireNonNull(aUnit, "A physical scale unit must be supplied");
+        Objects.requireNonNull(aUnit, LOGGER.getMessage(MessageCodes.EXC_070));
 
         myPhysicalScale = aScale;
         myPhysicalScaleUnit = aUnit;

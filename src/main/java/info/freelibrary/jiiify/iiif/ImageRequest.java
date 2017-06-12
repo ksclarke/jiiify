@@ -7,6 +7,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.StringJoiner;
 
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeUtils;
 import info.freelibrary.util.Logger;
@@ -101,9 +102,8 @@ public class ImageRequest implements Cloneable {
      * @param aQuality A quality of image to return
      * @param aFormat A format of image to return
      */
-    public ImageRequest(final String aID, final String aServicePrefix, final ImageRegion aRegion,
-            final ImageSize aSize, final ImageRotation aRotation, final ImageQuality aQuality,
-            final ImageFormat aFormat) {
+    public ImageRequest(final String aID, final String aServicePrefix, final ImageRegion aRegion, final ImageSize aSize,
+            final ImageRotation aRotation, final ImageQuality aQuality, final ImageFormat aFormat) {
         mySize = aSize;
         myID = aID;
         myServicePrefix = aServicePrefix.replace("/", "");
@@ -120,21 +120,18 @@ public class ImageRequest implements Cloneable {
      * @throws IIIFException
      */
     public ImageRequest(final String aIIIFImagePath) throws IIIFException {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Constructing image request from: {}", aIIIFImagePath);
-        }
-
         final String[] pathComponents = aIIIFImagePath.substring(1).split("/");
         final int dotIndex = pathComponents[5].lastIndexOf(".");
+
+        LOGGER.debug(MessageCodes.DBG_071, aIIIFImagePath);
 
         if (dotIndex == -1) {
             throw new IIIFException();
         }
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Request [Prefix: {}], [ID: {}], [Region: {}], [Size: {}], [Rotation: {}], [File: {}]",
-                    pathComponents[0], PairtreeUtils.decodeID(pathComponents[1]), pathComponents[2],
-                    pathComponents[3], pathComponents[4], pathComponents[5]);
+            LOGGER.debug(MessageCodes.DBG_072, pathComponents[0], PairtreeUtils.decodeID(pathComponents[1]),
+                    pathComponents[2], pathComponents[3], pathComponents[4], pathComponents[5]);
         }
 
         myServicePrefix = pathComponents[0];
@@ -318,7 +315,7 @@ public class ImageRequest implements Cloneable {
         try {
             return PathUtils.encodeIdentifier(myID);
         } catch (final URISyntaxException details) {
-            LOGGER.warn("Identifier contains characters invalid for a URI: {}", myID);
+            LOGGER.warn(MessageCodes.WARN_014, myID);
             return myID;
         }
     }

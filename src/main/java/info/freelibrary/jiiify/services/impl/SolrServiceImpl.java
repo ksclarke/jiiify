@@ -5,6 +5,7 @@ import static info.freelibrary.jiiify.Constants.JIIIFY_ARRAY;
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.util.Logger;
@@ -52,7 +53,7 @@ public class SolrServiceImpl implements SolrService {
         final HttpClientRequest request;
 
         if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug("Sending Solr query to: {}", solr);
+            LOGGER.debug(MessageCodes.DBG_086, solr);
         }
 
         request = client.getAbs(solr, response -> {

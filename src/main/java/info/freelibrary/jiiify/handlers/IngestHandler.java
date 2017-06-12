@@ -114,10 +114,7 @@ public class IngestHandler extends JiiifyHandler {
                             } else {
                                 aJsonNode.put("upload-message",
                                         "Manifest already exists and overwrite was not specified");
-
-                                LOGGER.warn("Didn't write manifest because it already existed: {}", ptObj.getPath(
-                                        MANIFEST_FILE));
-
+                                LOGGER.warn(MessageCodes.WARN_021, ptObj.getPath(MANIFEST_FILE));
                                 toTemplate(aContext, aJsonNode);
                             }
                         } else {

@@ -78,10 +78,10 @@ public class Configuration implements Shareable {
     public static final long DEFAULT_SESSION_TIMEOUT = 7200000L; // two hours
 
     public static final String DEFAULT_UPLOADS_DIR = new File(System.getProperty("java.io.tmpdir"),
-        "jiiify-file-uploads").getAbsolutePath();
+            "jiiify-file-uploads").getAbsolutePath();
 
     public static final File DEFAULT_WATCH_FOLDER = new File(System.getProperty("java.io.tmpdir"),
-        "jiiify-watch-folder");
+            "jiiify-watch-folder");
 
     public static final File DEFAULT_DATA_DIR = new File("jiiify_data");
 
@@ -131,7 +131,7 @@ public class Configuration implements Shareable {
      * @throws ConfigurationException If there is trouble reading or setting a configuration option
      */
     public Configuration(final JsonObject aConfig, final Vertx aVertx,
-        final Handler<AsyncResult<Configuration>> aHandler) {
+            final Handler<AsyncResult<Configuration>> aHandler) {
         final Future<Configuration> result = Future.future();
 
         myVertx = aVertx;
@@ -233,10 +233,7 @@ public class Configuration implements Shareable {
 
         // We'll give command line properties first priority then fall back to our JSON configuration
         if (properties.containsKey(GOOGLE_OAUTH_CLIENT_ID)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Found {} set in system properties", GOOGLE_OAUTH_CLIENT_ID);
-            }
-
+            LOGGER.debug(MessageCodes.DBG_111, GOOGLE_OAUTH_CLIENT_ID);
             return properties.getProperty(GOOGLE_OAUTH_CLIENT_ID);
         } else {
             return aConfig.getString(GOOGLE_OAUTH_CLIENT_ID, "");
@@ -254,10 +251,7 @@ public class Configuration implements Shareable {
 
         // We'll give command line properties first priority then fall back to our JSON configuration
         if (properties.containsKey(FACEBOOK_OAUTH_CLIENT_ID)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Found {} set in system properties", FACEBOOK_OAUTH_CLIENT_ID);
-            }
-
+            LOGGER.debug(MessageCodes.DBG_111, FACEBOOK_OAUTH_CLIENT_ID);
             return properties.getProperty(FACEBOOK_OAUTH_CLIENT_ID);
         } else {
             return aConfig.getString(FACEBOOK_OAUTH_CLIENT_ID, "");
@@ -367,8 +361,7 @@ public class Configuration implements Shareable {
     }
 
     /**
-     * Returns the base URL of the Jiiify image server, including: scheme, host, and port (if something other than
-     * 80).
+     * Returns the base URL of the Jiiify image server, including: scheme, host, and port (if something other than 80).
      *
      * @return The base URL of the Jiiify image server
      */
@@ -496,19 +489,18 @@ public class Configuration implements Shareable {
 
             if (LOGGER.isDebugEnabled()) {
                 if (scheme.equals(http)) {
-                    LOGGER.debug("Found {} set in system properties as: {}", URL_SCHEME_PROP, http);
+                    LOGGER.debug(MessageCodes.DBG_112, URL_SCHEME_PROP, http);
                 } else if (scheme.equals(https)) {
-                    LOGGER.debug("Found {} set in system properties as: {}", URL_SCHEME_PROP, https);
+                    LOGGER.debug(MessageCodes.DBG_112, URL_SCHEME_PROP, https);
                 }
             }
 
             if (!scheme.equals(http) && !scheme.equals(https)) {
-                LOGGER.warn("Found {} set in system properties but its value ({}) isn't value so using: {}",
-                    URL_SCHEME_PROP, scheme, https);
+                LOGGER.warn(MessageCodes.WARN_016, URL_SCHEME_PROP, scheme, https);
 
                 return https;
             } else {
-                LOGGER.info("Setting Jiiify URL scheme to: {}", scheme);
+                LOGGER.info(MessageCodes.INFO_008, scheme);
                 return scheme;
             }
         } else {
@@ -532,10 +524,7 @@ public class Configuration implements Shareable {
 
             // We'll give command line properties first priority then fall back to our JSON configuration
             if (properties.containsKey(HTTP_HOST_PROP) && !configHost.equals(testHost)) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Found {} set in system properties", HTTP_HOST_PROP);
-                }
-
+                LOGGER.debug(MessageCodes.DBG_111, HTTP_HOST_PROP);
                 host = properties.getProperty(HTTP_HOST_PROP);
             } else if (configHost.equals(testHost)) {
                 host = DEFAULT_HOST;
@@ -543,11 +532,11 @@ public class Configuration implements Shareable {
                 host = aConfig.getString(HTTP_HOST_PROP, DEFAULT_HOST);
             }
         } catch (final NumberFormatException details) {
-            LOGGER.warn("Supplied port isn't valid so trying to use {} instead", DEFAULT_PORT);
+            LOGGER.warn(MessageCodes.WARN_017, DEFAULT_PORT);
             host = DEFAULT_HOST;
         }
 
-        LOGGER.info("Setting Jiiify HTTP host to: {}", host);
+        LOGGER.info(MessageCodes.INFO_009, host);
         return host;
     }
 
@@ -564,20 +553,17 @@ public class Configuration implements Shareable {
 
             // We'll give command line properties first priority then fall back to our JSON configuration
             if (properties.containsKey(HTTP_PORT_PROP)) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Found {} set in system properties", HTTP_PORT_PROP);
-                }
-
+                LOGGER.debug(MessageCodes.DBG_111, HTTP_PORT_PROP);
                 port = Integer.parseInt(properties.getProperty(HTTP_PORT_PROP));
             } else {
                 port = aConfig.getInteger(HTTP_PORT_PROP, DEFAULT_PORT);
             }
         } catch (final NumberFormatException details) {
-            LOGGER.warn("Supplied port isn't valid so trying to use {} instead", DEFAULT_PORT);
+            LOGGER.warn(MessageCodes.WARN_017, DEFAULT_PORT);
             port = DEFAULT_PORT;
         }
 
-        LOGGER.info("Setting Jiiify HTTP port to: {}", port);
+        LOGGER.info(MessageCodes.INFO_010, port);
         return port;
     }
 
@@ -594,20 +580,17 @@ public class Configuration implements Shareable {
 
             // We'll give command line properties first priority then fall back to our JSON configuration
             if (properties.containsKey(HTTP_PORT_REDIRECT_PROP)) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Found {} set in system properties", HTTP_PORT_REDIRECT_PROP);
-                }
-
+                LOGGER.debug(MessageCodes.DBG_111, HTTP_PORT_REDIRECT_PROP);
                 port = Integer.parseInt(properties.getProperty(HTTP_PORT_REDIRECT_PROP));
             } else {
                 port = aConfig.getInteger(HTTP_PORT_REDIRECT_PROP, DEFAULT_REDIRECT_PORT);
             }
         } catch (final NumberFormatException details) {
-            LOGGER.warn("Supplied redirect port isn't valid so trying to use {} instead", DEFAULT_REDIRECT_PORT);
+            LOGGER.warn(MessageCodes.WARN_018, DEFAULT_REDIRECT_PORT);
             port = DEFAULT_REDIRECT_PORT;
         }
 
-        LOGGER.info("Setting Jiiify HTTP redirect port to: {}", port);
+        LOGGER.info(MessageCodes.INFO_011, port);
         return port;
     }
 
@@ -624,20 +607,17 @@ public class Configuration implements Shareable {
 
             // We'll give command line properties first priority then fall back to our JSON configuration
             if (properties.containsKey(TILE_SIZE_PROP)) {
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Found {} set in system properties", TILE_SIZE_PROP);
-                }
-
+                LOGGER.debug(MessageCodes.DBG_111, TILE_SIZE_PROP);
                 tileSize = Integer.parseInt(properties.getProperty(TILE_SIZE_PROP));
             } else {
                 tileSize = aConfig.getInteger(TILE_SIZE_PROP, DEFAULT_TILE_SIZE);
             }
         } catch (final NumberFormatException details) {
-            LOGGER.warn("Supplied tile size isn't valid so trying to use {} instead", DEFAULT_TILE_SIZE);
+            LOGGER.warn(MessageCodes.WARN_019, DEFAULT_TILE_SIZE);
             tileSize = DEFAULT_TILE_SIZE;
         }
 
-        LOGGER.info("Setting Jiiify tile size to: {}", tileSize);
+        LOGGER.info(MessageCodes.INFO_012, tileSize);
         return tileSize;
     }
 
@@ -647,10 +627,7 @@ public class Configuration implements Shareable {
         String prefix;
 
         if (properties.containsKey(SERVICE_PREFIX_PROP)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Found {} set in system properties", SERVICE_PREFIX_PROP);
-            }
-
+            LOGGER.debug(MessageCodes.DBG_111, SERVICE_PREFIX_PROP);
             prefix = properties.getProperty(SERVICE_PREFIX_PROP, DEFAULT_SERVICE_PREFIX);
         } else {
             prefix = aConfig.getString(SERVICE_PREFIX_PROP, DEFAULT_SERVICE_PREFIX);
@@ -658,9 +635,9 @@ public class Configuration implements Shareable {
 
         try {
             prefix = PathUtils.encodeServicePrefix(prefix.startsWith("/") ? prefix : "/" + prefix);
-            LOGGER.info("Setting Jiiify service prefix to: {}", prefix);
+            LOGGER.info(MessageCodes.INFO_013, prefix);
         } catch (final URISyntaxException details) {
-            LOGGER.warn("Prefix '{}' isn't valid so using '{}' instead", prefix, DEFAULT_SERVICE_PREFIX);
+            LOGGER.warn(MessageCodes.WARN_020, prefix, DEFAULT_SERVICE_PREFIX);
             prefix = DEFAULT_SERVICE_PREFIX;
         }
 
@@ -675,10 +652,10 @@ public class Configuration implements Shareable {
             result.setHandler(aHandler);
 
             final String solrServer = properties.getProperty(SOLR_SERVER_PROP, aConfig.getString(SOLR_SERVER_PROP,
-                DEFAULT_SOLR_SERVER));
+                    DEFAULT_SOLR_SERVER));
 
-            if (LOGGER.isDebugEnabled() && properties.containsKey(SOLR_SERVER_PROP)) {
-                LOGGER.debug("Found {} set in system properties", SOLR_SERVER_PROP);
+            if (properties.containsKey(SOLR_SERVER_PROP)) {
+                LOGGER.debug(MessageCodes.DBG_111, SOLR_SERVER_PROP);
             }
 
             try {
@@ -686,7 +663,7 @@ public class Configuration implements Shareable {
                 mySolrServer = new URL(solrServer);
                 result.complete(this);
             } catch (final MalformedURLException details) {
-                result.fail(new ConfigurationException("Solr server URL is not well-formed: " + solrServer));
+                result.fail(new ConfigurationException(LOGGER.getMessage(MessageCodes.EXC_079, solrServer)));
             }
         } else {
 
@@ -698,10 +675,7 @@ public class Configuration implements Shareable {
 
         // Then get the uploads directory we want to use, giving preference to system properties
         if (properties.containsKey(UPLOADS_DIR_PROP)) {
-            if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Found {} set in system properties", UPLOADS_DIR_PROP);
-            }
-
+            LOGGER.debug(MessageCodes.DBG_111, UPLOADS_DIR_PROP);
             confirmUploadsDir(properties.getProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR), aHandler);
         } else {
             confirmUploadsDir(aConfig.getString(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR), aHandler);
@@ -717,23 +691,17 @@ public class Configuration implements Shareable {
 
             if (aDirPath.equalsIgnoreCase("java.io.tmpdir") || aDirPath.trim().equals("")) {
                 uploadsDir = DEFAULT_UPLOADS_DIR;
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Using a temporary directory {} for file uploads", uploadsDir);
-                }
+                LOGGER.debug(MessageCodes.DBG_113, uploadsDir);
             } else {
                 uploadsDir = aDirPath;
-
-                if (LOGGER.isDebugEnabled()) {
-                    LOGGER.debug("Using a user supplied file uploads directory: {}", uploadsDir);
-                }
+                LOGGER.debug(MessageCodes.DBG_114, uploadsDir);
             }
 
             try {
                 if (!Files.createDirectories(Paths.get(uploadsDir)).toFile().canWrite()) {
                     result.fail(new ConfigurationException(LOGGER.getMessage(EXC_021, uploadsDir)));
                 } else {
-                    LOGGER.info("Setting Jiiify file uploads directory to: {}", uploadsDir);
+                    LOGGER.info(MessageCodes.INFO_014, uploadsDir);
 
                     myUploadsDir = uploadsDir;
                     result.complete(this);
@@ -757,24 +725,23 @@ public class Configuration implements Shareable {
 
         result.setHandler(aHandler);
 
-        if (LOGGER.isDebugEnabled() && props.containsKey(DATA_DIR_PROP)) {
-            LOGGER.debug("Found {} set in system properties", DATA_DIR_PROP);
+        if (props.containsKey(DATA_DIR_PROP)) {
+            LOGGER.debug(MessageCodes.DBG_111, DATA_DIR_PROP);
         }
 
         location = props.getProperty(DATA_DIR_PROP, aConfig.getString(DATA_DIR_PROP, DEFAULT_DATA_DIR
-            .getAbsolutePath()));
+                .getAbsolutePath()));
 
         if (awsAccessKey != null && awsSecretKey != null) {
-            LOGGER.info("Setting AWS credentials: {}", awsAccessKey);
+            LOGGER.info(MessageCodes.INFO_015, awsAccessKey);
 
             if (s3Endpoint == null) {
                 pairtree = PairtreeFactory.getFactory(myVertx, S3Bucket).getPairtree(location, awsAccessKey,
-                    awsSecretKey);
+                        awsSecretKey);
             } else {
-                LOGGER.info("Setting S3 endpoint: {}", s3Endpoint);
-
+                LOGGER.info(MessageCodes.INFO_016, s3Endpoint);
                 pairtree = PairtreeFactory.getFactory(myVertx, S3Bucket).getPairtree(location, awsAccessKey,
-                    awsSecretKey, s3Endpoint);
+                        awsSecretKey, s3Endpoint);
             }
         } else {
             pairtree = PairtreeFactory.getFactory(myVertx).getPairtree(location);
@@ -782,7 +749,7 @@ public class Configuration implements Shareable {
 
         pairtree.create(handler -> {
             if (handler.succeeded()) {
-                LOGGER.info("Setting default Jiiify data directory to: {}", pairtree.getPath());
+                LOGGER.info(MessageCodes.INFO_017, pairtree.getPath());
                 myDataDirs.put(DEFAULT_DATA_DIR_NAME, pairtree);
                 result.complete(this);
             } else {
@@ -808,18 +775,18 @@ public class Configuration implements Shareable {
         if (aHandler != null) {
             result.setHandler(aHandler);
 
-            if (LOGGER.isDebugEnabled() && properties.containsKey(WATCH_FOLDER_PROP)) {
-                LOGGER.debug("Found {} set in system properties", WATCH_FOLDER_PROP);
+            if (properties.containsKey(WATCH_FOLDER_PROP)) {
+                LOGGER.debug(MessageCodes.DBG_111, WATCH_FOLDER_PROP);
             }
 
             watchFolder = Paths.get(properties.getProperty(WATCH_FOLDER_PROP, aConfig.getString(WATCH_FOLDER_PROP,
-                DEFAULT_WATCH_FOLDER.getAbsolutePath())));
+                    DEFAULT_WATCH_FOLDER.getAbsolutePath())));
 
             try {
                 if (!Files.createDirectories(watchFolder).toFile().canWrite()) {
                     result.fail(new ConfigurationException(LOGGER.getMessage(EXC_023, watchFolder)));
                 } else {
-                    LOGGER.info("Setting Jiiify ingest watch folder to: {}", watchFolder);
+                    LOGGER.info(MessageCodes.INFO_018, watchFolder);
                     myWatchFolder = watchFolder.toFile();
                     result.complete();
                 }
