@@ -1,8 +1,5 @@
 #! /bin/bash
 
-# Fail on first error
-set -e
-
 #
 # This is a startup script for devs. It's not intended for production. See the supervisor config for that.
 #
@@ -77,17 +74,19 @@ if hash docker 2>/dev/null; then
     if [ -z "$CONTAINER_ID" ]; then
       CONTAINER_ID=$(docker run --name jiiify_solr -d -p 8983:8983 -t solr)
 
-      for INDEX in $(seq 1 10); do
+      for INDEX in $(seq 1 20); do
     	# Create the solr core
         docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify >/dev/null 2>&1
         RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" -L $PING)
 
         if [ "$RESPONSE_CODE" == "200" ]; then
+          echo "Solr connection established"
           break
         elif [ $INDEX == 10 ]; then
           echo "[ERROR] startup.sh | Failed to start Solr server"
           exit 1
         else
+          echo "Waiting on Solr..."
           sleep 6
         fi
       done
@@ -96,15 +95,17 @@ if hash docker 2>/dev/null; then
     else
       CONTAINER_ID=$(docker start ${CONTAINER_ID})
 
-      for INDEX in $(seq 1 10); do
+      for INDEX in $(seq 1 20); do
         RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
 
         if [ "$RESPONSE_CODE" == "200" ]; then
+          echo "Solr connection established"
           break
         elif [ $INDEX == 10 ]; then
           echo "[ERROR] startup.sh | Failed to start Solr server"
           exit 1
         else
+          echo "Waiting on Solr..."
           sleep 6
         fi
       done
@@ -114,6 +115,8 @@ if hash docker 2>/dev/null; then
   else
     echo "[INFO] startup.sh | Jiiify Solr [${CONTAINER_ID}] is already running..."
   fi
+else
+  echo "[WARNING] The administrative interface's browse and search won't work without Solr"
 fi
 
 $AUTHBIND java $HEAP_DUMP_CONFIG $XMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR $JKS_CONFIG \
