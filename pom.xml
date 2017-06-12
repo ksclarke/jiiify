@@ -42,6 +42,7 @@
     <!-- Application properties -->
     <jiffy.service.prefix>/iiif</jiffy.service.prefix>
     <jiiify.port>8443</jiiify.port>
+    <jiiify.host>localhost</jiiify.host>
     <jiiify.redirect.port>8000</jiiify.redirect.port>
     <jiiify.jks>jiiify.jks</jiiify.jks>
     <!-- A default value that can be overridden via Maven profile or on the command line -->

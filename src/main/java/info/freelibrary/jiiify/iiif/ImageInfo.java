@@ -251,7 +251,6 @@ public class ImageInfo {
     public String toString() {
         final JsonObject json = new JsonObject();
         final JsonArray tiles = new JsonArray();
-        final JsonObject tilesObj = new JsonObject();
         final JsonArray profile = new JsonArray();
         final JsonObject profileObj = new JsonObject();
         final JsonArray formats = new JsonArray();
@@ -280,11 +279,14 @@ public class ImageInfo {
         profileObj.put("qualities", qualities);
         profile.add(profileObj);
 
-        // Tiles array
-        tilesObj.put("width", myTileSize);
+        // Tiles array only if image is large enough to get tiled
+        if (myWidth > myTileSize || myHeight > myTileSize) {
+            final JsonObject tilesObj = new JsonObject();
 
-        tilesObj.put("scaleFactors", ImageUtils.getScaleFactors(myWidth, myHeight, myTileSize));
-        tiles.add(tilesObj);
+            tilesObj.put("width", myTileSize);
+            tilesObj.put("scaleFactors", ImageUtils.getScaleFactors(myWidth, myHeight, myTileSize));
+            tiles.add(tilesObj);
+        }
 
         // The standard stuff
         json.put("@context", CONTEXT);
@@ -293,7 +295,10 @@ public class ImageInfo {
         json.put("width", myWidth);
         json.put("height", myHeight);
 
-        json.put("tiles", tiles);
+        if (myWidth > myTileSize || myHeight > myTileSize) {
+            json.put("tiles", tiles);
+        }
+
         json.put("profile", profile);
 
         if (myPhysicalScaleUnit != null) {
