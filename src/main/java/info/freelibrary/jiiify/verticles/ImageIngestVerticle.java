@@ -149,12 +149,6 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         jsonMessage.put(FILE_PATH_KEY, aImageFile.getAbsolutePath());
 
         // These are the tasks we trigger, according to user's ingest request
-        if (!aJsonObject.getBoolean("skipthumbs", false)) {
-            sendMessage(jsonMessage, ThumbnailVerticle.class.getName(), INGEST_TIMEOUT);
-        } else {
-            LOGGER.debug(MessageCodes.DBG_103, aID);
-        }
-
         if (!aJsonObject.getBoolean("skipindexing", false)) {
             sendMessage(jsonMessage, ImageIndexVerticle.class.getName(), INGEST_TIMEOUT);
         } else {
@@ -167,7 +161,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
             LOGGER.debug(MessageCodes.DBG_105, aID);
         }
 
-        if (!aJsonObject.getBoolean("skiptiles", false)) {
+        if (!aJsonObject.getBoolean("skipimages", false)) {
             sendMessage(jsonMessage, TileMasterVerticle.class.getName(), INGEST_TIMEOUT);
         } else {
             LOGGER.debug(MessageCodes.DBG_106, aID);

@@ -19,7 +19,10 @@ import java.util.UUID;
 import javax.naming.ConfigurationException;
 
 import info.freelibrary.jiiify.MessageCodes;
+import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.iiif.ImageRegion.Region;
+import info.freelibrary.jiiify.iiif.ImageRequest;
+import info.freelibrary.jiiify.iiif.ImageSize;
 import info.freelibrary.jiiify.util.ImageUtils;
 
 import io.vertx.core.eventbus.Message;
@@ -49,6 +52,12 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
                 final String prefix = getConfig().getServicePrefix();
                 final String tileRequestKey = UUID.randomUUID().toString();
                 final List<String> tiles = ImageUtils.getTilePaths(prefix, id, tileSize, dim.width, dim.height);
+                final ImageRegion region = ImageUtils.getCenter(file);
+                final ImageSize size = new ImageSize(150); // TODO: make this configurable
+                final String thumbnailPath = new ImageRequest(id, prefix, region, size).toString();
+
+                /* Add a thumbnail to the requested tiles */
+                tiles.add(thumbnailPath);
 
                 newMessage.put(FILE_PATH_KEY, filePath);
                 newMessage.put(TILE_REQUEST_KEY, tileRequestKey);
@@ -61,6 +70,7 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
                                     LOGGER.debug(MessageCodes.DBG_021, id, tiles.size());
 
                                     queueImageInfo(newMessage, dim, id, tileSize);
+                                    queueManifest(newMessage.copy(), thumbnailPath);
                                     queueTileCreation(newMessage.copy(), tiles, message);
 
                                     message.reply(SUCCESS_RESPONSE);
@@ -97,6 +107,12 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
         aMessage.put(ID_KEY, aID);
 
         sendMessage(aMessage, ImageInfoVerticle.class.getName(), INGEST_TIMEOUT);
+    }
+
+    private void queueManifest(final JsonObject aMessage, final String aThumbnailPath) {
+        aMessage.put(IIIF_PATH_KEY, aThumbnailPath);
+
+        sendMessage(aMessage, ManifestVerticle.class.getName(), INGEST_TIMEOUT);
     }
 
     private void queueTileCreation(final JsonObject aMessage, final List<String> aTilesList,

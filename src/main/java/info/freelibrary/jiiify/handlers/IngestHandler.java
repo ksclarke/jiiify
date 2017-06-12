@@ -161,8 +161,7 @@ public class IngestHandler extends JiiifyHandler {
             final ObjectNode aJsonNode) {
         final HttpServerRequest request = aContext.request();
         final String overwrite = request.getParam("overwrite");
-        final String skipTiles = request.getParam("skiptiles");
-        final String skipThumbs = request.getParam("skipthumbs");
+        final String skipImages = request.getParam("skipimages");
         final String skipIndexing = request.getParam("skipindexing");
         final String skipProperties = request.getParam("skipproperties");
         final boolean overwriteValue = overwrite != null && overwrite.equals("overwrite");
@@ -182,12 +181,8 @@ public class IngestHandler extends JiiifyHandler {
                     json.put(FILE_PATH_KEY, line[1]);
                     json.put(OVERWRITE_KEY, overwriteValue);
 
-                    if (skipTiles != null) {
-                        json.put(skipTiles, true);
-                    }
-
-                    if (skipThumbs != null) {
-                        json.put(skipThumbs, true);
+                    if (skipImages != null) {
+                        json.put(skipImages, true);
                     }
 
                     if (skipIndexing != null) {

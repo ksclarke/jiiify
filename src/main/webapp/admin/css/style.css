@@ -116,6 +116,6 @@ html, body {
   padding: 15px 5px 5px 5px;
 }
 
-input#skiptiles, input#skipthumbs, input#skipproperties, input#skipindexing {
+input#skipimages, input#skipproperties, input#skipindexing {
   margin-left: 15px;
 }

@@ -154,7 +154,7 @@ public class ImageUtils {
         }
 
         Collections.reverse(list);
-        return Collections.unmodifiableList(list);
+        return list;
     }
 
     /**

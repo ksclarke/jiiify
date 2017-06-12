@@ -219,10 +219,9 @@
   <entry key="DBG-100">Decoded '{}' to '{}'</entry>
   <entry key="DBG-101">Succeeded submitting '{}' to Solr</entry>
   <entry key="DBG-102">Wrote JSON image info file: {}</entry>
-  <entry key="DBG-103">Skipping thumbnail generation for: {}</entry>
   <entry key="DBG-104">Skipping indexing  for: {}</entry>
   <entry key="DBG-105">Skipping property file generation for: {}</entry>
-  <entry key="DBG_106">Skipping tile generation for: {}</entry>
+  <entry key="DBG-106">Skipping image generation for: {}</entry>
   <entry key="DBG-107">Wrote image properties file: {}</entry>
   <entry key="DBG-108">Wrote manifest file: {}</entry>
   <entry key="DBG-109">Succeeded submitting thumbnail to Solr</entry>
