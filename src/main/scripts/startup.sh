@@ -22,7 +22,9 @@ JMX_METRICS="-Dcom.sun.management.jmxremote -Dvertx.metrics.options.jmxEnabled=t
 JDWP_AGENTLIB="-agentlib:jdwp=transport=dt_socket,address=9003,server=y,suspend=n"
 # For tools like VisualVM or JConsole (Note: only for use on dev's localhost since there is no configured security)
 JMX_REMOTE="-Dcom.sun.management.jmxremote.port=9001 -Dcom.sun.management.jmxremote.authenticate=false"
-JMX_REMOTE="$JMX_REMOTE -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.local.only=true"
+JMX_REMOTE="$JMX_REMOTE -Dcom.sun.management.jmxremote.ssl=false"
+# If you want to temporarily run remotely, after building on the remote machine, change these two variables
+JMX_REMOTE="$JMX_REMOTE -Djava.rmi.server.hostname=localhost -Dcom.sun.management.jmxremote.local.only=true"
 TOOLING="$DROPWIZARD_METRICS $JMX_METRICS"
 AUTHBIND=""
 JIIIFY_CONFIG=""
