@@ -19,9 +19,9 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
 import java.util.List;
 
 /**
- *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class MetadataMultilanguage extends Metadata {
 
     private final List<MetadataLocalizedValue> myValue;

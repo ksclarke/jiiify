@@ -21,6 +21,7 @@ package info.freelibrary.jiiify.iiif.presentation.model;
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class ImageContent extends Content {
 
     private String myLabel; // optional

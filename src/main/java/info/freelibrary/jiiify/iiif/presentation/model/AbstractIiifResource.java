@@ -21,6 +21,7 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Service;
 /**
  * @author Ralf Eichinger
  */
+@Deprecated
 public abstract class AbstractIiifResource {
 
     protected String myAttribution; // optional

@@ -23,7 +23,6 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.ViewingDirection;
 
 /**
  * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/sequence/{name}
- * </p>
  * <ul>
  * <li>Each sequence must have at least one canvas and is likely to have more than one.</li>
  * <li>A manifest, sequence or canvas must not have a format.</li>
@@ -33,6 +32,7 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.ViewingDirection;
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class Sequence extends AbstractIiifResource {
 
     private List<Canvas> myCanvases;
@@ -84,7 +84,7 @@ public class Sequence extends AbstractIiifResource {
     /**
      * Sets the sequence's canvases.
      *
-     * @param aCanvases
+     * @param aCanvases A list of canvases
      */
     public void setCanvases(final List<Canvas> aCanvases) {
         myCanvases = aCanvases;

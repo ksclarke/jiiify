@@ -25,7 +25,7 @@ import io.vertx.serviceproxy.ProxyHelper;
 public interface SolrService {
 
     /**
-     * Creates a service object from the {@see info.freelibrary.jiiify.services.impl.SolrServiceImpl} implementation.
+     * Creates a service object from the {@link info.freelibrary.jiiify.services.impl.SolrServiceImpl} implementation.
      *
      * @param aVertx A reference to the Vertx object
      * @return A new Solr service object

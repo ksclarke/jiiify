@@ -19,6 +19,7 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
 /**
  * @author Ralf Eichinger
  */
+@Deprecated
 public class Resource {
 
     protected String myFormat;
@@ -52,7 +53,7 @@ public class Resource {
     /**
      * Gets the resource ID.
      *
-     * @return
+     * @return A resource ID
      */
     public String getId() {
         return myID;

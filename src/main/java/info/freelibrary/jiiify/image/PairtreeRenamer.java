@@ -19,8 +19,8 @@ public class PairtreeRenamer {
     /**
      * Quick and stupid script
      *
-     * @param args
-     * @throws Exception
+     * @param args An array of arguments with which to initialize the program
+     * @throws Exception If there is any trouble running the program
      */
     public static void main(final String[] args) throws Exception {
         if (args.length != 3) {

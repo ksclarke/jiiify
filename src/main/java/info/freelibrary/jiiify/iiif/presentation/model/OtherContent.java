@@ -21,6 +21,7 @@ package info.freelibrary.jiiify.iiif.presentation.model;
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class OtherContent extends Content {
 
     private String label; // optional

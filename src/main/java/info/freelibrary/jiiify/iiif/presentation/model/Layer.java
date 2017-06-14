@@ -21,12 +21,11 @@ import java.util.List;
 import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 
 /**
- * <p>
  * Recommended URI Pattern: {scheme}://{host}/{prefix}/{identifier}/layer/{name}
- * </p>
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class Layer extends AbstractIiifResource {
 
     private String myDescription; // optional
@@ -132,7 +131,6 @@ public class Layer extends AbstractIiifResource {
     /**
      * Sets the layer's viewing direction.
      *
-     * @see ViewingDirections
      * @param aViewingDirection The direction that canvases of the resource should be presented when rendered for the
      *        user to navigate and/or read. A range or layer may have a viewing direction.
      */

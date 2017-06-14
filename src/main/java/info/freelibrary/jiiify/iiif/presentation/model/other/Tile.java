@@ -19,6 +19,7 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
 /**
  * @author Ralf Eichinger
  */
+@Deprecated
 public class Tile {
 
     private int myWidth;
@@ -55,7 +56,7 @@ public class Tile {
     /**
      * Sets the tile's scale factors
      *
-     * @param aScaleFactors
+     * @param aScaleFactors A scale factor array
      */
     public void setScaleFactors(final int[] aScaleFactors) {
         myScaleFactors = aScaleFactors;

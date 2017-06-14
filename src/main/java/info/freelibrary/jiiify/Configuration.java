@@ -128,7 +128,8 @@ public class Configuration implements Shareable {
      * Creates a new Jiiify configuration object, which simplifies accessing configuration information.
      *
      * @param aConfig A JSON configuration
-     * @throws ConfigurationException If there is trouble reading or setting a configuration option
+     * @param aVertx A Vert.x object
+     * @param aHandler A handler for an asynchronous result
      */
     public Configuration(final JsonObject aConfig, final Vertx aVertx,
             final Handler<AsyncResult<Configuration>> aHandler) {
@@ -192,7 +193,7 @@ public class Configuration implements Shareable {
     /**
      * Gets the users who are allowed to access the administrative side of things.
      *
-     * @return
+     * @return An string array of users
      */
     public String[] getUsers() {
         return myUsers;

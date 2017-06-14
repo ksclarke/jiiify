@@ -24,6 +24,8 @@ public class InvalidSizeException extends IIIFException {
 
     /**
      * Creates an invalid size exception using the message for the supplied message key.
+     *
+     * @param aMessageKey A message key
      */
     public InvalidSizeException(final String aMessageKey) {
         super(aMessageKey);
@@ -31,6 +33,9 @@ public class InvalidSizeException extends IIIFException {
 
     /**
      * Creates an invalid size exception using the message and additional details for the supplied message key.
+     *
+     * @param aMessageKey A message key
+     * @param aVarargs Additional details
      */
     public InvalidSizeException(final String aMessageKey, final Object... aVarargs) {
         super(aMessageKey, aVarargs);
@@ -38,6 +43,9 @@ public class InvalidSizeException extends IIIFException {
 
     /**
      * Creates an invalid size exception using the localized message for the supplied message key.
+     *
+     * @param aLocale A locale
+     * @param aMessageKey A message key
      */
     public InvalidSizeException(final Locale aLocale, final String aMessageKey) {
         super(aLocale, aMessageKey);
@@ -46,6 +54,10 @@ public class InvalidSizeException extends IIIFException {
     /**
      * Creates an invalid size exception using the localized message and additional details for the supplied message
      * key.
+     *
+     * @param aLocale A locale
+     * @param aMessageKey A message key
+     * @param aVarargs Additional details
      */
     public InvalidSizeException(final Locale aLocale, final String aMessageKey, final Object... aVarargs) {
         super(aLocale, aMessageKey, aVarargs);

@@ -21,10 +21,11 @@ import java.util.List;
 import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
 
 /**
- * Recommended URI Pattern: {scheme}://{host}/{prefix}/collection/{name}</p>
+ * Recommended URI Pattern: {scheme}://{host}/{prefix}/collection/{name}
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class Collection extends AbstractIiifResource {
 
     private String myDescription; // recommended

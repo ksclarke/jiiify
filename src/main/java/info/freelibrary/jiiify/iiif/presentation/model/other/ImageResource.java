@@ -17,9 +17,9 @@
 package info.freelibrary.jiiify.iiif.presentation.model.other;
 
 /**
- *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class ImageResource extends Resource {
 
     private int myHeight;

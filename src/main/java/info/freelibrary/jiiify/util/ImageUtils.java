@@ -62,6 +62,11 @@ public class ImageUtils {
     /**
      * Return a list of derivative images to be pre-generated so that the OpenSeadragon viewer can use them.
      *
+     * @param aService A IIIF service name
+     * @param aID An image ID
+     * @param aTileSize A tile size
+     * @param aWidth An image width
+     * @param aHeight An image height
      * @return A list of derivative images to be pre-generated
      */
     public static List<String> getTilePaths(final String aService, final String aID, final int aTileSize,
@@ -72,6 +77,11 @@ public class ImageUtils {
     /**
      * Return a list of derivative images to be pre-generated so that the OpenSeadragon viewer can use them.
      *
+     * @param aService A IIIF service name
+     * @param aID An image ID
+     * @param aTileSize A tile size
+     * @param aWidth An image width
+     * @param aHeight An image height
      * @return A list of derivative images to be pre-generated
      */
     public static List<String> getTilePaths(final String aService, final String aID, final int aTileSize,
@@ -169,7 +179,7 @@ public class ImageUtils {
     /**
      * Sets whether to use native image libraries or to use the standard Java ones.
      *
-     * @param aFlagToUseNativeLibs
+     * @param aFlagToUseNativeLibs A flag to indicate whether or not native libraries should be used
      */
     public static void useNativeLibs(final boolean aFlagToUseNativeLibs) {
         useNativeLibs = aFlagToUseNativeLibs;
@@ -180,6 +190,7 @@ public class ImageUtils {
      *
      * @param aImageFile A file from which to pull dimension
      * @return An image dimension
+     * @throws IOException If there is trouble reading the dimensions from the supplied image file
      */
     public static Dimension getImageDimension(final File aImageFile) throws IOException {
         final String mimeType = ImageFormat.getMIMEType(FileUtils.getExt(aImageFile.getName()));
@@ -234,7 +245,7 @@ public class ImageUtils {
     }
 
     /**
-     * Gets the center of an image, represented by a {@see java.awt.Dimension} object.
+     * Gets the center of an image, represented by a {@link java.awt.Dimension} object.
      *
      * @param aDimension Dimensions to use as the source for the calculation of center
      * @return An image region representing the center of the dimensions

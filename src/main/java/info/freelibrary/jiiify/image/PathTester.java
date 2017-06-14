@@ -29,8 +29,8 @@ public class PathTester {
     /**
      * Utility class.
      *
-     * @param args
-     * @throws Exception
+     * @param args An array of argument with which to initialize the program
+     * @throws Exception If there is any trouble running the program
      */
     public static void main(final String[] args) throws Exception {
         final BufferedReader reader = new BufferedReader(new FileReader(args[0]));

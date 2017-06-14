@@ -40,6 +40,7 @@ public interface ImageObject {
      * Changes the image object by extracting a region from the whole.
      *
      * @param aRegion A IIIF image region
+     * @throws IOException If there is trouble reading the image region
      */
     public void extractRegion(final ImageRegion aRegion) throws IOException;
 
@@ -47,6 +48,7 @@ public interface ImageObject {
      * Changes the image object by resizing it.
      *
      * @param aSize A IIIF image size
+     * @throws IOException If there is trouble reading the image size
      */
     public void resize(final ImageSize aSize) throws IOException;
 
@@ -54,6 +56,7 @@ public interface ImageObject {
      * Changes the image object by rotating it.
      *
      * @param aRotation A IIIF image rotation
+     * @throws IOException If there is trouble reading the image rotation
      */
     public void rotate(final ImageRotation aRotation) throws IOException;
 
@@ -61,6 +64,7 @@ public interface ImageObject {
      * Changes the image object by adjusting its quality.
      *
      * @param aQuality A IIIF image quality
+     * @throws IOException If there is trouble reading the image quality
      */
     public void adjustQuality(final ImageQuality aQuality) throws IOException;
 
@@ -68,6 +72,8 @@ public interface ImageObject {
      * Writes the image object to a Vertx {@link io.vertx.core.buffer.Buffer}.
      *
      * @param aFileExt A file extension to indicate desired image output format
+     * @throws IOException If there is trouble writing the image to the Vert.x buffer
+     * @return A Vert.x {@link io.vertx.core.buffer.Buffer}
      */
     public Buffer toBuffer(final String aFileExt) throws IOException;
 

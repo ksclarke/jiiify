@@ -27,6 +27,7 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class Annotation extends AbstractIiifResource {
 
     private String myDescription; // optional

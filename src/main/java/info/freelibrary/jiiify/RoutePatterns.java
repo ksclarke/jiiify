@@ -2,7 +2,7 @@
 package info.freelibrary.jiiify;
 
 /**
- * Defines HTTP routing patterns used by the {@link info.freelibrary.jiiify.JiiifyMainVerticle}.
+ * Defines HTTP routing patterns used by the {@link info.freelibrary.jiiify.verticles.JiiifyMainVerticle}.
  *
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
