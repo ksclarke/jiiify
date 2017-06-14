@@ -39,6 +39,7 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.Metadata;
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class Canvas extends AbstractIiifResource {
 
     private String myDescription; // optional

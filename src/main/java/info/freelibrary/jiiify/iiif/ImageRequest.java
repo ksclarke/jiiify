@@ -116,8 +116,8 @@ public class ImageRequest implements Cloneable {
     /**
      * Takes a IIIF request in the form of /service-prefix/id/region/size/rotation/quality.format
      *
-     * @param aIIIFImagePath
-     * @throws IIIFException
+     * @param aIIIFImagePath A IIIF image path
+     * @throws IIIFException If the supplied path is not valid
      */
     public ImageRequest(final String aIIIFImagePath) throws IIIFException {
         final String[] pathComponents = aIIIFImagePath.substring(1).split("/");
@@ -171,7 +171,7 @@ public class ImageRequest implements Cloneable {
     }
 
     /**
-     * Resets the region for the iamge request.
+     * Resets the region for the image request.
      *
      * @param aImageRegion A new image region
      */

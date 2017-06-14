@@ -19,9 +19,9 @@ package info.freelibrary.jiiify.iiif.presentation.json;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- *
  * @author Ralf Eichinger
  */
+@Deprecated
 public abstract class AbstractIiifResourceMixIn {
 
     @JsonProperty("@id")

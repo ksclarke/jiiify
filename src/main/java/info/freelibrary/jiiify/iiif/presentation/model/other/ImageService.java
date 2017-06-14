@@ -21,6 +21,7 @@ import java.util.List;
 /**
  * @author Ralf Eichinger
  */
+@Deprecated
 public class ImageService extends Service {
 
     private int myHeight;

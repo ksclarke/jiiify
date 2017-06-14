@@ -30,6 +30,7 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public abstract class Metadata {
 
     private final String myLabel;

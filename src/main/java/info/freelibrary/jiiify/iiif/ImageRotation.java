@@ -38,6 +38,9 @@ public class ImageRotation {
 
     /**
      * Creates an image rotation object from a supplied float.
+     *
+     * @param aRotation A rotation float
+     * @throws InvalidRotationException If the supplied float isn't a valid IIIF rotation value
      */
     public ImageRotation(final float aRotation) throws InvalidRotationException {
         myRotation = aRotation;

@@ -102,6 +102,7 @@ public class ImageFormat {
      * Creates a new <code>ImageFormat</code> from the supplied query string.
      *
      * @param aFormat The format part of a IIIF query
+     * @throws UnsupportedFormatException If the supplied string isn't a valid IIIF format
      */
     public ImageFormat(final String aFormat) throws UnsupportedFormatException {
         if (EXT2MIME_MAP.containsKey(aFormat)) {

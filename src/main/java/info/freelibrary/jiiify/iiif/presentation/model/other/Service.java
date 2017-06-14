@@ -33,7 +33,6 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
  * the only properties of the object are @context, @id, profile and/or label, then the client should retrieve the
  * resource from the URI given in @id.
  * </p>
- * <p>
  * Example: <pre>
  * {
  *   "service": {
@@ -45,10 +44,10 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
  *   }
  * }
  * </pre>
- * </p>
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class Service {
 
     protected String myContext;
@@ -68,7 +67,7 @@ public class Service {
     /**
      * Creates a new service object with an ID.
      *
-     * @param aID
+     * @param aID An ID for the service object
      */
     public Service(final String aID) {
         myID = aID;

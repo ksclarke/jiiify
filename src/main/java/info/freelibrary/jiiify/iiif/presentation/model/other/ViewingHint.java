@@ -22,6 +22,7 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
  *
  * @author Ralf Eichinger
  */
+@Deprecated
 public class ViewingHint {
 
     private ViewingHint() {

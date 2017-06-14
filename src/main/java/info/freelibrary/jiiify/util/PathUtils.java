@@ -32,6 +32,7 @@ public class PathUtils {
      *
      * @param aIdentifier An identifier to encode
      * @return An encoded version of the identifier
+     * @throws URISyntaxException if the supplied identifier isn't valid for a URI
      */
     public static final String encodeIdentifier(final String aIdentifier) throws URISyntaxException {
         return encode(aIdentifier, false);
@@ -42,6 +43,7 @@ public class PathUtils {
      *
      * @param aPrefix An optional IIIF service path
      * @return The encoded form of the IIIF service path
+     * @throws URISyntaxException if the supplied prefix isn't valid for a URI
      */
     public static final String encodeServicePrefix(final String aPrefix) throws URISyntaxException {
         return encode(aPrefix, true);

@@ -19,6 +19,7 @@ package info.freelibrary.jiiify.iiif.presentation.model.other;
 /**
  * @author Ralf Eichinger
  */
+@Deprecated
 public class MetadataSimple extends Metadata {
 
     private final String myValue;

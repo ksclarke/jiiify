@@ -21,6 +21,7 @@ import java.util.Locale;
 /**
  * @author Ralf Eichinger
  */
+@Deprecated
 public class MetadataLocalizedValue {
 
     private final String myValue;

@@ -34,13 +34,12 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.ViewingHint;
  * <li>Other resources must not have a startCanvas relationship.</li>
  * </ul>
  * <p>
- * Other properties are possible, either via custom extensions or endorsed by the IIIF. If a client discovers
- * properties that it does not understand, then it must ignore them. Other properties should consist of a prefix and a
- * name in the form “prefix:name” to ensure it does not collide with a property defined by IIIF specifications.
- * Services should be used for extensions if at all possible.
+ * Other properties are possible, either via custom extensions or endorsed by the IIIF. If a client discovers properties
+ * that it does not understand, then it must ignore them. Other properties should consist of a prefix and a name in the
+ * form “prefix:name” to ensure it does not collide with a property defined by IIIF specifications. Services should be
+ * used for extensions if at all possible.
  * </p>
- * <p>
- * A complete example rsponse, e.g. at URL http://www.example.org/iiif/book1/manifest: <pre>
+ * A complete example response, e.g. at URL http://www.example.org/iiif/book1/manifest: <pre>
  *
  *
  * {
@@ -195,11 +194,10 @@ import info.freelibrary.jiiify.iiif.presentation.model.other.ViewingHint;
  *   ]
  * }
  * </pre>
- * </p>
  *
  * @author Ralf Eichinger
- * @see http://iiif.io/api/presentation/2.0/#manifest
  */
+@Deprecated
 public class Manifest extends AbstractIiifResource {
 
     private static final String CONTEXT = "http://iiif.io/api/presentation/2/context.json";
@@ -221,8 +219,8 @@ public class Manifest extends AbstractIiifResource {
     /**
      * Creates manifest with ID and label.
      *
-     * @param aID
-     * @param aLabel
+     * @param aID An ID for the manifest
+     * @param aLabel A label for the manifest
      */
     public Manifest(final String aID, final String aLabel) {
         assert aID != null;
@@ -301,7 +299,7 @@ public class Manifest extends AbstractIiifResource {
     /**
      * Sets the manifest description.
      *
-     * @param aDescription
+     * @param aDescription A manifest description
      */
     public void setDescription(final String aDescription) {
         myDescription = aDescription;
@@ -380,7 +378,6 @@ public class Manifest extends AbstractIiifResource {
     }
 
     /**
-     * @see ViewingDirections
      * @param aViewingDirection The direction that canvases of the resource should be presented when rendered for the
      *        user to navigate and/or read. A manifest may have a viewing direction, and if so, it applies to all of
      *        its sequences unless the sequence specifies its own viewing direction.
