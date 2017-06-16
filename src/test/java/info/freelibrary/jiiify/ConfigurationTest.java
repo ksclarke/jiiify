@@ -466,6 +466,7 @@ public class ConfigurationTest {
                     final JsonObject config = new JsonObject().put(UPLOADS_DIR_PROP, "");
 
                     method.setAccessible(true);
+
                     method.invoke(handler.result(), config, (Handler<AsyncResult<Configuration>>) aResult -> {
                         if (aResult.failed()) {
                             aContext.fail(aResult.cause());
@@ -611,8 +612,10 @@ public class ConfigurationTest {
                     final JsonObject config = new JsonObject().put(UPLOADS_DIR_PROP, "/tmp/test");
 
                     method.setAccessible(true);
+
                     LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
                     System.setProperty(UPLOADS_DIR_PROP, "java.io.tmpdir");
+
                     method.invoke(handler.result(), config, (Handler<AsyncResult<Configuration>>) aResult -> {
                         if (aResult.failed()) {
                             aContext.fail(aResult.cause());
@@ -622,6 +625,7 @@ public class ConfigurationTest {
 
                         System.clearProperty(UPLOADS_DIR_PROP);
                         LoggingUtils.setLogLevel(Configuration.class, logLevel);
+
                         async.complete();
                     });
                 } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException |
@@ -648,8 +652,10 @@ public class ConfigurationTest {
                     final JsonObject config = new JsonObject().put(UPLOADS_DIR_PROP, "/tmp/test");
 
                     method.setAccessible(true);
+
                     LoggingUtils.setLogLevel(Configuration.class, Level.OFF.levelStr);
-                    System.setProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR);
+                    System.setProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR.toString());
+
                     method.invoke(handler.result(), config, (Handler<AsyncResult<Configuration>>) aResult -> {
                         if (aResult.failed()) {
                             aContext.fail(aResult.cause());
@@ -659,6 +665,7 @@ public class ConfigurationTest {
 
                         System.clearProperty(UPLOADS_DIR_PROP);
                         LoggingUtils.setLogLevel(Configuration.class, logLevel);
+
                         async.complete();
                     });
                 } catch (final NoSuchMethodException | IllegalAccessException | IllegalArgumentException |

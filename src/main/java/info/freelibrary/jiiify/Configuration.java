@@ -77,11 +77,11 @@ public class Configuration implements Shareable {
 
     public static final long DEFAULT_SESSION_TIMEOUT = 7200000L; // two hours
 
-    public static final String DEFAULT_UPLOADS_DIR = new File(System.getProperty("java.io.tmpdir"),
-            "jiiify-file-uploads").getAbsolutePath();
+    public static final String DEFAULT_UPLOADS_DIR = Paths.get(System.getProperty("java.io.tmpdir"),
+            "jiiify-file-uploads").toString();
 
-    public static final File DEFAULT_WATCH_FOLDER = new File(System.getProperty("java.io.tmpdir"),
-            "jiiify-watch-folder");
+    public static final String DEFAULT_WATCH_FOLDER = Paths.get(System.getProperty("java.io.tmpdir"),
+            "jiiify-watch-folder").toString();
 
     public static final File DEFAULT_DATA_DIR = new File("jiiify_data");
 
@@ -672,30 +672,22 @@ public class Configuration implements Shareable {
     }
 
     private void setUploadsDir(final JsonObject aConfig, final Handler<AsyncResult<Configuration>> aHandler) {
-        final Properties properties = System.getProperties();
-
-        // Then get the uploads directory we want to use, giving preference to system properties
-        if (properties.containsKey(UPLOADS_DIR_PROP)) {
-            LOGGER.debug(MessageCodes.DBG_111, UPLOADS_DIR_PROP);
-            confirmUploadsDir(properties.getProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR), aHandler);
-        } else {
-            confirmUploadsDir(aConfig.getString(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR), aHandler);
-        }
-    }
-
-    private void confirmUploadsDir(final String aDirPath, final Handler<AsyncResult<Configuration>> aHandler) {
-        final Future<Configuration> result = Future.future();
-        final String uploadsDir;
+        String uploadsDir = StringUtils.trimToNull(System.getProperties().getProperty(UPLOADS_DIR_PROP));
 
         if (aHandler != null) {
+            final Future<Configuration> result = Future.future();
+
             result.setHandler(aHandler);
 
-            if (aDirPath.equalsIgnoreCase("java.io.tmpdir") || aDirPath.trim().equals("")) {
+            if (uploadsDir != null) {
+                LOGGER.debug(MessageCodes.DBG_111, UPLOADS_DIR_PROP);
+            } else {
+                uploadsDir = StringUtils.trimTo(aConfig.getString(UPLOADS_DIR_PROP), DEFAULT_UPLOADS_DIR);
+            }
+
+            if ("java.io.tmpdir".equalsIgnoreCase(uploadsDir)) {
                 uploadsDir = DEFAULT_UPLOADS_DIR;
                 LOGGER.debug(MessageCodes.DBG_113, uploadsDir);
-            } else {
-                uploadsDir = aDirPath;
-                LOGGER.debug(MessageCodes.DBG_114, uploadsDir);
             }
 
             try {
@@ -774,14 +766,17 @@ public class Configuration implements Shareable {
         final Path watchFolder;
 
         if (aHandler != null) {
+            final String watchFolderPath = StringUtils.trimToNull(properties.getProperty(WATCH_FOLDER_PROP));
+
             result.setHandler(aHandler);
 
-            if (properties.containsKey(WATCH_FOLDER_PROP)) {
+            if (watchFolderPath != null) {
                 LOGGER.debug(MessageCodes.DBG_111, WATCH_FOLDER_PROP);
-            }
 
-            watchFolder = Paths.get(properties.getProperty(WATCH_FOLDER_PROP, aConfig.getString(WATCH_FOLDER_PROP,
-                    DEFAULT_WATCH_FOLDER.getAbsolutePath())));
+                watchFolder = Paths.get(watchFolderPath);
+            } else {
+                watchFolder = Paths.get(aConfig.getString(WATCH_FOLDER_PROP, DEFAULT_WATCH_FOLDER));
+            }
 
             try {
                 if (!Files.createDirectories(watchFolder).toFile().canWrite()) {
