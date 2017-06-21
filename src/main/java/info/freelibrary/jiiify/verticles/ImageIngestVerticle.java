@@ -139,13 +139,12 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
      */
     private void messageIngestListeners(final Properties aProperties, final File aImageFile, final String aID,
             final JsonObject aJsonObject) {
-        final Object ts = aProperties.getOrDefault(TILE_SIZE_PROP, getConfig().getTileSize());
         final JsonObject jsonMessage = new JsonObject();
         FileUtils.getExt(aImageFile.getAbsolutePath());
 
         // Pass along some metadata about the image being ingested
         jsonMessage.put(ID_KEY, aID);
-        jsonMessage.put(TILE_SIZE_PROP, ts instanceof String ? Integer.parseInt((String) ts) : ts);
+        jsonMessage.put(TILE_SIZE_PROP, getConfig().getTileSize());
         jsonMessage.put(FILE_PATH_KEY, aImageFile.getAbsolutePath());
 
         // These are the tasks we trigger, according to user's ingest request

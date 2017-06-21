@@ -49,7 +49,7 @@
     <dev.tools />
     <jiiify.memory />
     <jiiify.cores />
-    <jiiify.watch.folder/>
+    <jiiify.watch.folder />
     <!-- These are samples for testing purposes only ... DO NOT USE THEM IN PRODUCTION!!! -->
     <jiiify.json.config.path>${project.basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
 
@@ -126,7 +126,7 @@
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
-      <artifactId>vertx-camel-bridge</artifactId>
+      <artifactId>vertx-web-client</artifactId>
       <version>${vertx.version}</version>
     </dependency>
     <!-- Netty dependencies -->
@@ -363,7 +363,7 @@
               <storepass>${jiiify.key.pass}</storepass>
               <keypass>${jiiify.key.pass}</keypass>
               <alias>jiiify</alias>
-              <dname><![CDATA[cn=localhost, ou=Jiiify Image Server, L=Boone, ST=North Carolina, o=FreeLibrary Projects, c=US]]></dname>
+              <dname><![CDATA[cn=${jiiify.host}, ou=Jiiify Image Server, L=Boone, ST=North Carolina, o=FreeLibrary Projects, c=US]]></dname>
               <sigalg>SHA256withRSA</sigalg>
               <validity>100</validity>
               <keyalg>RSA</keyalg>

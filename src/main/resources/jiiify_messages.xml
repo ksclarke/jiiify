@@ -71,6 +71,11 @@
   <entry key="EXC-077">Failed to write manifest file: {}</entry>
   <entry key="EXC-078">Unexpected Solr server status response: </entry>
   <entry key="EXC-079">Solr server URL is not well-formed: </entry>
+  <entry key="EXC-080">Failed to send Fedora event to {}</entry>
+  <entry key="EXC-081">Error downloading image file ({}) from Fedora: {}</entry>
+  <entry key="EXC-082">Invalid or unexpected ID received from Fedora: {}</entry>
+  <entry key="EXC-083">Failed to clean up source image as requested: {}</entry>
+  <entry key="EXC-084">Fedora image source URL was not a valid URL!? {}</entry>
 
   <!-- Info messages -->
   <entry key="INFO-001">Ingesting an added or updated image file: {}</entry>
@@ -114,6 +119,10 @@
   <entry key="WARN-019">Supplied tile size isn't valid so trying to use {} instead</entry>
   <entry key="WARN-020">Prefix '{}' isn't valid so using '{}' instead</entry>
   <entry key="WARN-021">Didn't write manifest because it already existed: {}</entry>
+  <entry key="WARN-022">Received an ingest request from an unrecognized IP: {}</entry>
+  <entry key="WARN-023">Received a Fedora ingest request from '{}' but there is no allowed Fedora IP configured</entry>
+  <entry key="WARN-024">Something hit the /fcrepo-event endpoint from '{}' but didn't send valid parameters</entry>
+  <entry key="WARN-025">[No IP address?!]</entry>
 
   <!-- Messages for debugging -->
   <entry key="DBG-000">Successfully undeployed {} [{}]</entry>
@@ -219,7 +228,7 @@
   <entry key="DBG-100">Decoded '{}' to '{}'</entry>
   <entry key="DBG-101">Succeeded submitting '{}' to Solr</entry>
   <entry key="DBG-102">Wrote JSON image info file: {}</entry>
-  <entry key="DBG-104">Skipping indexing  for: {}</entry>
+  <entry key="DBG-104">Skipping indexing for: {}</entry>
   <entry key="DBG-105">Skipping property file generation for: {}</entry>
   <entry key="DBG-106">Skipping image generation for: {}</entry>
   <entry key="DBG-107">Wrote image properties file: {}</entry>
@@ -230,6 +239,8 @@
   <entry key="DBG-112">Found {} set in system properties as: {}</entry>
   <entry key="DBG-113">Using a temporary directory {} for file uploads</entry>
   <entry key="DBG-114">Using a user supplied file uploads directory: {}</entry>
+  <entry key="DBG-115">Receiving image ingest request from Fedora: {} ({})</entry>
+  <entry key="DBG-116">Received image ingest request from: {} - {}</entry>
 
   <!-- Messages for testing package specific exceptions -->
   <entry key="TEST-001">test message</entry>

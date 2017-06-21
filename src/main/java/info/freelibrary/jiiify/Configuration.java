@@ -4,6 +4,7 @@ package info.freelibrary.jiiify;
 import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.DATA_DIR_PROP;
 import static info.freelibrary.jiiify.Constants.FACEBOOK_OAUTH_CLIENT_ID;
+import static info.freelibrary.jiiify.Constants.FEDORA_IP_PROP;
 import static info.freelibrary.jiiify.Constants.GOOGLE_OAUTH_CLIENT_ID;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_PROP;
@@ -117,6 +118,8 @@ public class Configuration implements Shareable {
 
     private final String[] myUsers;
 
+    private final String myFedoraIP;
+
     private final Vertx myVertx;
 
     /* FIXME: hard-coded for now */
@@ -136,6 +139,7 @@ public class Configuration implements Shareable {
         final Future<Configuration> result = Future.future();
 
         myVertx = aVertx;
+        myFedoraIP = aConfig.getString(FEDORA_IP_PROP);
         myServicePrefix = setServicePrefix(aConfig);
         myPort = setPort(aConfig);
         myRedirectPort = setRedirectPort(aConfig);
@@ -179,15 +183,22 @@ public class Configuration implements Shareable {
         }
     }
 
-    private String[] setUsers(final JsonObject aConfig) {
-        final List<?> list = aConfig.getJsonArray(OAUTH_USERS, new JsonArray()).getList();
-        final String[] users = new String[list.size()];
+    /**
+     * Gets the Fedora IP address that's allowed to send image ingest requests.
+     *
+     * @return The Fedora IP address that's allowed to send image ingest requests
+     */
+    public String getFedoraIP() {
+        return myFedoraIP;
+    }
 
-        for (int index = 0; index < list.size(); index++) {
-            users[index] = list.get(index).toString();
-        }
-
-        return users;
+    /**
+     * Whether there is a Fedora instance that's allowed to send image ingest requests configured
+     *
+     * @return True if there is a Fedora instance that will communicate with the image server; else, false
+     */
+    public boolean hasFedoraIP() {
+        return myFedoraIP != null;
     }
 
     /**
@@ -430,6 +441,23 @@ public class Configuration implements Shareable {
      */
     public File getWatchFolder() {
         return myWatchFolder;
+    }
+
+    /**
+     * Sets the users allowed to interact with Jiiify.
+     *
+     * @param aConfig A configuration that includes allowed users
+     * @return An array of users
+     */
+    private String[] setUsers(final JsonObject aConfig) {
+        final List<?> list = aConfig.getJsonArray(OAUTH_USERS, new JsonArray()).getList();
+        final String[] users = new String[list.size()];
+
+        for (int index = 0; index < list.size(); index++) {
+            users[index] = list.get(index).toString();
+        }
+
+        return users;
     }
 
     /**

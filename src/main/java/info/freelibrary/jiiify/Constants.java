@@ -52,6 +52,8 @@ public interface Constants {
 
     public static final String METRICS_REG_PROP = "jiiify.metrics";
 
+    public static final String FEDORA_IP_PROP = "fedora.ip";
+
     /* These config values are only used internally. */
 
     public static final String JIIIFY_TESTING = "jiiify.ignore.failures";
@@ -61,6 +63,8 @@ public interface Constants {
     public static final String IIIF_PATH_KEY = "jiiify.iiif.path";
 
     public static final String IMAGE_SOURCE_KEY = "jiiify.image.source";
+
+    public static final String IMAGE_CLEANUP_KEY = "jiiify.image.cleanup";
 
     public static final String SHARED_DATA_KEY = "jiiify.shared.data";
 
