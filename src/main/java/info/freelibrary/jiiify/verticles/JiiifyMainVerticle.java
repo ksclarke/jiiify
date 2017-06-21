@@ -99,6 +99,8 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         options.setPort(myConfig.getPort());
         options.setHost("0.0.0.0");
         options.setCompressionSupported(true);
+
+        // Bug somewhere: Browsers cancel some of the image requests in OSD
         // options.setUseAlpn(true);
 
         if (myConfig.usesHttps()) {
