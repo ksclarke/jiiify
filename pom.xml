@@ -447,7 +447,6 @@
               <goal>copy-resources</goal>
             </goals>
             <configuration>
-              <escapeString>\</escapeString>
               <outputDirectory>target</outputDirectory>
               <resources>
                 <resource>
