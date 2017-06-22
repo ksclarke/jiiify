@@ -35,7 +35,7 @@ You can also choose to skip the above steps if you have Docker installed on your
 
 The server should then be available at: [https://localhost:8443](https://localhost:8443).
 
-The out-of-the-box install uses a self-signed SSL certificate, so you will be warned about this on connecting in the browser and you'll have to click through that warning, acknowledging that a self-signed certificate is being used. At the moment, the self-signed certificate is regenerated every time you do a build, so each build will present you with a new opportunity to click through that warning when you connect to the administrative interface in a browser.
+The out-of-the-box install uses a self-signed SSL certificate, so you will be warned about this on connecting in the browser and you'll have to click through that warning, acknowledging that a self-signed certificate is being used. At the moment, the self-signed certificate is regenerated every time you do a build, so each build will present you with a new opportunity to click through that warning when you connect to the administrative interface in a browser. That will change.
 
 For more on using Jiiify (including how to ingest a sample image), visit the [project page](http://projects.freelibrary.info/jiiify).
 

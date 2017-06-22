@@ -16,6 +16,8 @@ Note that in order to use Jiiify with Mirador, or other similar viewers, one mus
 
 Since there are no stable releases, to install Jiiify you should follow the instructions in the project's GitHub [README](https://github.com/ksclarke/jiiify/blob/master/README.md). This will build the code and start it on your machine.
 
+## Configuring Jiiify
+
 Jiiify runs behind HTTPS by default. For testing purposes, a self-signed certificate is created with each new build and used when the server is run. If you want to use your own SSL certificate, you can change the `jiiify.jks` setting in the `startup.sh` or `supervisord.conf` files (depending on which method you're using to run Jiiify). To change that value in both files at the point of build, you can supply `-Djiiify.jks=/etc/your.jks` to the build on the command line or store that value in your system's [Maven settings.xml](https://maven.apache.org/settings.html) file.
 
 If you'd like to use Let's Encrypt as a certificate provider, there is a [script](https://github.com/ksclarke/jiiify/blob/master/src/main/scripts/letsencrypt2jks.sh) in the project's `src/main/scripts` folder that will convert a Let's Encrypt certificate to a JKS certificate. It makes the assumption that the Let's Encrypt certificates reside in `/etc/letsencrypt/live/`, which may not be the case for every Let's Encrypt client(?) In any case, it provides the basic steps needed to convert to a JKS keystore (paths can be adjusted as needed).
