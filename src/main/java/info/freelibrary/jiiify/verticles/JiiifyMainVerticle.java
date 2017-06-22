@@ -22,6 +22,7 @@ import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.RoutePatterns;
 import info.freelibrary.jiiify.handlers.DownloadHandler;
 import info.freelibrary.jiiify.handlers.FailureHandler;
+import info.freelibrary.jiiify.handlers.FedoraHandler;
 import info.freelibrary.jiiify.handlers.IIIFErrorHandler;
 import info.freelibrary.jiiify.handlers.ImageHandler;
 import info.freelibrary.jiiify.handlers.ImageInfoHandler;
@@ -99,6 +100,8 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         options.setPort(myConfig.getPort());
         options.setHost("0.0.0.0");
         options.setCompressionSupported(true);
+
+        // Bug somewhere: Browsers cancel some of the image requests in OSD
         // options.setUseAlpn(true);
 
         if (myConfig.usesHttps()) {
@@ -229,7 +232,6 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         aRouter.getWithRegex(iiif(IMAGE_INFO_DOC_RE)).handler(new ImageInfoHandler(myConfig));
         aRouter.getWithRegex(iiif(IMAGE_REQUEST_RE)).handler(new ImageHandler(myConfig));
         aRouter.getWithRegex(iiif(IMAGE_MANIFEST_RE)).handler(new ManifestHandler(myConfig));
-        // router.getWithRegex(iiif(BASE_URI)).handler(new RedirectHandler(myConfig));
         aRouter.get(iiif(IIIF_URI)).failureHandler(new IIIFErrorHandler(myConfig));
 
         // Then we have the plain old administrative UI patterns
@@ -251,6 +253,9 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         aRouter.get(ROOT).handler(templateHandler).failureHandler(failureHandler);
 
         aRouter.get(STATUS).handler(new StatusHandler(myConfig));
+
+        // Handle Camel events from Fedora
+        aRouter.get(FEDORA_EVENT).handler(new FedoraHandler(myConfig)).failureHandler(failureHandler);
     }
 
     /**
@@ -335,6 +340,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             futures.add(deployVerticle(ManifestVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageInfoVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImagePropertiesVerticle.class.getName(), options, Future.future()));
+            futures.add(deployVerticle(FedoraIngestVerticle.class.getName(), options, Future.future()));
 
             // Confirm all our verticles were successfully deployed
             CompositeFuture.all(futures).setHandler(handler -> {

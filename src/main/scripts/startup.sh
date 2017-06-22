@@ -13,6 +13,7 @@ LOG_DELEGATE="-Dvertx.logger-delegate-factory-class-name=io.vertx.core.logging.S
 KEY_PASS_CONFIG="-Djiiify.key.pass=${jiiify.key.pass}"
 WATCH_FOLDER_DIR="-Djiiify.watch.folder=${jiiify.watch.folder}"
 JIIIFY_PORT="-Djiiify.port=${jiiify.port}"
+JIIIFY_HOST="-Djiiify.host=${jiiify.host}"
 DROPWIZARD_METRICS="-Dvertx.metrics.options.enabled=true -Dvertx.metrics.options.registryName=jiiify.metrics"
 JMX_METRICS="-Dcom.sun.management.jmxremote -Dvertx.metrics.options.jmxEnabled=true"
 # For tools like Eclipse's Debugging
@@ -120,4 +121,4 @@ else
 fi
 
 $AUTHBIND java $HEAP_DUMP_CONFIG $XMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR $JKS_CONFIG \
-  $JIIIFY_PORT $TOOLING $JIIIFY_CORES $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG
+  $JIIIFY_PORT $JIIIFY_HOST $TOOLING $JIIIFY_CORES $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG

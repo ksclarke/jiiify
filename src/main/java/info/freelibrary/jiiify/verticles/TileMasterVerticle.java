@@ -5,6 +5,7 @@ import static info.freelibrary.jiiify.Constants.FAILURE_RESPONSE;
 import static info.freelibrary.jiiify.Constants.FILE_PATH_KEY;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
 import static info.freelibrary.jiiify.Constants.IIIF_PATH_KEY;
+import static info.freelibrary.jiiify.Constants.IMAGE_CLEANUP_KEY;
 import static info.freelibrary.jiiify.Constants.IMAGE_TILE_COUNT;
 import static info.freelibrary.jiiify.Constants.SUCCESS_RESPONSE;
 import static info.freelibrary.jiiify.Constants.TILE_REQUEST_KEY;
@@ -57,6 +58,8 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
                 final ImageRegion region = ImageUtils.getCenter(file);
                 final ImageSize size = new ImageSize(150); // TODO: make this configurable
                 final String thumbnailPath = new ImageRequest(id, prefix, region, size).toString();
+                /* Get whether source image should be deleted afterwards */
+                final boolean cleanup = json.getBoolean(IMAGE_CLEANUP_KEY, false);
 
                 /* Add a thumbnail to the requested tiles */
                 tiles.add(thumbnailPath);
@@ -66,6 +69,7 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
 
                 newMessage.put(FILE_PATH_KEY, filePath);
                 newMessage.put(TILE_REQUEST_KEY, tileRequestKey);
+                newMessage.put(IMAGE_CLEANUP_KEY, cleanup);
 
                 sharedData.getCounter(tileRequestKey, getCounter -> {
                     if (getCounter.succeeded()) {

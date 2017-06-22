@@ -5,6 +5,7 @@ import static info.freelibrary.jiiify.Constants.FAILURE_RESPONSE;
 import static info.freelibrary.jiiify.Constants.FILE_PATH_KEY;
 import static info.freelibrary.jiiify.Constants.IIIF_PATH_KEY;
 import static info.freelibrary.jiiify.Constants.IMAGE_BUFFER_KEY;
+import static info.freelibrary.jiiify.Constants.IMAGE_CLEANUP_KEY;
 import static info.freelibrary.jiiify.Constants.IMAGE_TILE_COUNT;
 import static info.freelibrary.jiiify.Constants.SUCCESS_RESPONSE;
 import static info.freelibrary.jiiify.Constants.TILE_REQUEST_KEY;
@@ -150,8 +151,19 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
                 LOGGER.debug(MessageCodes.DBG_013, aFilePath);
 
                 if (aTileCount == 1) {
+                    final boolean cleanupSource = aJson.getBoolean(IMAGE_CLEANUP_KEY);
+
                     LOGGER.debug(MessageCodes.DBG_012, aID, aFilePath);
+
                     image = dataMap.remove(tileRequestKey).getBytes();
+
+                    if (cleanupSource) {
+                        vertx.fileSystem().delete(aFilePath, delete -> {
+                            if (!delete.succeeded()) {
+                                LOGGER.error(MessageCodes.EXC_083, aFilePath);
+                            }
+                        });
+                    }
                 } else {
                     image = dataMap.get(tileRequestKey).getBytes();
                 }

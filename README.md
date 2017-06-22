@@ -8,8 +8,6 @@ As a Level 0 IIIF image server, Jiiify does not generate images on-the-fly, but 
 
 Note that in order to use Jiiify with Mirador, or other similar viewers, one must create IIIF Presentation API manifests and upload them into Jiiify using its Web-based administrative interface. There is not, currently, any mechanism for creating or editing IIIF presentation manifests within Jiiify itself. Currently, at my place of work, we use a script that builds a IIIF manifest from files on the file system and a CSV document with metadata.
 
-For more information about Jiiify, visit its [project page](http://projects.freelibrary.info/jiiify).
-
 ### Installation
 
 Jiiify is meant to be distributed as an executable jar file but, as there are no stable releases of Jiiify yet, if you want to experiment with it you'll need to build it yourself.
@@ -39,7 +37,7 @@ The server should then be available at: [https://localhost:8443](https://localho
 
 The out-of-the-box install uses a self-signed SSL certificate, so you will be warned about this on connecting in the browser and you'll have to click through that warning, acknowledging that a self-signed certificate is being used. At the moment, the self-signed certificate is regenerated every time you do a build, so each build will present you with a new opportunity to click through that warning when you connect to the administrative interface in a browser.
 
-For more on using Jiiify, visit the [project page](http://projects.freelibrary.info/jiiify).
+For more on using Jiiify (including how to ingest a sample image), visit the [project page](http://projects.freelibrary.info/jiiify).
 
 ### Running Jiiify in Production
 

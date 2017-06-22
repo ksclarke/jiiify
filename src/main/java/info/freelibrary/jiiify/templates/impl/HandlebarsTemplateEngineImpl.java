@@ -20,6 +20,7 @@ import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.HBS_PATH_SKIP_KEY;
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 
+import java.nio.file.Paths;
 import java.util.Map;
 
 import com.github.jknack.handlebars.Handlebars;
@@ -70,6 +71,12 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
         LOGGER.debug(MessageCodes.DBG_089, aMaxCacheSize);
         this.cache.setMaxSize(aMaxCacheSize);
         return null;
+    }
+
+    @Override
+    public void render(final RoutingContext aContext, final String aTemplateDirName, final String aTemplateFileName,
+            final Handler<AsyncResult<Buffer>> aHandler) {
+        render(aContext, Paths.get(aTemplateDirName, aTemplateFileName).toString(), aHandler);
     }
 
     @Override

@@ -4,6 +4,7 @@ package info.freelibrary.jiiify;
 import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
 import static info.freelibrary.jiiify.Constants.DATA_DIR_PROP;
 import static info.freelibrary.jiiify.Constants.FACEBOOK_OAUTH_CLIENT_ID;
+import static info.freelibrary.jiiify.Constants.FEDORA_IP_PROP;
 import static info.freelibrary.jiiify.Constants.GOOGLE_OAUTH_CLIENT_ID;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.HTTP_PORT_PROP;
@@ -77,11 +78,11 @@ public class Configuration implements Shareable {
 
     public static final long DEFAULT_SESSION_TIMEOUT = 7200000L; // two hours
 
-    public static final String DEFAULT_UPLOADS_DIR = new File(System.getProperty("java.io.tmpdir"),
-            "jiiify-file-uploads").getAbsolutePath();
+    public static final String DEFAULT_UPLOADS_DIR = Paths.get(System.getProperty("java.io.tmpdir"),
+            "jiiify-file-uploads").toString();
 
-    public static final File DEFAULT_WATCH_FOLDER = new File(System.getProperty("java.io.tmpdir"),
-            "jiiify-watch-folder");
+    public static final String DEFAULT_WATCH_FOLDER = Paths.get(System.getProperty("java.io.tmpdir"),
+            "jiiify-watch-folder").toString();
 
     public static final File DEFAULT_DATA_DIR = new File("jiiify_data");
 
@@ -117,6 +118,8 @@ public class Configuration implements Shareable {
 
     private final String[] myUsers;
 
+    private final String myFedoraIP;
+
     private final Vertx myVertx;
 
     /* FIXME: hard-coded for now */
@@ -136,6 +139,7 @@ public class Configuration implements Shareable {
         final Future<Configuration> result = Future.future();
 
         myVertx = aVertx;
+        myFedoraIP = aConfig.getString(FEDORA_IP_PROP);
         myServicePrefix = setServicePrefix(aConfig);
         myPort = setPort(aConfig);
         myRedirectPort = setRedirectPort(aConfig);
@@ -179,15 +183,22 @@ public class Configuration implements Shareable {
         }
     }
 
-    private String[] setUsers(final JsonObject aConfig) {
-        final List<?> list = aConfig.getJsonArray(OAUTH_USERS, new JsonArray()).getList();
-        final String[] users = new String[list.size()];
+    /**
+     * Gets the Fedora IP address that's allowed to send image ingest requests.
+     *
+     * @return The Fedora IP address that's allowed to send image ingest requests
+     */
+    public String getFedoraIP() {
+        return myFedoraIP;
+    }
 
-        for (int index = 0; index < list.size(); index++) {
-            users[index] = list.get(index).toString();
-        }
-
-        return users;
+    /**
+     * Whether there is a Fedora instance that's allowed to send image ingest requests configured
+     *
+     * @return True if there is a Fedora instance that will communicate with the image server; else, false
+     */
+    public boolean hasFedoraIP() {
+        return myFedoraIP != null;
     }
 
     /**
@@ -433,6 +444,23 @@ public class Configuration implements Shareable {
     }
 
     /**
+     * Sets the users allowed to interact with Jiiify.
+     *
+     * @param aConfig A configuration that includes allowed users
+     * @return An array of users
+     */
+    private String[] setUsers(final JsonObject aConfig) {
+        final List<?> list = aConfig.getJsonArray(OAUTH_USERS, new JsonArray()).getList();
+        final String[] users = new String[list.size()];
+
+        for (int index = 0; index < list.size(); index++) {
+            users[index] = list.get(index).toString();
+        }
+
+        return users;
+    }
+
+    /**
      * Checks whether we are using more than one Pairtree data directory.
      *
      * @return True if we are using multiple data directories; else, false
@@ -672,30 +700,22 @@ public class Configuration implements Shareable {
     }
 
     private void setUploadsDir(final JsonObject aConfig, final Handler<AsyncResult<Configuration>> aHandler) {
-        final Properties properties = System.getProperties();
-
-        // Then get the uploads directory we want to use, giving preference to system properties
-        if (properties.containsKey(UPLOADS_DIR_PROP)) {
-            LOGGER.debug(MessageCodes.DBG_111, UPLOADS_DIR_PROP);
-            confirmUploadsDir(properties.getProperty(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR), aHandler);
-        } else {
-            confirmUploadsDir(aConfig.getString(UPLOADS_DIR_PROP, DEFAULT_UPLOADS_DIR), aHandler);
-        }
-    }
-
-    private void confirmUploadsDir(final String aDirPath, final Handler<AsyncResult<Configuration>> aHandler) {
-        final Future<Configuration> result = Future.future();
-        final String uploadsDir;
+        String uploadsDir = StringUtils.trimToNull(System.getProperties().getProperty(UPLOADS_DIR_PROP));
 
         if (aHandler != null) {
+            final Future<Configuration> result = Future.future();
+
             result.setHandler(aHandler);
 
-            if (aDirPath.equalsIgnoreCase("java.io.tmpdir") || aDirPath.trim().equals("")) {
+            if (uploadsDir != null) {
+                LOGGER.debug(MessageCodes.DBG_111, UPLOADS_DIR_PROP);
+            } else {
+                uploadsDir = StringUtils.trimTo(aConfig.getString(UPLOADS_DIR_PROP), DEFAULT_UPLOADS_DIR);
+            }
+
+            if ("java.io.tmpdir".equalsIgnoreCase(uploadsDir)) {
                 uploadsDir = DEFAULT_UPLOADS_DIR;
                 LOGGER.debug(MessageCodes.DBG_113, uploadsDir);
-            } else {
-                uploadsDir = aDirPath;
-                LOGGER.debug(MessageCodes.DBG_114, uploadsDir);
             }
 
             try {
@@ -774,14 +794,17 @@ public class Configuration implements Shareable {
         final Path watchFolder;
 
         if (aHandler != null) {
+            final String watchFolderPath = StringUtils.trimToNull(properties.getProperty(WATCH_FOLDER_PROP));
+
             result.setHandler(aHandler);
 
-            if (properties.containsKey(WATCH_FOLDER_PROP)) {
+            if (watchFolderPath != null) {
                 LOGGER.debug(MessageCodes.DBG_111, WATCH_FOLDER_PROP);
-            }
 
-            watchFolder = Paths.get(properties.getProperty(WATCH_FOLDER_PROP, aConfig.getString(WATCH_FOLDER_PROP,
-                    DEFAULT_WATCH_FOLDER.getAbsolutePath())));
+                watchFolder = Paths.get(watchFolderPath);
+            } else {
+                watchFolder = Paths.get(aConfig.getString(WATCH_FOLDER_PROP, DEFAULT_WATCH_FOLDER));
+            }
 
             try {
                 if (!Files.createDirectories(watchFolder).toFile().canWrite()) {
