@@ -2,9 +2,9 @@
 
 ### Introduction
 
-Jiiify is an experimental, Java-based, IIIF (Version 2, Level 0) image server built with [Vert.x](http://vertx.io/) (an event-driven, non-blocking, reactive tool-kit). Jiiify is still in active development and should not yet be considered ready for production use.
+Jiiify is an experimental Java-based IIIF (Version 2, Level 0) image server built with [Vert.x](http://vertx.io/) (an event-driven, non-blocking, reactive tool-kit). Jiiify is still in active development and does not yet have a stable release.
 
-As a Level 0 IIIF image server, Jiiify does not generate images on-the-fly, but pre-generates the tiles and thumbnails necessary to use [Mirador](http://projectmirador.org/) and [OpenSeadragon](https://openseadragon.github.io/) (and, perhaps, other IIIF compatible image viewers that work with tiled images). It is, by design, de-coupled from other systems, so archival images should be ingested into Jiiify so that tiles can be generated. It does not store the archival images, just the tiles and other derivative images (thumbnails, etc.) that are created. The archival images should continue to live in their repositories or on their separate archival file systems.
+As a Level 0 IIIF image server, Jiiify does not generate images on-the-fly, but pre-generates the tiles and thumbnails necessary to use [Mirador](http://projectmirador.org/) and [OpenSeadragon](https://openseadragon.github.io/) (and perhaps other IIIF tiling clients). Archival images should be ingested into Jiiify so that tiles can be generated. It does not store these images, just the tiles and other derivatives (thumbnails, etc.) that are created. The archival images should continue to live in their repositories or on their separate archival file systems.
 
 Note that in order to use Jiiify with Mirador, or other similar viewers, one must create IIIF Presentation API manifests and upload them into Jiiify using its Web-based administrative interface. There is not, currently, any mechanism for creating or editing IIIF presentation manifests within Jiiify itself. Currently, at my place of work, we use a script that builds a IIIF manifest from files on the file system and a CSV document with metadata.
 
@@ -20,7 +20,7 @@ Once these pre-requisites are installed, you can install a development copy of J
     cd jiiify
     mvn clean install
 
-While images can be ingested and served without connecting Jiiify to [Solr](http://lucene.apache.org/solr/), parts of the administrative interface do require a Solr connection (for browsing images in the administrative interface, etc.) If you don't already have Solr running on your local machine (or even if you do), you can use Docker to easily bring up Solr at the place that Jiiify expects to find it. To do this, type:
+While images can be ingested and served without connecting Jiiify to [Solr](http://lucene.apache.org/solr/), parts of the administrative interface do require a Solr connection (for browsing images, searching for images, etc.) If you don't already have Solr running on your local machine (or even if you do), you can use Docker to easily bring up Solr at the place that Jiiify expects to find it. To do this, type:
 
     docker run --name jiiify_solr -d -p 8983:8983 -t solr
     docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify
