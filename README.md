@@ -1,10 +1,10 @@
-# Jiiify Image Server [![Build Status](https://travis-ci.org/ksclarke/jiiify.png?branch=master)](https://travis-ci.org/ksclarke/jiiify)
+# Jiiify Image Server [![Build Status](https://travis-ci.org/ksclarke/jiiify.png?branch=master)](https://travis-ci.org/ksclarke/jiiify) [![Codacy coverage](https://img.shields.io/codacy/coverage/1e48da36d55e4a44ba0a334d20641315.svg?maxAge=0)](https://www.codacy.com/app/ksclarke/jiiify?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ksclarke/jiiify&amp;utm_campaign=Badge_Coverage) [![Codacy grade](https://img.shields.io/codacy/grade/1e48da36d55e4a44ba0a334d20641315.svg?maxAge=0)](https://www.codacy.com/app/ksclarke/jiiify?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ksclarke/jiiify&amp;utm_campaign=Badge_Grade) [![Maven Central](https://img.shields.io/maven-central/v/info.freelibrary/jiiify.svg?maxAge=0)](http://mvnrepository.com/artifact/info.freelibrary/jiiify) [![LGPL license](https://img.shields.io/badge/License-BSD%203--Clause-brightgreen.svg?maxAge=600)](https://opensource.org/licenses/BSD-3-Clause)
 
 ### Introduction
 
 Jiiify is an experimental Java-based IIIF (Version 2, Level 0) image server built with [Vert.x](http://vertx.io/) (an event-driven, non-blocking, reactive tool-kit). Jiiify is still in active development and does not yet have a stable release.
 
-As a Level 0 IIIF image server, Jiiify does not generate images on-the-fly, but pre-generates the tiles and thumbnails necessary to use [Mirador](http://projectmirador.org/) and [OpenSeadragon](https://openseadragon.github.io/) (and perhaps other IIIF tiling clients). Archival images should be ingested into Jiiify so that tiles can be generated. It does not store these images, just the tiles and other derivatives (thumbnails, etc.) that are created. The archival images should continue to live in their repositories or on their separate archival file systems.
+As a "Level 0" IIIF image server, Jiiify does not generate images on-the-fly; instead it pre-generates the tiles and thumbnails necessary to use [Mirador](http://projectmirador.org/) and [OpenSeadragon](https://openseadragon.github.io/) (and perhaps other IIIF tiling clients). Archival images should be ingested into Jiiify so that tiles can be generated. Jiiify does not store the archival images, just the derivatives that are created. The archival images should continue to live in their repositories or on their separate archival file systems.
 
 Note that in order to use Jiiify with Mirador, or other similar viewers, one must create IIIF Presentation API manifests and upload them into Jiiify using its Web-based administrative interface. There is not, currently, any mechanism for creating or editing IIIF presentation manifests within Jiiify itself. Currently, at my place of work, we use a script that builds a IIIF manifest from files on the file system and a CSV document with metadata.
 
@@ -35,7 +35,7 @@ You can also choose to skip the above steps if you have Docker installed on your
 
 The server should then be available at: [https://localhost:8443](https://localhost:8443).
 
-The out-of-the-box install uses a self-signed SSL certificate, so you will be warned about this on connecting in the browser and you'll have to click through that warning, acknowledging that a self-signed certificate is being used. At the moment, the self-signed certificate is regenerated every time you do a build, so each build will present you with a new opportunity to click through that warning when you connect to the administrative interface in a browser.
+The out-of-the-box install uses a self-signed SSL certificate, so you will be warned about this on connecting in the browser and you'll have to click through that warning, acknowledging that a self-signed certificate is being used. At the moment, the self-signed certificate is regenerated every time you do a build, so each build will present you with a new opportunity to click through that warning when you connect to the administrative interface in a browser. That will change.
 
 For more on using Jiiify (including how to ingest a sample image), visit the [project page](http://projects.freelibrary.info/jiiify).
 

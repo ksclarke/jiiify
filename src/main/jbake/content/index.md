@@ -8,13 +8,15 @@ status=published
 
 Jiiify is an experimental Java-based IIIF (Version 2, Level 0) image server built with [Vert.x](http://vertx.io/) (an event-driven, non-blocking, reactive tool-kit). Jiiify is still in active development and does not yet have a stable release.
 
-As a Level 0 IIIF image server, Jiiify does not generate images on-the-fly, but pre-generates the tiles and thumbnails necessary to use [Mirador](http://projectmirador.org/) and [OpenSeadragon](https://openseadragon.github.io/) (and perhaps other IIIF tiling clients). Archival images should be ingested into Jiiify so that tiles can be generated. It does not store these images, just the tiles and other derivatives (thumbnails, etc.) that are created. The archival images should continue to live in their repositories or on their separate archival file systems.
+As a "Level 0" IIIF image server, Jiiify does not generate images on-the-fly; instead it pre-generates the tiles and thumbnails necessary to use [Mirador](http://projectmirador.org/) and [OpenSeadragon](https://openseadragon.github.io/) (and perhaps other IIIF tiling clients). Archival images should be ingested into Jiiify so that tiles can be generated. Jiiify does not store the archival images, just the derivatives that are created. The archival images should continue to live in their repositories or on their separate archival file systems.
 
 Note that in order to use Jiiify with Mirador, or other similar viewers, one must create IIIF Presentation API manifests and upload them into Jiiify using its Web-based administrative interface. There is not, currently, any mechanism for creating or editing IIIF presentation manifests within Jiiify itself. Currently, at my place of work, we use a script that builds a IIIF manifest from files on the file system and a CSV document with metadata.
 
 ## Installing Jiiify
 
 Since there are no stable releases, to install Jiiify you should follow the instructions in the project's GitHub [README](https://github.com/ksclarke/jiiify/blob/master/README.md). This will build the code and start it on your machine.
+
+## Configuring Jiiify
 
 Jiiify runs behind HTTPS by default. For testing purposes, a self-signed certificate is created with each new build and used when the server is run. If you want to use your own SSL certificate, you can change the `jiiify.jks` setting in the `startup.sh` or `supervisord.conf` files (depending on which method you're using to run Jiiify). To change that value in both files at the point of build, you can supply `-Djiiify.jks=/etc/your.jks` to the build on the command line or store that value in your system's [Maven settings.xml](https://maven.apache.org/settings.html) file.
 
