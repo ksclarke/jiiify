@@ -73,12 +73,12 @@ if hash docker 2>/dev/null; then
 
     # If container has never been created, create it and its Solr core
     if [ -z "$CONTAINER_ID" ]; then
-      CONTAINER_ID=$(docker run --name jiiify_solr -d -p 8983:8983 -t solr)
+      CONTAINER_ID=$(docker run --name jiiify_solr -d -p 8983:8983 -t solr:alpine)
 
       for INDEX in $(seq 1 20); do
     	# Create the solr core
         docker exec -it --user=solr jiiify_solr bin/solr create_core -c jiiify >/dev/null 2>&1
-        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" -L $PING)
+        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr wget --server-response $PING 2>&1 | awk '/^  HTTP/{print $2}')
 
         if [ "$RESPONSE_CODE" == "200" ]; then
           echo "Solr connection established"
@@ -97,7 +97,7 @@ if hash docker 2>/dev/null; then
       CONTAINER_ID=$(docker start ${CONTAINER_ID})
 
       for INDEX in $(seq 1 20); do
-        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr curl -s -o /dev/null -w "%{http_code}" $PING)
+        RESPONSE_CODE=$(docker exec -it --user=solr jiiify_solr wget --server-response $PING 2>&1 | awk '/^  HTTP/{print $2}')
 
         if [ "$RESPONSE_CODE" == "200" ]; then
           echo "Solr connection established"
