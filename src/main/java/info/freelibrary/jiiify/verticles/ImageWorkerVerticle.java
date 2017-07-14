@@ -194,7 +194,7 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
             aImage.rotate(aRequest.getRotation());
         }
 
-        if (!aRequest.getQuality().equals(ImageQuality.DEFAULT)) {
+        if (!aRequest.getQuality().getValue().equals(ImageQuality.DEFAULT)) {
             aImage.adjustQuality(aRequest.getQuality());
         }
 

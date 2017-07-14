@@ -100,7 +100,7 @@
   <!-- Warn messages -->
   <entry key="WARN-001">Failed to send tile path ({}) so trying again</entry>
   <entry key="WARN-002">Failed to send image path '{}' so trying again</entry>
-  <entry key="WARN-003">It's not recommended to run with less than 2 GB RAM available: {} GiB</entry>
+  <entry key="WARN-003">It's not recommended to try to ingest images with less than 2 GB RAM available: {} GiB</entry>
   <entry key="WARN-004">Scaling down image processing cores to '{}' [available memory: {} GiB]</entry>
   <entry key="WARN-005">Our sleeping {} thread was interrupted: {}</entry>
   <entry key="WARN-006">Waiting for tile source image cache took longer than expected: {}</entry>

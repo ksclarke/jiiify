@@ -50,23 +50,25 @@ public class ImagePropertiesVerticle extends AbstractJiiifyVerticle {
             final Message<JsonObject> aMessage) {
         final ByteArrayOutputStream stream = new ByteArrayOutputStream();
         final Properties properties = new Properties();
-        final String propFilePath = aPtObj.getPath(PROPERTIES_FILE);
 
         try {
             properties.put(IMAGE_SOURCE_KEY, aImageFilePath);
             properties.storeToXML(stream, null);
 
-            aPtObj.put(propFilePath, Buffer.buffer(stream.toByteArray()), writeHandler -> {
+            aPtObj.put(PROPERTIES_FILE, Buffer.buffer(stream.toByteArray()), writeHandler -> {
                 if (writeHandler.succeeded()) {
-                    LOGGER.debug(MessageCodes.DBG_107, propFilePath);
+                    if (LOGGER.isDebugEnabled()) {
+                        LOGGER.debug(MessageCodes.DBG_107, aPtObj.getPath(PROPERTIES_FILE));
+                    }
+
                     aMessage.reply(SUCCESS_RESPONSE);
                 } else {
-                    LOGGER.error(writeHandler.cause(), MessageCodes.EXC_074, propFilePath);
+                    LOGGER.error(writeHandler.cause(), MessageCodes.EXC_074, aPtObj.getPath(PROPERTIES_FILE));
                     aMessage.reply(FAILURE_RESPONSE);
                 }
             });
         } catch (final IOException details) {
-            LOGGER.error(details, MessageCodes.EXC_074, propFilePath);
+            LOGGER.error(details, MessageCodes.EXC_074, aPtObj.getPath(PROPERTIES_FILE));
             aMessage.reply(FAILURE_RESPONSE);
         } finally {
             IOUtils.closeQuietly(stream);
