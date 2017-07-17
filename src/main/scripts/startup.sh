@@ -121,4 +121,4 @@ else
 fi
 
 $AUTHBIND java $HEAP_DUMP_CONFIG $XMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR $JKS_CONFIG \
-  $JIIIFY_PORT $JIIIFY_HOST $TOOLING $JIIIFY_CORES $1 -jar target/jiiify-${project.version}-exec.jar $JIIIFY_CONFIG
+  $JIIIFY_PORT $JIIIFY_HOST $TOOLING $JIIIFY_CORES $1 -jar target/build-artifact/jiiify-${project.version}.jar $JIIIFY_CONFIG
