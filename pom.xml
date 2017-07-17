@@ -262,6 +262,12 @@
           <artifactId>freelib-utils</artifactId>
           <executions>
             <execution>
+              <id>configure-java-logging</id>
+              <goals>
+                <goal>read-logging-properties</goal>
+              </goals>
+            </execution>
+            <execution>
               <id>set-key-pass</id>
               <goals>
                 <goal>set-uuid-property</goal>
@@ -316,12 +322,6 @@
             <compilerArgs>
               <arg>-Acodegen.output=${project.basedir}/src/main</arg>
             </compilerArgs>
-            <!-- Don't fork, so we can see CodeGen's logging -->
-            <fork>false</fork>
-            <properties>
-              <!-- CodeGen logging configuration -->
-              <java.util.logging.config.file>src/main/resources/logging.properties</java.util.logging.config.file>
-            </properties>
           </configuration>
         </plugin>
       </plugins>
@@ -593,10 +593,7 @@
               </transformers>
               <artifactSet>
               </artifactSet>
-              <!-- <minimizeJar>true</minimizeJar> <filters> <filter> <artifact>io.vertx:*</artifact> <includes> <include>**</include> 
-                </includes> </filter> <filter> <artifact>ch.qos.logback:*</artifact> <includes> <include>**</include> </includes> </filter> 
-                </filters> -->
-              <outputFile>${project.build.directory}/${project.artifactId}-${project.version}-exec.jar</outputFile>
+              <outputFile>${project.build.directory}/build-artifact/${project.artifactId}-${project.version}.jar</outputFile>
             </configuration>
           </execution>
         </executions>
@@ -620,7 +617,7 @@
                 <argument>-Djiiify.port=${http.port}</argument>
                 <argument>-Djiiify.service.prefix=/iiif</argument>
                 <argument>-jar</argument>
-                <argument>${project.basedir}/target/${project.artifactId}-${project.version}-exec.jar</argument>
+                <argument>${project.build.directory}/build-artifact/${project.artifactId}-${project.version}.jar</argument>
               </arguments>
             </configuration>
           </execution>
@@ -656,7 +653,7 @@
   <parent>
     <groupId>info.freelibrary</groupId>
     <artifactId>freelib-parent</artifactId>
-    <version>0.1.13</version>
+    <version>0.1.15</version>
   </parent>
 
 </project>
