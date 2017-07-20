@@ -14,11 +14,11 @@ Jiiify is meant to be distributed as an executable jar file but, as there are no
 
 To do this, you will need [Java](http://www.oracle.com/technetwork/java/javase/downloads/index.html), [Git](https://git-scm.com/), and [Maven](http://maven.apache.org/) installed on your local machine. This is left as an exercise for the reader.
 
-Once these pre-requisites are installed, you can install a development copy of Jiiify:
+Once these pre-requisites are installed, you can create a development copy of Jiiify:
 
     git clone https://github.com/ksclarke/jiiify.git
     cd jiiify
-    mvn clean install
+    mvn package
 
 While images can be ingested and served without connecting Jiiify to [Solr](http://lucene.apache.org/solr/), parts of the administrative interface do require a Solr connection (for browsing images, searching for images, etc.) If you don't already have Solr running on your local machine (or even if you do), you can use Docker to easily bring up Solr at the place that Jiiify expects to find it. To do this, type:
 
@@ -35,7 +35,14 @@ You can also choose to skip the above steps if you have Docker installed on your
 
 The server should then be available at: [https://localhost:8443](https://localhost:8443).
 
-The out-of-the-box install uses a self-signed SSL certificate, so you will be warned about this on connecting in the browser and you'll have to click through that warning, acknowledging that a self-signed certificate is being used. At the moment, the self-signed certificate is regenerated every time you do a build, so each build will present you with a new opportunity to click through that warning when you connect to the administrative interface in a browser. That will change.
+The out-of-the-box install uses a self-signed SSL certificate. You will be warned about this on connecting in the browser and you'll have to click through a warning, acknowledging that a self-signed certificate is being used. The self-signed certificate is regenerated if you run `mvn clean`. If you just use `mvn package` to rebuild the project the self-signed certificate will persist across builds.
+
+Note that because of the way a Maven profile is activated, if you want to wipe your workspace and build a completely clean version, you'll need to use two steps:
+
+    mvn clean
+    mvn package
+
+Those familiar with Maven may be tempted to combine those into `mvn clean package` but that will fail because of the way profiles for the build are activated. You can, of course, just use `mvn package` to rebuild the project. The clean is optional.
 
 For more on using Jiiify (including how to ingest a sample image), visit the [project page](http://projects.freelibrary.info/jiiify).
 
