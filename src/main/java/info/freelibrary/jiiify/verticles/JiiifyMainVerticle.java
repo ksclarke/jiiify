@@ -151,8 +151,12 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
                     message = cause.getMessage();
 
                     /* If issue is keystore password and we're running in debug mode, log password */
-                    if (message != null && message.contains("password was incorrect")) {
-                        LOGGER.debug(MessageCodes.DBG_017, ksPassword);
+                    if (message != null) {
+                        if (message.contains("password was incorrect")) {
+                            LOGGER.warn(MessageCodes.DBG_017, ksPassword);
+                        } else if (message.contains("Cannot recover key")) {
+                            LOGGER.warn(MessageCodes.DBG_017, ksPassword);
+                        }
                     }
                 } else {
                     message = details.getMessage();
@@ -299,8 +303,8 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
     }
 
     /**
-     * Loads the set of verticles that comprise "Jiiify". Jiiify verticles are used to create content that's then served
-     * by the Jiiify handlers.
+     * Loads the set of verticles that comprise "Jiiify". Jiiify verticles are used to create content that's then
+     * served by the Jiiify handlers.
      *
      * @param aConfig A Jiiify configuration
      */
