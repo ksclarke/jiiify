@@ -70,6 +70,10 @@ You can also supply the `dev.tools` variable in a default Maven profile. See [sr
 
 Once you run the `target/startup.sh` script, you'll be told which ports to use to connect your profiling or debugging client. If you want to enable these options on a remote machine instead, you'll need to edit the `target/startup.sh` file (after you've run the build) to allow that.
 
+### Known Gotchas
+
+If you use an IDE that builds the project automatically but doesn't refresh the project's resources at the same time you may run into issues with the startup script, self-signed certificates, etc. Consider turning off automatic building of this project in your IDE if this happens.
+
 ### License
 
 [BSD 3-Clause License](https://github.com/ksclarke/jiiify/blob/master/LICENSE.txt)
