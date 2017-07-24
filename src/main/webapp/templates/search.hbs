@@ -1,17 +1,20 @@
-{{> templates/header}}
-<div class="container">
-  <div class="page-header">
-    <form class="form-horizontal" id="search-form" role="form" action="search" method="get">
-      <h2>Search
-        <input type="text" class="form-control" name="query" id="query" value="{{searchQuery}}"
-          placeholder='Try a search with wildcards: *sharpie* OR id:"ark:/21198/z1154f0f" OR id:*z1154f0u'>
-      </h2>
-    </form>
-  </div>
-  {{> templates/search-results}}
-</div>
 
-<!-- div#wrap close -->
+{{> templates/header}}
+
+  <div class="container">
+    <div class="page-header">
+      <form class="form-horizontal" id="search-form" role="form" action="search" method="get">
+        <h2>Search
+          <input type="text" class="form-control" name="query" id="query" value="{{searchQuery}}"
+            placeholder='Try a search with wildcards: *sharpie* OR id:"ark:/21198/z1154f0f" OR id:*z1154f0u'>
+        </h2>
+      </form>
+    </div>
+    {{> templates/search-results}}
+  </div>
+
+  <!-- div#wrap close -->
   <div id="push"></div>
 </div>
+
 {{> templates/footer}}
