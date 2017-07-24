@@ -1,20 +1,22 @@
+
 {{> templates/header}}
-<div class="container">
-  <h3>Download <script>document.write(decodeURIComponent('{{this.id}}'));</script></h3>
-  <p>To download a bag file of derivative images and image metadata. References in the metadata will point back to this
-    server.
-  </p>
-  <form id="download-form" role="form" action="/admin/download/bagit/{{this.id}}" method="post">
-    <div class="checkbox">
-      <label>
-        <input type="checkbox"> Delete from this server afterwards
-      </label>
-    </div>
-    <button type="submit" class="btn btn-default" id="download-button">Download</button>
-  </form>
+
+  <div class="container">
+    <h3>Download <script>document.write(decodeURIComponent('{{this.id}}'));</script></h3>
+    <p>To download a bag file of derivative images and image metadata. References in the metadata will point back to this server.
+    </p>
+    <form id="download-form" role="form" action="/admin/download/bagit/{{this.id}}" method="post">
+      <div class="checkbox">
+        <label>
+          <input type="checkbox"> Delete from this server afterwards
+        </label>
+      </div>
+      <button type="submit" class="btn btn-default" id="download-button">Download</button>
+    </form>
+  </div>
+
+  <!-- div#wrap close -->
+  <div id="push"></div>
 </div>
 
-<!-- div#wrap close -->
-<div id="push"></div>
-</div>
 {{> templates/footer}}

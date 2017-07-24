@@ -1,12 +1,16 @@
+
 {{> templates/header}}
+
 <div class="container">
   <div class="page-header">
     <h2>Login</h2>
   </div>
+
   <p>Rather than create yet one more username and password, you can login to Jiiify's administrative interface through
     one of your other online accounts. This does not give Jiiify permission to do anything other than just verify your
     account on that other service (it can not, for instance, post on that service as you).
   </p>
+
   <!-- TODO: merge these to 2 files: hello, login -->
   <script src="/admin/js/hello-min.js" defer="true"></script>
   <script src="/admin/js/google-min.js" defer="true"></script>
@@ -19,6 +23,7 @@
       }, {redirect_uri: urlParts[0] + "//" + urlParts[2] + '/login-response'});
     }
   </script>
+
   <div style="text-align:center" class="row">
     <div class="col-md-4" id="google-login"><button class="zocial google" onclick="login('google')">Login with Google</button></div>
   </div>
@@ -27,4 +32,5 @@
 <!-- div#wrap close -->
   <div id="push"></div>
 </div>
+
 {{> templates/footer}}
