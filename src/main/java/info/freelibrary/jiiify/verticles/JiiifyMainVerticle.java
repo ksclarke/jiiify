@@ -213,7 +213,7 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         aRouter.getWithRegex(STATIC_FILES_RE).handler(StaticHandler.create());
 
         // Put everything in the administrative interface behind an authentication check
-        if (aJWTAuth != null) {
+        if (aJWTAuth != null && !"true".equals(System.getProperty("jiiify.ignore.auth"))) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(MessageCodes.DBG_020);
             }
@@ -230,6 +230,9 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             aRouter.post(LOGIN).handler(new LoginHandler(myConfig, aJWTAuth));
             aRouter.getWithRegex(LOGIN_RESPONSE_RE).handler(new LoginHandler(myConfig, aJWTAuth));
             aRouter.getWithRegex(LOGIN_RESPONSE_RE).handler(templateHandler).failureHandler(failureHandler);
+        } else {
+            // Or, if no authentication check is configured, a logout will just do nothing
+            aRouter.get(LOGIN).handler(new LogoutHandler(myConfig));
         }
 
         // Configure our IIIF specific handlers
