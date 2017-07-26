@@ -30,6 +30,7 @@ JKS_CONFIG=""
 XMX_CONFIG="${jiiify.memory}"
 JIIIFY_CORES="-Djiiify.cores=${jiiify.cores}"
 HEAP_DUMP_CONFIG="-XX:+HeapDumpOnOutOfMemoryError"
+AUTH_CONFIG="-Djiiify.ignore.auth=${jiiify.ignore.auth}"
 
 # If we have authbind and it's configured to run our port, let's use it
 if hash authbind 2>/dev/null; then
@@ -120,5 +121,5 @@ else
   echo "[WARNING] The administrative interface's browse and search won't work without Solr"
 fi
 
-$AUTHBIND java $HEAP_DUMP_CONFIG $XMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR $JKS_CONFIG \
+$AUTHBIND java $HEAP_DUMP_CONFIG $XMX_CONFIG $LOG_DELEGATE $KEY_PASS_CONFIG $WATCH_FOLDER_DIR $JKS_CONFIG $AUTH_CONFIG \
   $JIIIFY_PORT $JIIIFY_HOST $TOOLING $JIIIFY_CORES $1 -jar target/build-artifact/jiiify-${project.version}.jar $JIIIFY_CONFIG
