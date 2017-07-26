@@ -11,12 +11,14 @@ env:
     - secure: "aD+Oy7LWkPTMaCLNpDqvQks6v9EpQuPp9VuKgGAJz3NWcBD0rBQnzXXwBu6xQMuxq67XuHyz9OzC3SpXUXfZYMrACaaX3QyL1qUnMAYiqpYCrr2N1+803yRM9h0wsMdTqXblUcZaNrwZSpkmA68BoQ3qkmIF4xyAdI3pmBgVsxVbpDAoGj5/pygeUvGXT+N0wRqpgPjcmOqjy3tQTAZaEhiTU+cn7bOy2hBGD+Nu4jGWFvFmqPps7dVsj+zMtld0vgVh2OmGcGM2PzjrdVOIFJcZ7c20zVz81JUkQqgpW9KkpTFXzCUzcNcvq8J9fu2EIIeNkQQ2L0/gYjQbIJ0jZC9vtSc9NpuH1js53e/SFD6X6w4Bm7jcPU668yly4CJQWZ5go+9HRXSxImV0paORXBJkSVj14d6zU0aEHUp/voyfBGDtjndQALUzJkIR0W84gZacWf/UJjCkGqqbPX2p1Kg1QhFyZHudTCm5VFaSJOVcFezlF2dFPl+8W2EVtX6bR20X+Drq8XxeVW5AUgGD/XpQy0j4fRlUqRQLenT5oPGOqI6+fgQmn/FIjUZf8a95AtnOaRZ+Cg/krw4RaKtLO3t30vwUlIiQgCuR22bQmu9Gw3/8h+NH0PELvJ1Tw0SCqoBekWGD+4Bptb0bA7/W/0xP8OU2uxqFMUW0WZ8BEIc="
 
 install:
-  mvn package -Djiiify.ignore.auth=true
+  mvn validate
 
 script:
-  mvn package
+  mvn package -Djiiify.ignore.auth=true
 
+# Right now, we build twice: once with auth off for testing and once with auth on for deploy
 after_success:
+  mvn package
   mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken="${PROJECT_TOKEN}" -DapiToken="${API_TOKEN}"
 
 deploy:
