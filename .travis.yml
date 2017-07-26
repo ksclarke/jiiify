@@ -18,8 +18,8 @@ script:
 
 # Right now, we build twice: once with auth off for testing and once with auth on for deploy
 after_success:
-  mvn package
-  mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken="${PROJECT_TOKEN}" -DapiToken="${API_TOKEN}"
+  - mvn package
+  - mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken="${PROJECT_TOKEN}" -DapiToken="${API_TOKEN}"
 
 deploy:
   - provider: s3
