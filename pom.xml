@@ -494,7 +494,7 @@
               <outputDirectory>${basedir}/target/classes/webroot/admin/js</outputDirectory>
               <resources>
                 <resource>
-                  <directory>${basedir}/target/openseadragon/META-INF/resources/webjars/openseadragon/${openseadragon.version}/built-openseadragon/openseadragon</directory>
+                  <directory>${basedir}/target/openseadragon/META-INF/resources/webjars/openseadragon/${openseadragon.version}/build/openseadragon</directory>
                   <includes>
                     <include>openseadragon.min.js</include>
                     <include>openseadragon.min.js.map</include>
@@ -513,7 +513,7 @@
               <outputDirectory>${basedir}/target/classes/webroot/images</outputDirectory>
               <resources>
                 <resource>
-                  <directory>${basedir}/target/openseadragon/META-INF/resources/webjars/openseadragon/${openseadragon.version}/built-openseadragon/openseadragon/images</directory>
+                  <directory>${basedir}/target/openseadragon/META-INF/resources/webjars/openseadragon/${openseadragon.version}/build/openseadragon/images</directory>
                 </resource>
               </resources>
             </configuration>

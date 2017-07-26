@@ -79,7 +79,6 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
                                     LOGGER.debug(MessageCodes.DBG_021, id, tiles.size());
 
                                     queueImageInfo(newMessage, dim, id, tileSize);
-                                    queueManifest(newMessage.copy(), thumbnailPath);
                                     queueTileCreation(newMessage.copy(), tiles, message);
 
                                     message.reply(SUCCESS_RESPONSE);
@@ -116,12 +115,6 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
         aMessage.put(ID_KEY, aID);
 
         sendMessage(aMessage, ImageInfoVerticle.class.getName(), INGEST_TIMEOUT);
-    }
-
-    private void queueManifest(final JsonObject aMessage, final String aThumbnailPath) {
-        aMessage.put(IIIF_PATH_KEY, aThumbnailPath);
-
-        sendMessage(aMessage, ManifestVerticle.class.getName(), INGEST_TIMEOUT);
     }
 
     private void queueTileCreation(final JsonObject aMessage, final List<String> aTilesList,

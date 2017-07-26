@@ -344,7 +344,6 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
             futures.add(deployVerticle(SolrServiceVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageIndexVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageIngestVerticle.class.getName(), options, Future.future()));
-            futures.add(deployVerticle(ManifestVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImageInfoVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(ImagePropertiesVerticle.class.getName(), options, Future.future()));
             futures.add(deployVerticle(FedoraIngestVerticle.class.getName(), options, Future.future()));
