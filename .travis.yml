@@ -14,23 +14,36 @@ install:
   mvn validate
 
 script:
-  mvn install
+  mvn package -Djiiify.ignore.auth=true
 
+# Right now, we build twice: once with auth off for testing and once with auth on for deploy
 after_success:
-  mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken="${PROJECT_TOKEN}" -DapiToken="${API_TOKEN}"
+  - mvn package
+  - mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken="${PROJECT_TOKEN}" -DapiToken="${API_TOKEN}"
 
 deploy:
-  provider: s3
-  access_key_id: "${AWS_ACCESS_KEY_ID}"
-  secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
-  bucket: "build-artifacts.library.ucla.edu"
-  local_dir: target/build-artifact
-  upload_dir: jiiify
-  skip_cleanup: true
-  acl: public_read
-  region: us-west-2
-  on:
-    branch: travis-testing
+  - provider: s3
+    access_key_id: "${AWS_ACCESS_KEY_ID}"
+    secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
+    bucket: "build-artifacts.library.ucla.edu"
+    local_dir: target/build-artifact
+    upload_dir: jiiify
+    skip_cleanup: true
+    acl: public_read
+    region: us-west-2
+    on:
+      branch: develop
+  - provider: s3
+    access_key_id: "${AWS_ACCESS_KEY_ID}"
+    secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
+    bucket: "build-artifacts.library.ucla.edu"
+    local_dir: target/build-artifact
+    upload_dir: jiiify
+    skip_cleanup: true
+    acl: public_read
+    region: us-west-2
+    on:
+      tags: true
 
 cache:
   directories:
