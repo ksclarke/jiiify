@@ -78,7 +78,7 @@ body{
 }
 
 .openseadragon{
-  /* Oxygen's CSS editor doesn't like this, but it works */
+  /* OxygenXML's CSS editor doesn't like this but it's okay */
   height: calc(100vh - 108px);
   margin-left: auto;
   margin-right: auto;
@@ -118,14 +118,12 @@ body{
   margin-bottom: 40px;
 }
 
-#google-login,
-#facebook-login{
+#google-login{
   text-align: center;
   padding: 10px 20px 10px;
 }
 
-#google-login-response,
-#facebook-login-response{
+#google-login-response{
   padding: 15px 5px 5px 5px;
 }
 
