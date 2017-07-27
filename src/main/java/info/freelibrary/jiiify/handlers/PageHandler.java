@@ -1,3 +1,4 @@
+
 package info.freelibrary.jiiify.handlers;
 
 import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
@@ -31,15 +32,17 @@ public class PageHandler extends JiiifyHandler {
         final ObjectMapper mapper = new ObjectMapper();
         final ObjectNode jsonNode = mapper.createObjectNode();
 
-        LOGGER.debug(MessageCodes.DBG_058, aContext.request().uri());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(MessageCodes.DBG_058, aContext.request().uri());
 
-        aContext.request().params().forEach(param -> {
-            LOGGER.debug(MessageCodes.DBG_059, param.getKey(), param.getValue());
-        });
+            aContext.request().params().forEach(param -> {
+                LOGGER.debug(MessageCodes.DBG_059, param.getKey(), param.getValue());
+            });
 
-        aContext.request().headers().forEach(header -> {
-            LOGGER.debug(MessageCodes.DBG_060, header.getKey(), header.getValue());
-        });
+            aContext.request().headers().forEach(header -> {
+                LOGGER.debug(MessageCodes.DBG_060, header.getKey(), header.getValue());
+            });
+        }
 
         // This inserts a session check to toggle our login/logout option
         aContext.data().put(HBS_DATA_KEY, toHbsContext(jsonNode, aContext));

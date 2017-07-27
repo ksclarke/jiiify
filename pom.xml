@@ -51,6 +51,7 @@
     <jiiify.memory/>
     <jiiify.cores/>
     <jiiify.watch.folder/>
+    <jiiify.ignore.auth/>
     <!-- These are samples for testing purposes only ... DO NOT USE THEM IN PRODUCTION!!! -->
     <jiiify.json.config.path>${project.basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
 
