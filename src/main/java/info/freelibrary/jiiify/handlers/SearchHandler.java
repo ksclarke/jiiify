@@ -5,7 +5,6 @@ import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.Constants.SOLR_SERVICE_KEY;
-import static info.freelibrary.jiiify.Constants.THUMBNAIL_KEY;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_HEADER;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 import static info.freelibrary.jiiify.util.SolrUtils.DOCS;
@@ -23,6 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
+import info.freelibrary.jiiify.SolrMetadata;
 import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.util.StringUtils;
@@ -122,7 +122,7 @@ public class SearchHandler extends JiiifyHandler {
             final ObjectNode objNode = mapper.createObjectNode();
 
             objNode.put(ID_KEY, PathUtils.encodeIdentifier(jsonObject.getString(ID_KEY)));
-            objNode.put(THUMBNAIL_KEY, jsonObject.getString(THUMBNAIL_KEY));
+            objNode.put(SolrMetadata.THUMBNAIL_KEY, jsonObject.getString(SolrMetadata.THUMBNAIL_KEY));
             imageArray.add(objNode);
         }
 

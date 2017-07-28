@@ -20,6 +20,7 @@ import java.util.UUID;
 import javax.naming.ConfigurationException;
 
 import info.freelibrary.jiiify.MessageCodes;
+import info.freelibrary.jiiify.SolrMetadata;
 import info.freelibrary.jiiify.iiif.ImageRegion;
 import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 import info.freelibrary.jiiify.iiif.ImageRequest;
@@ -81,22 +82,22 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
                                     queueImageInfo(newMessage, dim, id, tileSize);
                                     queueTileCreation(newMessage.copy(), tiles, message);
 
+                                    if (!json.getBoolean(SolrMetadata.SKIP_INDEXING, false)) {
+                                        queueIndexing(newMessage.copy(), thumbnailPath);
+                                    }
+
                                     message.reply(SUCCESS_RESPONSE);
                                 } else {
                                     LOGGER.error(MessageCodes.EXC_045, id);
                                     message.reply(FAILURE_RESPONSE);
                                 }
                             } else {
-                                final Throwable cause = compareAndSet.cause();
-
-                                LOGGER.error(cause, cause.getMessage());
+                                LOGGER.error(compareAndSet.cause(), compareAndSet.cause().getMessage());
                                 message.reply(FAILURE_RESPONSE);
                             }
                         });
                     } else {
-                        final Throwable cause = getCounter.cause();
-
-                        LOGGER.error(cause, cause.getMessage());
+                        LOGGER.error(getCounter.cause(), getCounter.cause().getMessage());
                         message.reply(FAILURE_RESPONSE);
                     }
                 });
@@ -126,4 +127,11 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
             sendMessage(aMessage, ImageWorkerVerticle.class.getName(), INGEST_TIMEOUT);
         });
     }
+
+    private void queueIndexing(final JsonObject aMessage, final String aThumbnail) {
+        aMessage.put(SolrMetadata.ACTION_TYPE, SolrMetadata.INDEX_ACTION);
+        aMessage.put(IIIF_PATH_KEY, aThumbnail);
+        sendMessage(aMessage, ImageIndexVerticle.class.getName(), INGEST_TIMEOUT);
+    }
+
 }

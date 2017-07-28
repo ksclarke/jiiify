@@ -17,6 +17,7 @@ import java.util.Properties;
 import javax.naming.ConfigurationException;
 
 import info.freelibrary.jiiify.MessageCodes;
+import info.freelibrary.jiiify.SolrMetadata;
 import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.util.FileUtils;
 
@@ -33,6 +34,10 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImageIngestVerticle extends AbstractJiiifyVerticle {
+
+    private static final String SKIP_PROPERTIES = "skipproperties";
+
+    private static final String SKIP_IMAGES = "skipimages";
 
     @Override
     public void start() throws ConfigurationException, IOException {
@@ -122,7 +127,7 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
 
                     aMessage.reply(SUCCESS_RESPONSE);
                 } else {
-                    LOGGER.error(handler.cause(), "{}", handler.cause().getMessage());
+                    LOGGER.error(handler.cause(), handler.cause().getMessage());
                     aMessage.reply(FAILURE_RESPONSE);
                 }
             });
@@ -148,21 +153,28 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
         jsonMessage.put(FILE_PATH_KEY, aImageFile.getAbsolutePath());
 
         // These are the tasks we trigger, according to user's ingest request
-        if (!aJsonObject.getBoolean("skipindexing", false)) {
-            sendMessage(jsonMessage, ImageIndexVerticle.class.getName(), INGEST_TIMEOUT);
-        } else {
-            LOGGER.debug(MessageCodes.DBG_104, aID);
-        }
-
-        if (!aJsonObject.getBoolean("skipproperties", false)) {
+        if (!aJsonObject.getBoolean(SKIP_PROPERTIES, false)) {
             sendMessage(jsonMessage, ImagePropertiesVerticle.class.getName(), INGEST_TIMEOUT);
         } else {
             LOGGER.debug(MessageCodes.DBG_105, aID);
         }
 
-        if (!aJsonObject.getBoolean("skipimages", false)) {
+        if (!aJsonObject.getBoolean(SKIP_IMAGES, false)) {
+            if (!aJsonObject.getBoolean(SolrMetadata.SKIP_INDEXING, false)) {
+                jsonMessage.put(SolrMetadata.SKIP_INDEXING, false);
+            } else {
+                LOGGER.debug(MessageCodes.DBG_104, aID);
+            }
+
             sendMessage(jsonMessage, TileMasterVerticle.class.getName(), INGEST_TIMEOUT);
         } else {
+            if (!aJsonObject.getBoolean(SolrMetadata.SKIP_INDEXING, false)) {
+                jsonMessage.put(SolrMetadata.ACTION_TYPE, SolrMetadata.UPDATE_ACTION);
+                sendMessage(jsonMessage, ImageIndexVerticle.class.getName(), INGEST_TIMEOUT);
+            } else {
+                LOGGER.debug(MessageCodes.DBG_104, aID);
+            }
+
             LOGGER.debug(MessageCodes.DBG_106, aID);
         }
     }
