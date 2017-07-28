@@ -76,6 +76,8 @@
   <entry key="EXC-082">Invalid or unexpected ID received from Fedora: {}</entry>
   <entry key="EXC-083">Failed to clean up source image as requested: {}</entry>
   <entry key="EXC-084">Fedora image source URL was not a valid URL!? {}</entry>
+  <entry key="EXC-085">Expected to index '{}' but didn't(!?)</entry>
+  <entry key="EXC-086">(No details)</entry>
 
   <!-- Info messages -->
   <entry key="INFO-001">Ingesting an added or updated image file: {}</entry>
@@ -241,6 +243,9 @@
   <entry key="DBG-114">Using a user supplied file uploads directory: {}</entry>
   <entry key="DBG-115">Receiving image ingest request from Fedora: {} ({})</entry>
   <entry key="DBG-116">Received image ingest request from: {} - {}</entry>
+  <entry key="DBG-117">Indexing image metadata for '{}'</entry>
+  <entry key="DBG-118">Updating image metadata for '{}'</entry>
+  <entry key="DBG-119">Writing progressive '{}' image</entry>
 
   <!-- Messages for testing package specific exceptions -->
   <entry key="TEST-001">test message</entry>

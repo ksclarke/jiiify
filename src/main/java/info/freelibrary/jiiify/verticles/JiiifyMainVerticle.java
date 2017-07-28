@@ -214,12 +214,19 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
         // Put everything in the administrative interface behind an authentication check
         if (aJWTAuth != null && !"true".equals(System.getProperty("jiiify.ignore.auth"))) {
+            UserSessionHandler userSessionHandler = UserSessionHandler.create(aJWTAuth);
+            JWTAuthHandler jwtAuthHandler = JWTAuthHandler.create(aJWTAuth, LOGIN);
+
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(MessageCodes.DBG_020);
             }
 
-            aRouter.route(ADMIN_UI).handler(UserSessionHandler.create(aJWTAuth));
-            aRouter.route(ADMIN_UI).handler(JWTAuthHandler.create(aJWTAuth, LOGIN));
+            // We don't want to restrict access to root but do want to know if logged in
+            aRouter.get(ROOT).handler(userSessionHandler);
+
+            // The admin pages we will restrict access to if not logged in
+            aRouter.route(ADMIN_UI).handler(userSessionHandler);
+            aRouter.route(ADMIN_UI).handler(jwtAuthHandler);
             aRouter.route(ADMIN_UI).handler(handler -> {
                 handler.response().headers().add(CACHE_CONTROL, "no-store, no-cache");
                 handler.next();

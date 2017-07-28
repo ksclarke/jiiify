@@ -43,13 +43,15 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
      * @return A Handlebars context that can be passed to the template engine
      */
     Context toHbsContext(final ObjectNode aJsonObject, final RoutingContext aContext) {
-        LOGGER.debug(MessageCodes.DBG_046, getClass().getSimpleName(), aJsonObject.toString());
-
         // Are we logged into the administrative interface?
         if (aContext.user() == null) {
             aJsonObject.put("logged-in", false);
         } else {
             aJsonObject.put("logged-in", true);
+        }
+
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug(MessageCodes.DBG_046, getClass().getSimpleName(), aJsonObject.toString());
         }
 
         return Context.newBuilder(aJsonObject).resolver(JsonNodeValueResolver.INSTANCE).build();

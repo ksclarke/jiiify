@@ -9,7 +9,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Iterator;
 
+import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
 import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
@@ -103,10 +105,17 @@ public class JavaImageObject implements ImageObject {
             final ImageWriter writer = iterator.next();
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             final ImageOutputStream outStream = ImageIO.createImageOutputStream(baos);
+            final ImageWriteParam param = writer.getDefaultWriteParam();
+
+            if (param.canWriteProgressive()) {
+                LOGGER.debug(MessageCodes.DBG_119, aFileExt);
+                param.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
+            }
 
             try {
                 writer.setOutput(outStream);
-                writer.write(myImage);
+                // TODO: Keep metadata, too
+                writer.write(null, new IIOImage(myImage, null, null), param);
                 outStream.flush();
                 return Buffer.buffer(baos.toByteArray());
             } finally {
