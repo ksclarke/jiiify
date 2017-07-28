@@ -108,7 +108,7 @@ public class JavaImageObject implements ImageObject {
             final ImageWriteParam param = writer.getDefaultWriteParam();
 
             if (param.canWriteProgressive()) {
-                LOGGER.debug("Writing progressive '{}' image", aFileExt);
+                LOGGER.debug(MessageCodes.DBG_119, aFileExt);
                 param.setProgressiveMode(ImageWriteParam.MODE_DEFAULT);
             }
 
@@ -116,7 +116,6 @@ public class JavaImageObject implements ImageObject {
                 writer.setOutput(outStream);
                 // TODO: Keep metadata, too
                 writer.write(null, new IIOImage(myImage, null, null), param);
-                // writer.write(myImage);
                 outStream.flush();
                 return Buffer.buffer(baos.toByteArray());
             } finally {
