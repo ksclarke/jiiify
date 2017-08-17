@@ -213,9 +213,9 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         aRouter.getWithRegex(STATIC_FILES_RE).handler(StaticHandler.create());
 
         // Put everything in the administrative interface behind an authentication check
-        if (aJWTAuth != null && !"true".equals(System.getProperty("jiiify.ignore.auth"))) {
-            UserSessionHandler userSessionHandler = UserSessionHandler.create(aJWTAuth);
-            JWTAuthHandler jwtAuthHandler = JWTAuthHandler.create(aJWTAuth, LOGIN);
+        if ((aJWTAuth != null) && !"true".equals(System.getProperty("jiiify.ignore.auth"))) {
+            final UserSessionHandler userSessionHandler = UserSessionHandler.create(aJWTAuth);
+            final JWTAuthHandler jwtAuthHandler = JWTAuthHandler.create(aJWTAuth, LOGIN);
 
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(MessageCodes.DBG_020);
