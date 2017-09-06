@@ -78,6 +78,7 @@
   <entry key="EXC-084">Fedora image source URL was not a valid URL!? {}</entry>
   <entry key="EXC-085">Expected to index '{}' but didn't(!?)</entry>
   <entry key="EXC-086">(No details)</entry>
+  <entry key="EXC-087">Unsupported OAuth service</entry>
 
   <!-- Info messages -->
   <entry key="INFO-001">Ingesting an added or updated image file: {}</entry>

@@ -2,9 +2,9 @@
 
 ### Introduction
 
-Jiiify is an experimental Java-based IIIF (Version 2, Level 0) image server built with [Vert.x](http://vertx.io/) (an event-driven, non-blocking, reactive tool-kit). Jiiify is still in active development and does not yet have a stable release.
+Jiiify is an experimental Java-based IIIF (Version 2, Level 0) tile server built with [Vert.x](http://vertx.io/) (an event-driven, non-blocking, reactive tool-kit). Jiiify is still in active development and does not yet have a stable release.
 
-As a "Level 0" IIIF image server, Jiiify does not generate images on-the-fly; instead it pre-generates the tiles and thumbnails necessary to use [Mirador](http://projectmirador.org/) and [OpenSeadragon](https://openseadragon.github.io/) (and perhaps other IIIF tiling clients). Archival images should be ingested into Jiiify so that tiles can be generated. Jiiify does not store the archival images, just the derivatives that are created. The archival images should continue to live in their repositories or on their separate archival file systems.
+As a "Level 0" IIIF tile server, Jiiify does not generate images on-the-fly; instead, it pre-generates the tiles and thumbnails necessary to use [Mirador](http://projectmirador.org/) and [OpenSeadragon](https://openseadragon.github.io/) (and perhaps other IIIF tiling clients). Archival images should be ingested into Jiiify so that tiles can be generated. Jiiify does not store the archival images, just the derivatives that are created. The archival images should continue to live in their repositories or on their separate archival file systems.
 
 Note that in order to use Jiiify with Mirador, or other similar viewers, one must create IIIF Presentation API manifests and upload them into Jiiify using its Web-based administrative interface. There is not, currently, any mechanism for creating or editing IIIF presentation manifests within Jiiify itself. Currently, at my place of work, we use a script that builds a IIIF manifest from files on the file system and a CSV document with metadata.
 

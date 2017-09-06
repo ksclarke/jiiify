@@ -13,6 +13,7 @@ import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.OAUTH_USERS;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
+import static info.freelibrary.jiiify.Constants.SLASH;
 import static info.freelibrary.jiiify.Constants.SOLR_SERVER_PROP;
 import static info.freelibrary.jiiify.Constants.TILE_SIZE_PROP;
 import static info.freelibrary.jiiify.Constants.UPLOADS_DIR_PROP;
@@ -78,11 +79,13 @@ public class Configuration implements Shareable {
 
     public static final long DEFAULT_SESSION_TIMEOUT = 7200000L; // two hours
 
-    public static final String DEFAULT_UPLOADS_DIR = Paths.get(System.getProperty("java.io.tmpdir"),
-            "jiiify-file-uploads").toString();
+    public static final String TMP_DIR_PROPERTY = "java.io.tmpdir";
 
-    public static final String DEFAULT_WATCH_FOLDER = Paths.get(System.getProperty("java.io.tmpdir"),
-            "jiiify-watch-folder").toString();
+    public static final String TMP_DIR = System.getProperty(TMP_DIR_PROPERTY);
+
+    public static final String DEFAULT_UPLOADS_DIR = Paths.get(TMP_DIR, "jiiify-file-uploads").toString();
+
+    public static final String DEFAULT_WATCH_FOLDER = Paths.get(TMP_DIR, "jiiify-watch-folder").toString();
 
     public static final File DEFAULT_DATA_DIR = new File("jiiify_data");
 
@@ -92,7 +95,11 @@ public class Configuration implements Shareable {
 
     private static final String DEFAULT_SOLR_SERVER = "http://localhost:8983/solr/jiiify";
 
-    private final Logger LOGGER = LoggerFactory.getLogger(Configuration.class, MESSAGES);
+    private static final Logger LOGGER = LoggerFactory.getLogger(Configuration.class, MESSAGES);
+
+    private static final String HTTPS = "https";
+
+    private static final String HTTP = "http";
 
     private final int myPort;
 
@@ -286,7 +293,7 @@ public class Configuration implements Shareable {
         }
 
         // FIXME: With something better than a RuntimeException
-        throw new RuntimeException("Unsupported OAuth service");
+        throw new RuntimeException(LOGGER.getMessage(MessageCodes.EXC_087));
     }
 
     /**
@@ -305,7 +312,7 @@ public class Configuration implements Shareable {
         }
 
         // FIXME: With something better than a RuntimeException
-        throw new RuntimeException("Unsupported OAuth service");
+        throw new RuntimeException(LOGGER.getMessage(MessageCodes.EXC_087));
     }
 
     /**
@@ -369,17 +376,18 @@ public class Configuration implements Shareable {
      * @return True if the server is using HTTPS; else, false
      */
     public boolean usesHttps() {
-        return myURLScheme.equals("https");
+        return HTTPS.equals(myURLScheme);
     }
 
     /**
-     * Returns the base URL of the Jiiify image server, including: scheme, host, and port (if something other than 80).
+     * Returns the base URL of the Jiiify image server, including: scheme, host, and port (if something other than
+     * 80).
      *
      * @return The base URL of the Jiiify image server
      */
     public String getServer() {
         final int port = getPort();
-        return getScheme() + "://" + getHost() + (port != 80 && port != 443 ? ":" + getPort() : "");
+        return getScheme() + "://" + getHost() + ((port != 80) && (port != 443) ? ":" + getPort() : "");
     }
 
     /**
@@ -509,31 +517,29 @@ public class Configuration implements Shareable {
 
     private String setURLScheme(final JsonObject aConfig) {
         final Properties properties = System.getProperties();
-        final String https = "https";
-        final String http = "http";
 
         // We'll give command line properties first priority then fall back to our JSON configuration
         if (properties.containsKey(URL_SCHEME_PROP)) {
             final String scheme = properties.getProperty(URL_SCHEME_PROP);
 
             if (LOGGER.isDebugEnabled()) {
-                if (scheme.equals(http)) {
-                    LOGGER.debug(MessageCodes.DBG_112, URL_SCHEME_PROP, http);
-                } else if (scheme.equals(https)) {
-                    LOGGER.debug(MessageCodes.DBG_112, URL_SCHEME_PROP, https);
+                if (HTTP.equals(scheme)) {
+                    LOGGER.debug(MessageCodes.DBG_112, URL_SCHEME_PROP, HTTP);
+                } else if (HTTPS.equals(scheme)) {
+                    LOGGER.debug(MessageCodes.DBG_112, URL_SCHEME_PROP, HTTPS);
                 }
             }
 
-            if (!scheme.equals(http) && !scheme.equals(https)) {
-                LOGGER.warn(MessageCodes.WARN_016, URL_SCHEME_PROP, scheme, https);
+            if (!HTTP.equals(scheme) && !HTTPS.equals(scheme)) {
+                LOGGER.warn(MessageCodes.WARN_016, URL_SCHEME_PROP, scheme, HTTPS);
 
-                return https;
+                return HTTPS;
             } else {
                 LOGGER.info(MessageCodes.INFO_008, scheme);
                 return scheme;
             }
         } else {
-            return https;
+            return HTTPS;
         }
     }
 
@@ -663,7 +669,7 @@ public class Configuration implements Shareable {
         }
 
         try {
-            prefix = PathUtils.encodeServicePrefix(prefix.startsWith("/") ? prefix : "/" + prefix);
+            prefix = PathUtils.encodeServicePrefix(prefix.startsWith(SLASH) ? prefix : SLASH + prefix);
             LOGGER.info(MessageCodes.INFO_013, prefix);
         } catch (final URISyntaxException details) {
             LOGGER.warn(MessageCodes.WARN_020, prefix, DEFAULT_SERVICE_PREFIX);
@@ -713,7 +719,7 @@ public class Configuration implements Shareable {
                 uploadsDir = StringUtils.trimTo(aConfig.getString(UPLOADS_DIR_PROP), DEFAULT_UPLOADS_DIR);
             }
 
-            if ("java.io.tmpdir".equalsIgnoreCase(uploadsDir)) {
+            if (TMP_DIR_PROPERTY.equalsIgnoreCase(uploadsDir)) {
                 uploadsDir = DEFAULT_UPLOADS_DIR;
                 LOGGER.debug(MessageCodes.DBG_113, uploadsDir);
             }
@@ -753,7 +759,7 @@ public class Configuration implements Shareable {
         location = props.getProperty(DATA_DIR_PROP, aConfig.getString(DATA_DIR_PROP, DEFAULT_DATA_DIR
                 .getAbsolutePath()));
 
-        if (awsAccessKey != null && awsSecretKey != null) {
+        if ((awsAccessKey != null) && (awsSecretKey != null)) {
             LOGGER.info(MessageCodes.INFO_015, awsAccessKey);
 
             if (s3Endpoint == null) {

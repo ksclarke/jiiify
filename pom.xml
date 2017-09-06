@@ -962,7 +962,7 @@
   <parent>
     <groupId>info.freelibrary</groupId>
     <artifactId>freelib-parent</artifactId>
-    <version>0.1.15</version>
+    <version>0.1.17-SNAPSHOT</version>
   </parent>
 
 </project>

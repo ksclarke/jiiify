@@ -170,7 +170,7 @@ public class ImageFormat {
      * @param aMIMEType A MIME type for which to return a file extension
      * @return A file extension for the supplied MIME type
      */
-    public final static String getExtension(final String aMIMEType) {
+    public static final String getExtension(final String aMIMEType) {
         return MIME2EXT_MAP.get(aMIMEType);
     }
 
@@ -180,7 +180,7 @@ public class ImageFormat {
      * @param aFileExt A file extension for which to return a MIME type
      * @return A MIME type for the supplied file extension
      */
-    public final static String getMIMEType(final String aFileExt) {
+    public static final String getMIMEType(final String aFileExt) {
         return EXT2MIME_MAP.get(aFileExt);
     }
 

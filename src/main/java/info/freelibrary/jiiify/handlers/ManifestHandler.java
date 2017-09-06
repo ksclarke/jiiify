@@ -1,6 +1,7 @@
 
 package info.freelibrary.jiiify.handlers;
 
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.net.MalformedURLException;
@@ -12,6 +13,8 @@ import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -26,6 +29,16 @@ import io.vertx.ext.web.RoutingContext;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ManifestHandler extends JiiifyHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ManifestHandler.class, MESSAGES);
+
+    private static final String THUMBNAIL = "thumbnail";
+
+    private static final String LOGO = "logo";
+
+    private static final String ID = "@id";
+
+    private static final String ON = "on";
 
     /**
      * A IIIF manifest handler.
@@ -92,32 +105,32 @@ public class ManifestHandler extends JiiifyHandler {
         final JsonObject defaultItem = aJsonObject.getJsonObject("default");
         final JsonObject resource = aJsonObject.getJsonObject("resource");
         final JsonObject service = aJsonObject.getJsonObject("service");
-        final String thumbnail = aJsonObject.getString("thumbnail");
-        final String logo = aJsonObject.getString("logo");
-        final String id = aJsonObject.getString("@id");
-        final String on = aJsonObject.getString("on");
+        final String thumbnail = aJsonObject.getString(THUMBNAIL);
+        final String logo = aJsonObject.getString(LOGO);
+        final String id = aJsonObject.getString(ID);
+        final String on = aJsonObject.getString(ON);
         final String iiifService = aService + "/";
         final JsonArray jsonArray = new JsonArray();
         final Iterator<Object> iterator;
 
-        if (thumbnail != null && thumbnail.contains(iiifService)) {
-            aJsonObject.put("thumbnail", aServer + thumbnail.substring(thumbnail.indexOf(iiifService)));
+        if ((thumbnail != null) && thumbnail.contains(iiifService)) {
+            aJsonObject.put(THUMBNAIL, aServer + thumbnail.substring(thumbnail.indexOf(iiifService)));
         }
 
         if (logo != null) {
             try {
-                aJsonObject.put("logo", new URL(aServer + new URL(logo).getPath()).toExternalForm());
+                aJsonObject.put(LOGO, new URL(aServer + new URL(logo).getPath()).toExternalForm());
             } catch (final MalformedURLException details) {
                 LOGGER.error(MessageCodes.EXC_052, logo, details);
             }
         }
 
-        if (id != null && id.contains(iiifService)) {
-            aJsonObject.put("@id", aServer + id.substring(id.indexOf(iiifService)));
+        if ((id != null) && id.contains(iiifService)) {
+            aJsonObject.put(ID, aServer + id.substring(id.indexOf(iiifService)));
         }
 
-        if (on != null && on.contains(iiifService)) {
-            aJsonObject.put("on", aServer + on.substring(on.indexOf(iiifService)));
+        if ((on != null) && on.contains(iiifService)) {
+            aJsonObject.put(ON, aServer + on.substring(on.indexOf(iiifService)));
         }
 
         if (resource != null) {
@@ -148,5 +161,10 @@ public class ManifestHandler extends JiiifyHandler {
                 LOGGER.debug(MessageCodes.DBG_056, obj.getClass().getName());
             }
         }
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 }

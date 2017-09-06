@@ -36,7 +36,7 @@ import io.vertx.core.json.JsonArray;
  *
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
-public class ImageUtils {
+public final class ImageUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ImageUtils.class, MESSAGES);
 
@@ -99,7 +99,7 @@ public class ImageUtils {
 
         LOGGER.debug(MessageCodes.DBG_094, aID, aTileSize, aWidth, aHeight);
 
-        for (int multiplier = 1; multiplier * aTileSize < longDim; multiplier *= 2) {
+        for (int multiplier = 1; (multiplier * aTileSize) < longDim; multiplier *= 2) {
             final int tileSize = multiplier * aTileSize;
 
             int x = 0;
@@ -113,11 +113,11 @@ public class ImageUtils {
 
             LOGGER.debug(MessageCodes.DBG_095, multiplier);
 
-            for (x = 0; x < aWidth + tileSize; x += tileSize) {
-                xTileSize = x + tileSize < aWidth ? tileSize : aWidth - x;
+            for (x = 0; x < (aWidth + tileSize); x += tileSize) {
+                xTileSize = (x + tileSize) < aWidth ? tileSize : aWidth - x;
                 yTileSize = tileSize < aHeight ? tileSize : aHeight;
 
-                if (xTileSize > 0 && yTileSize > 0) {
+                if ((xTileSize > 0) && (yTileSize > 0)) {
                     region = StringUtils.format(REGION, x, y, xTileSize, yTileSize);
                     size = getSize(multiplier, xTileSize, yTileSize);
 
@@ -132,11 +132,11 @@ public class ImageUtils {
                     }
                 }
 
-                for (y = tileSize; y < aHeight + tileSize; y += tileSize) {
-                    xTileSize = x + tileSize < aWidth ? tileSize : aWidth - x;
-                    yTileSize = y + tileSize < aHeight ? tileSize : aHeight - y;
+                for (y = tileSize; y < (aHeight + tileSize); y += tileSize) {
+                    xTileSize = (x + tileSize) < aWidth ? tileSize : aWidth - x;
+                    yTileSize = (y + tileSize) < aHeight ? tileSize : aHeight - y;
 
-                    if (xTileSize > 0 && yTileSize > 0) {
+                    if ((xTileSize > 0) && (yTileSize > 0)) {
                         region = StringUtils.format(REGION, x, y, xTileSize, yTileSize);
                         size = getSize(multiplier, xTileSize, yTileSize);
 
@@ -226,7 +226,7 @@ public class ImageUtils {
         final int longDimension = Math.max(aWidth, aHeight);
         final JsonArray scaleFactors = new JsonArray();
 
-        for (int multiplier = 1; multiplier * aTileSize < longDimension; multiplier *= 2) {
+        for (int multiplier = 1; (multiplier * aTileSize) < longDimension; multiplier *= 2) {
             scaleFactors.add(multiplier);
         }
 
@@ -272,7 +272,7 @@ public class ImageUtils {
      */
     public static String ratio(final int aWidth, final int aHeight) {
         final int gcd = gcd(aWidth, aHeight);
-        return aHeight / gcd + ":" + aHeight / gcd;
+        return (aHeight / gcd) + ":" + (aHeight / gcd);
     }
 
     /**

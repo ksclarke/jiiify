@@ -21,7 +21,11 @@ import info.freelibrary.util.StringUtils;
  */
 public class ImageRequest implements Cloneable {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ImageRequest.class, MESSAGES);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageRequest.class, MESSAGES);
+
+    private static final String DELIM = "/";
+
+    private static final String EMPTY = "";
 
     private final String myID;
 
@@ -47,7 +51,7 @@ public class ImageRequest implements Cloneable {
     public ImageRequest(final String aID, final String aServicePrefix, final ImageRegion aRegion) {
         myRegion = aRegion;
         myID = aID;
-        myServicePrefix = aServicePrefix.replace("/", "");
+        myServicePrefix = aServicePrefix.replace(DELIM, EMPTY);
         mySize = new ImageSize();
         myRotation = new ImageRotation();
         myQuality = new ImageQuality();
@@ -66,7 +70,7 @@ public class ImageRequest implements Cloneable {
             final ImageSize aSize) {
         myRegion = aRegion;
         myID = aID;
-        myServicePrefix = aServicePrefix.replace("/", "");
+        myServicePrefix = aServicePrefix.replace(DELIM, EMPTY);
         mySize = aSize;
         myRotation = new ImageRotation();
         myQuality = new ImageQuality();
@@ -83,7 +87,7 @@ public class ImageRequest implements Cloneable {
     public ImageRequest(final String aID, final String aServicePrefix, final ImageSize aSize) {
         mySize = aSize;
         myID = aID;
-        myServicePrefix = aServicePrefix.replace("/", "");
+        myServicePrefix = aServicePrefix.replace(DELIM, EMPTY);
         myRegion = new ImageRegion();
         myRotation = new ImageRotation();
         myQuality = new ImageQuality();
@@ -102,11 +106,12 @@ public class ImageRequest implements Cloneable {
      * @param aQuality A quality of image to return
      * @param aFormat A format of image to return
      */
-    public ImageRequest(final String aID, final String aServicePrefix, final ImageRegion aRegion, final ImageSize aSize,
-            final ImageRotation aRotation, final ImageQuality aQuality, final ImageFormat aFormat) {
+    public ImageRequest(final String aID, final String aServicePrefix, final ImageRegion aRegion,
+            final ImageSize aSize, final ImageRotation aRotation, final ImageQuality aQuality,
+            final ImageFormat aFormat) {
         mySize = aSize;
         myID = aID;
-        myServicePrefix = aServicePrefix.replace("/", "");
+        myServicePrefix = aServicePrefix.replace(DELIM, EMPTY);
         myRegion = aRegion;
         myRotation = aRotation;
         myQuality = aQuality;
@@ -120,7 +125,7 @@ public class ImageRequest implements Cloneable {
      * @throws IIIFException If the supplied path is not valid
      */
     public ImageRequest(final String aIIIFImagePath) throws IIIFException {
-        final String[] pathComponents = aIIIFImagePath.substring(1).split("/");
+        final String[] pathComponents = aIIIFImagePath.substring(1).split(DELIM);
         final int dotIndex = pathComponents[5].lastIndexOf(".");
 
         LOGGER.debug(MessageCodes.DBG_071, aIIIFImagePath);
@@ -256,7 +261,7 @@ public class ImageRequest implements Cloneable {
         final String fileName = StringUtils.toString('.', myQuality, myFormat);
         final String id = getPathEncodedID();
 
-        return new StringJoiner("/", "/", "").add(myServicePrefix).add(id).add(myRegion.toString()).add(mySize
+        return new StringJoiner(DELIM, DELIM, EMPTY).add(myServicePrefix).add(id).add(myRegion.toString()).add(mySize
                 .toString()).add(myRotation.toString()).add(fileName).toString();
     }
 
@@ -292,6 +297,21 @@ public class ImageRequest implements Cloneable {
         }
 
         return false;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = 13;
+
+        result += myServicePrefix.hashCode();
+        result += myID.hashCode();
+        result += myFormat.hashCode();
+        result += myQuality.hashCode();
+        result += myRegion.hashCode();
+        result += myRotation.hashCode();
+        result += mySize.hashCode();
+
+        return 37 * result;
     }
 
     /**

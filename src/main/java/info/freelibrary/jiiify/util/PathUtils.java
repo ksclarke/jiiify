@@ -2,6 +2,7 @@
 package info.freelibrary.jiiify.util;
 
 import static info.freelibrary.jiiify.Constants.MESSAGES;
+import static info.freelibrary.jiiify.Constants.SLASH;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -20,9 +21,11 @@ import info.freelibrary.util.LoggerFactory;
  *
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
-public class PathUtils {
+public final class PathUtils {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PathUtils.class, MESSAGES);
+
+    private static final String PERCENT = "%25";
 
     private PathUtils() {
     }
@@ -34,7 +37,7 @@ public class PathUtils {
      * @return An encoded version of the identifier
      * @throws URISyntaxException if the supplied identifier isn't valid for a URI
      */
-    public static final String encodeIdentifier(final String aIdentifier) throws URISyntaxException {
+    public static String encodeIdentifier(final String aIdentifier) throws URISyntaxException {
         return encode(aIdentifier, false);
     }
 
@@ -45,7 +48,7 @@ public class PathUtils {
      * @return The encoded form of the IIIF service path
      * @throws URISyntaxException if the supplied prefix isn't valid for a URI
      */
-    public static final String encodeServicePrefix(final String aPrefix) throws URISyntaxException {
+    public static String encodeServicePrefix(final String aPrefix) throws URISyntaxException {
         return encode(aPrefix, true);
     }
 
@@ -55,7 +58,7 @@ public class PathUtils {
      * @param aString An encoded IIIF identifier or service path
      * @return A decoded IIIF identifier or service path
      */
-    public static final String decode(final String aString) {
+    public static String decode(final String aString) {
         return decode(aString, Constants.UTF_8_ENCODING);
     }
 
@@ -68,7 +71,7 @@ public class PathUtils {
      * @param aEncoding A character encoding to use for the string decoding
      * @return A decoded IIIF identifier or service path
      */
-    private static final String decode(final String aURIString, final String aEncoding) {
+    private static String decode(final String aURIString, final String aEncoding) {
         String uriString = aURIString;
         String decodedString;
 
@@ -77,7 +80,7 @@ public class PathUtils {
                 decodedString = uriString;
 
                 // Java's URLDecoder needs a little help with occurrences of '%' that aren't percent escaped values
-                uriString = URLDecoder.decode(decodedString.replaceAll("%(?![0-9a-fA-F]{2})", "%25"), aEncoding);
+                uriString = URLDecoder.decode(decodedString.replaceAll("%(?![0-9a-fA-F]{2})", PERCENT), aEncoding);
             } while (!uriString.equals(decodedString));
         } catch (final UnsupportedEncodingException details) {
             throw new RuntimeException("An unsupported charset was supplied: " + aEncoding, details);
@@ -97,14 +100,14 @@ public class PathUtils {
      * @param aIgnoreSlashFlag Whether slashes should be encoded or not
      * @return The percent-encoded string
      */
-    private static final String encode(final String aString, final boolean aIgnoreSlashFlag) throws URISyntaxException {
+    private static String encode(final String aString, final boolean aIgnoreSlashFlag) throws URISyntaxException {
         final CharacterIterator iterator = new StringCharacterIterator(decode(aString));
         final StringBuilder sb = new StringBuilder();
 
         for (char c = iterator.first(); c != CharacterIterator.DONE; c = iterator.next()) {
             switch (c) {
                 case '%':
-                    sb.append("%25");
+                    sb.append(PERCENT);
                     break;
                 case '/':
                     if (aIgnoreSlashFlag) {
@@ -145,8 +148,9 @@ public class PathUtils {
      * @return The path without the stripped parts
      */
     public static String stripPathParts(final String aPath, final int... aParts) {
-        final String path = aPath.startsWith("/") ? aPath.replaceFirst("\\/", "") : aPath;
-        final String[] parts = path.split("\\/");
+        final String delimiter = "\\/";
+        final String path = aPath.startsWith(SLASH) ? aPath.replaceFirst(delimiter, "") : aPath;
+        final String[] parts = path.split(delimiter);
         final StringBuilder builder = new StringBuilder();
 
         for (int index = 0; index < parts.length; index++) {
@@ -159,11 +163,11 @@ public class PathUtils {
             }
 
             if (!found) {
-                builder.append(parts[index]).append('/');
+                builder.append(parts[index]).append(SLASH);
             }
         }
 
-        if (builder.charAt(builder.length() - 1) == '/') {
+        if (builder.charAt(builder.length() - 1) == SLASH.charAt(0)) {
             builder.deleteCharAt(builder.length() - 1);
         }
 

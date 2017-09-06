@@ -19,6 +19,7 @@ import java.util.UUID;
 
 import javax.naming.ConfigurationException;
 
+import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.SolrMetadata;
 import info.freelibrary.jiiify.iiif.ImageRegion;
@@ -26,6 +27,8 @@ import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 import info.freelibrary.jiiify.iiif.ImageRequest;
 import info.freelibrary.jiiify.iiif.ImageSize;
 import info.freelibrary.jiiify.util.ImageUtils;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -37,6 +40,8 @@ import io.vertx.core.shareddata.SharedData;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class TileMasterVerticle extends AbstractJiiifyVerticle {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(TileMasterVerticle.class, Constants.MESSAGES);
 
     @Override
     public void start() throws ConfigurationException, IOException {
@@ -132,6 +137,11 @@ public class TileMasterVerticle extends AbstractJiiifyVerticle {
         aMessage.put(SolrMetadata.ACTION_TYPE, SolrMetadata.INDEX_ACTION);
         aMessage.put(IIIF_PATH_KEY, aThumbnail);
         sendMessage(aMessage, ImageIndexVerticle.class.getName(), INGEST_TIMEOUT);
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

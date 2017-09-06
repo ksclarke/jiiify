@@ -27,9 +27,9 @@ import io.vertx.core.json.JsonObject;
  */
 public class SolrServiceImpl implements SolrService {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(SolrServiceImpl.class, MESSAGES);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolrServiceImpl.class, MESSAGES);
 
-    private final int MAX_TRIES = 10;
+    private static final int MAX_TRIES = 10;
 
     private final Configuration myConfig;
 
@@ -108,7 +108,7 @@ public class SolrServiceImpl implements SolrService {
 
         request.putHeader(Metadata.CONTENT_TYPE, Metadata.JSON_MIME_TYPE);
 
-        if (aJsonObject.size() == 1 && aJsonObject.containsKey(JIIIFY_ARRAY)) {
+        if ((aJsonObject.size() == 1) && aJsonObject.containsKey(JIIIFY_ARRAY)) {
             request.end(aJsonObject.getJsonArray(JIIIFY_ARRAY).toString());
         } else {
             request.end(aJsonObject.toString());

@@ -2,6 +2,7 @@
 package info.freelibrary.jiiify.handlers;
 
 import static info.freelibrary.jiiify.Constants.MESSAGES;
+import static info.freelibrary.jiiify.Constants.SLASH;
 import static info.freelibrary.jiiify.Metadata.LOCATION_HEADER;
 
 import info.freelibrary.jiiify.Configuration;
@@ -21,7 +22,7 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class RedirectHandler implements Handler<RoutingContext> {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(RedirectHandler.class, MESSAGES);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RedirectHandler.class, MESSAGES);
 
     private String myBaseURI;
 
@@ -41,10 +42,10 @@ public class RedirectHandler implements Handler<RoutingContext> {
         final String redirectURI;
 
         if (uri.matches(myBaseURI)) {
-            if (uri.endsWith("/")) {
+            if (uri.endsWith(SLASH)) {
                 redirectURI = uri + ImageInfo.FILE_NAME;
             } else {
-                redirectURI = uri + "/" + ImageInfo.FILE_NAME;
+                redirectURI = uri + SLASH + ImageInfo.FILE_NAME;
             }
 
             if (LOGGER.isDebugEnabled()) {
@@ -52,7 +53,7 @@ public class RedirectHandler implements Handler<RoutingContext> {
             }
         } else {
             LOGGER.warn(MessageCodes.WARN_011);
-            redirectURI = "/";
+            redirectURI = SLASH;
         }
 
         response.putHeader(LOCATION_HEADER, redirectURI).end();

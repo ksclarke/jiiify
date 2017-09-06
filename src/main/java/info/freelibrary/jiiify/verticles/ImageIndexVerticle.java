@@ -17,10 +17,13 @@ import javax.naming.ConfigurationException;
 
 import org.javatuples.KeyValue;
 
+import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.SolrMetadata;
 import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.jiiify.util.SolrUtils;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
@@ -32,6 +35,8 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImageIndexVerticle extends AbstractJiiifyVerticle implements SolrMetadata {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageIndexVerticle.class, Constants.MESSAGES);
 
     @Override
     public void start() throws ConfigurationException, IOException {
@@ -91,4 +96,10 @@ public class ImageIndexVerticle extends AbstractJiiifyVerticle implements SolrMe
             aMessage.reply(FAILURE_RESPONSE);
         }
     }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
 }

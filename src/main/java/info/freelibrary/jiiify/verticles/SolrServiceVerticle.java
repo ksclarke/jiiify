@@ -6,9 +6,12 @@ import static info.freelibrary.jiiify.Constants.SOLR_SERVICE_KEY;
 import static info.freelibrary.jiiify.util.SolrUtils.SOLR_OK_STATUS;
 import static info.freelibrary.jiiify.util.SolrUtils.SOLR_STATUS;
 
+import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.jiiify.services.impl.SolrServiceImpl;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpClient;
@@ -23,6 +26,8 @@ import io.vertx.serviceproxy.ProxyHelper;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class SolrServiceVerticle extends AbstractJiiifyVerticle {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SolrServiceVerticle.class, Constants.MESSAGES);
 
     private SolrService myService;
 
@@ -58,7 +63,7 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
             aResponse.bodyHandler(body -> {
                 final String status = new JsonObject(body.toString()).getString(SOLR_STATUS);
 
-                if (status != null && status.equals(SOLR_OK_STATUS)) {
+                if ((status != null) && status.equals(SOLR_OK_STATUS)) {
                     myService = new SolrServiceImpl(getConfig(), vertx);
                     ProxyHelper.registerService(SolrService.class, vertx, myService, SOLR_SERVICE_KEY);
 
@@ -75,4 +80,10 @@ public class SolrServiceVerticle extends AbstractJiiifyVerticle {
             aFuture.fail(aResponse.statusMessage() + " [" + aResponse.statusCode() + "]");
         }
     }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
 }

@@ -1,6 +1,7 @@
 
 package info.freelibrary.jiiify.handlers;
 
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 
 import java.awt.image.BufferedImage;
@@ -22,6 +23,8 @@ import info.freelibrary.jiiify.iiif.ImageRotation;
 import info.freelibrary.jiiify.iiif.InvalidRotationException;
 import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.util.FileUtils;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -34,6 +37,8 @@ import io.vertx.ext.web.RoutingContext;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImageHandler extends JiiifyHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageHandler.class, MESSAGES);
 
     /**
      * Creates a IIIF image handler.
@@ -201,6 +206,11 @@ public class ImageHandler extends JiiifyHandler {
                 fail(aContext, getHandler.cause());
             }
         });
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

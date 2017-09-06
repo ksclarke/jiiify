@@ -20,6 +20,7 @@ import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.HBS_PATH_SKIP_KEY;
 import static info.freelibrary.jiiify.Constants.MESSAGES;
 
+import java.io.File;
 import java.nio.file.Paths;
 import java.util.Map;
 
@@ -44,9 +45,10 @@ import io.vertx.ext.web.templ.impl.CachingTemplateEngine;
  * @author <a href="http://tfox.org">Tim Fox</a>
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
-public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template> implements HandlebarsTemplateEngine {
+public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template> implements
+        HandlebarsTemplateEngine {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(HandlebarsTemplateEngineImpl.class, MESSAGES);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HandlebarsTemplateEngineImpl.class, MESSAGES);
 
     private final Handlebars myHandlebars;
 
@@ -86,11 +88,11 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
         final String templateFileName;
 
         if (skip != null) {
-            final String[] pathParts = aTemplateFileName.split("/");
+            final String[] pathParts = aTemplateFileName.split(File.separator);
             final StringBuilder pathBuilder = new StringBuilder();
 
-            for (int index = 0; index < pathParts.length - (int) skip; index++) {
-                pathBuilder.append(pathParts[index]).append('/');
+            for (int index = 0; index < (pathParts.length - (int) skip); index++) {
+                pathBuilder.append(pathParts[index]).append(File.separator);
             }
 
             templateFileName = pathBuilder.deleteCharAt(pathBuilder.length() - 1).toString();
@@ -98,7 +100,7 @@ public class HandlebarsTemplateEngineImpl extends CachingTemplateEngine<Template
         } else {
             LOGGER.debug(MessageCodes.DBG_091, aTemplateFileName);
             // FIXME: Seems some paths are coming in with /admin/ and some aren't... related to POST(?!)
-            templateFileName = aTemplateFileName.replaceAll("\\/admin\\/", "/");
+            templateFileName = aTemplateFileName.replaceAll("\\/admin\\/", File.separator);
         }
 
         try {

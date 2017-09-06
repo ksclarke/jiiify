@@ -92,7 +92,7 @@ public class GoogleOAuth2 extends DefaultApi20 {
 
         private final OAuthConfig myConfig;
 
-        public GoogleOAuth2Service(final DefaultApi20 aAPI, final OAuthConfig aConfig) {
+        GoogleOAuth2Service(final DefaultApi20 aAPI, final OAuthConfig aConfig) {
             super(aAPI, aConfig);
 
             myAPI = aAPI;

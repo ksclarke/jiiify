@@ -156,13 +156,13 @@ public class ImageSizeTest {
     @Test
     public void canBeScaled() {
         try {
-            assertTrue(new ImageSize("!200,200").canBeScaled());
+            assertTrue(new ImageSize("!200,200").isScalable());
         } catch (final InvalidSizeException details) {
             fail(details.getMessage());
         }
 
         try {
-            assertFalse(new ImageSize("200,200").canBeScaled());
+            assertFalse(new ImageSize("200,200").isScalable());
         } catch (final InvalidSizeException details) {
             fail(details.getMessage());
         }

@@ -20,27 +20,31 @@ import io.vertx.core.json.JsonObject;
  */
 public class ImageInfo {
 
-    public final static String FILE_NAME = "info.json";
+    public static final String FILE_NAME = "info.json";
 
-    public final static String WIDTH = "width";
+    public static final String WIDTH = "width";
 
-    public final static String HEIGHT = "height";
+    public static final String HEIGHT = "height";
 
-    public final static String SCALE_FACTORS = "scaleFactors";
+    public static final String SCALE_FACTORS = "scaleFactors";
 
-    public final static String ID = "@id";
+    public static final String ID = "@id";
 
-    public final static String FORMATS = "formats";
+    public static final String CONTEXT = "@context";
 
-    public final static String QUALITIES = "qualities";
+    public static final String TILES = "tiles";
 
-    private final static String CONTEXT = "http://iiif.io/api/image/2/context.json";
+    public static final String FORMATS = "formats";
 
-    private static final String PROTOCOL = "http://iiif.io/api/image";
+    public static final String QUALITIES = "qualities";
 
-    private static final String PROFILE = "http://iiif.io/api/image/2/level0.json";
+    private static final String CONTEXT_URI = "http://iiif.io/api/image/2/context.json";
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ImageInfo.class, MESSAGES);
+    private static final String PROTOCOL_URI = "http://iiif.io/api/image";
+
+    private static final String PROFILE_URI = "http://iiif.io/api/image/2/level0.json";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageInfo.class, MESSAGES);
 
     private String myID;
 
@@ -77,8 +81,8 @@ public class ImageInfo {
      * @throws InvalidInfoException If the JSON object isn't a valid image info object
      */
     public ImageInfo(final JsonObject aJsonObject) throws InvalidInfoException {
-        final JsonArray profileArray = aJsonObject.getJsonArray("profile");
-        final JsonArray tileArray = aJsonObject.getJsonArray("tiles");
+        final JsonArray profileArray = aJsonObject.getJsonArray(PROFILE_URI);
+        final JsonArray tileArray = aJsonObject.getJsonArray(TILES);
 
         myID = aJsonObject.getString(ImageInfo.ID);
 
@@ -246,7 +250,6 @@ public class ImageInfo {
         return myPhysicalScaleUnit;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public String toString() {
         final JsonObject json = new JsonObject();
@@ -257,7 +260,7 @@ public class ImageInfo {
         final JsonArray qualities = new JsonArray();
 
         // Profiles array
-        profile.add(PROFILE);
+        profile.add(PROFILE_URI);
 
         if (myFormats == null) {
             formats.add("jpg");
@@ -275,36 +278,36 @@ public class ImageInfo {
             }
         }
 
-        profileObj.put("formats", formats);
-        profileObj.put("qualities", qualities);
+        profileObj.put(FORMATS, formats);
+        profileObj.put(QUALITIES, qualities);
         profile.add(profileObj);
 
         // Tiles array only if image is large enough to get tiled
-        if (myWidth > myTileSize || myHeight > myTileSize) {
+        if ((myWidth > myTileSize) || (myHeight > myTileSize)) {
             final JsonObject tilesObj = new JsonObject();
 
-            tilesObj.put("width", myTileSize);
-            tilesObj.put("scaleFactors", ImageUtils.getScaleFactors(myWidth, myHeight, myTileSize));
+            tilesObj.put(WIDTH, myTileSize);
+            tilesObj.put(SCALE_FACTORS, ImageUtils.getScaleFactors(myWidth, myHeight, myTileSize));
             tiles.add(tilesObj);
         }
 
         // The standard stuff
-        json.put("@context", CONTEXT);
-        json.put("@id", myID);
-        json.put("protocol", PROTOCOL);
-        json.put("width", myWidth);
-        json.put("height", myHeight);
+        json.put(CONTEXT, CONTEXT_URI);
+        json.put(ID, myID);
+        json.put("protocol", PROTOCOL_URI);
+        json.put(WIDTH, myWidth);
+        json.put(HEIGHT, myHeight);
 
-        if (myWidth > myTileSize || myHeight > myTileSize) {
-            json.put("tiles", tiles);
+        if ((myWidth > myTileSize) || (myHeight > myTileSize)) {
+            json.put(TILES, tiles);
         }
 
-        json.put("profile", profile);
+        json.put(PROFILE_URI, profile);
 
         if (myPhysicalScaleUnit != null) {
             final JsonObject service = new JsonObject();
 
-            service.put("@context", "http://iiif.io/api/annex/services/physdim/1/context.json");
+            service.put(CONTEXT, "http://iiif.io/api/annex/services/physdim/1/context.json");
             service.put("profile", "http://iiif.io/api/annex/services/physdim");
             service.put("physicalScale", myPhysicalScale);
             service.put("physicalUnits", myPhysicalScaleUnit);

@@ -5,6 +5,7 @@ import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.HBS_PATH_SKIP_KEY;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -13,6 +14,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.util.PathUtils;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -22,6 +25,8 @@ import io.vertx.ext.web.RoutingContext;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ItemHandler extends JiiifyHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ItemHandler.class, MESSAGES);
 
     /**
      * An item handler for the administrative interface.
@@ -38,12 +43,13 @@ public class ItemHandler extends JiiifyHandler {
         final ObjectNode jsonNode = mapper.createObjectNode();
         final String servicePrefix = myConfig.getServicePrefix();
         final String requestPath = aContext.request().uri();
+        final String delimiter = "\\/";
         final String id;
 
         if (requestPath.contains("viewer")) {
-            id = requestPath.split("\\/")[4];
+            id = requestPath.split(delimiter)[4];
         } else {
-            id = requestPath.split("\\/")[3];
+            id = requestPath.split(delimiter)[3];
         }
 
         LOGGER.debug(MessageCodes.DBG_045, id);
@@ -56,6 +62,11 @@ public class ItemHandler extends JiiifyHandler {
         aContext.data().put(HBS_PATH_SKIP_KEY, 1 + slashCount(PathUtils.decode(id)));
         aContext.data().put(HBS_DATA_KEY, toHbsContext(jsonNode, aContext));
         aContext.next();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

@@ -12,9 +12,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 
+import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.util.IOUtils;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
@@ -26,6 +29,8 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImagePropertiesVerticle extends AbstractJiiifyVerticle {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImagePropertiesVerticle.class, Constants.MESSAGES);
 
     @Override
     public void start() throws IOException {
@@ -73,6 +78,11 @@ public class ImagePropertiesVerticle extends AbstractJiiifyVerticle {
         } finally {
             IOUtils.closeQuietly(stream);
         }
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

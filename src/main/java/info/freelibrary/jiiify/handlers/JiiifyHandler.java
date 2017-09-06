@@ -1,8 +1,6 @@
 
 package info.freelibrary.jiiify.handlers;
 
-import static info.freelibrary.jiiify.Constants.MESSAGES;
-
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.JsonNodeValueResolver;
@@ -10,7 +8,6 @@ import com.github.jknack.handlebars.JsonNodeValueResolver;
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.Logger;
-import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.Handler;
 import io.vertx.ext.web.RoutingContext;
@@ -22,7 +19,7 @@ import io.vertx.ext.web.RoutingContext;
  */
 abstract class JiiifyHandler implements Handler<RoutingContext> {
 
-    protected final Logger LOGGER = LoggerFactory.getLogger(getClass(), MESSAGES);
+    private static final String LOGGED_IN = "logged-in";
 
     protected final Configuration myConfig;
 
@@ -45,14 +42,12 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
     Context toHbsContext(final ObjectNode aJsonObject, final RoutingContext aContext) {
         // Are we logged into the administrative interface?
         if (aContext.user() == null) {
-            aJsonObject.put("logged-in", false);
+            aJsonObject.put(LOGGED_IN, false);
         } else {
-            aJsonObject.put("logged-in", true);
+            aJsonObject.put(LOGGED_IN, true);
         }
 
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(MessageCodes.DBG_046, getClass().getSimpleName(), aJsonObject.toString());
-        }
+        getLogger().debug(MessageCodes.DBG_046, getClass().getSimpleName(), aJsonObject.toString());
 
         return Context.newBuilder(aJsonObject).resolver(JsonNodeValueResolver.INSTANCE).build();
     }
@@ -75,7 +70,7 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
      * @return A string formatted and ready for use in a message
      */
     String msg(final String aMessage, final Object... aDetails) {
-        return LOGGER.getMessage(aMessage, aDetails);
+        return getLogger().getMessage(aMessage, aDetails);
     }
 
     /**
@@ -106,7 +101,7 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
      * @param aMessage A more detailed message to supplement the exception message
      */
     void fail(final RoutingContext aContext, final Throwable aThrowable, final String aMessage) {
-        LOGGER.debug(MessageCodes.DBG_047, getClass().getName());
+        getLogger().debug(MessageCodes.DBG_047, getClass().getName());
 
         aContext.fail(500);
 
@@ -125,9 +120,11 @@ abstract class JiiifyHandler implements Handler<RoutingContext> {
      * @param aMessage A more detailed message to supplement the exception message
      */
     void fail(final RoutingContext aContext, final int aFailCode, final String aMessage) {
-        LOGGER.debug(MessageCodes.DBG_047, getClass().getName());
+        getLogger().debug(MessageCodes.DBG_047, getClass().getName());
 
         aContext.fail(aFailCode);
         aContext.put(FailureHandler.ERROR_MESSAGE, aMessage);
     }
+
+    protected abstract Logger getLogger();
 }

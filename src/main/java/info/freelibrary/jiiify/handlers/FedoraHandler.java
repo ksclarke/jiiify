@@ -1,8 +1,13 @@
+
 package info.freelibrary.jiiify.handlers;
+
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.verticles.FedoraIngestVerticle;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
@@ -16,11 +21,13 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class FedoraHandler extends JiiifyHandler {
 
-    public final static String URL_PARAM = "url";
+    public static final String URL_PARAM = "url";
 
-    public final static String FILE_PARAM = "file";
+    public static final String FILE_PARAM = "file";
 
-    public final static String IP_PARAM = "ip";
+    public static final String IP_PARAM = "ip";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(FedoraHandler.class, MESSAGES);
 
     /**
      * Creates a Fedora repository event handler using the supplied configuration.
@@ -51,6 +58,11 @@ public class FedoraHandler extends JiiifyHandler {
                 fail(aContext, result.cause(), msg(MessageCodes.EXC_080, FedoraIngestVerticle.class));
             }
         });
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

@@ -5,6 +5,7 @@ import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.HBS_PATH_SKIP_KEY;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.Metadata.PROPERTIES_FILE;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
@@ -22,6 +23,8 @@ import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -31,6 +34,8 @@ import io.vertx.ext.web.RoutingContext;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class PropertiesHandler extends JiiifyHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(PropertiesHandler.class, MESSAGES);
 
     /**
      * Creates a properties file handler.
@@ -63,7 +68,8 @@ public class PropertiesHandler extends JiiifyHandler {
                     });
                 } else {
                     aContext.fail(404);
-                    aContext.put(ERROR_MESSAGE, msg(MessageCodes.EXC_067, Paths.get(ptObj.getPath(), PROPERTIES_FILE)));
+                    aContext.put(ERROR_MESSAGE, msg(MessageCodes.EXC_067, Paths.get(ptObj.getPath(),
+                            PROPERTIES_FILE)));
                 }
             } else {
                 fail(aContext, findHandler.cause());
@@ -97,6 +103,11 @@ public class PropertiesHandler extends JiiifyHandler {
         } catch (final IOException details) {
             fail(aContext, details);
         }
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

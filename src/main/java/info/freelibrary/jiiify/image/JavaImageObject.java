@@ -41,7 +41,7 @@ public class JavaImageObject implements ImageObject {
         ImageIO.setUseCache(true);
     }
 
-    private final Logger LOGGER = LoggerFactory.getLogger(JavaImageObject.class, MESSAGES);
+    private static final Logger LOGGER = LoggerFactory.getLogger(JavaImageObject.class, MESSAGES);
 
     private BufferedImage myImage;
 

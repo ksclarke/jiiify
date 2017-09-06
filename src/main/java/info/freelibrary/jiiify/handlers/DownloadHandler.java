@@ -5,7 +5,9 @@ import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.HBS_PATH_SKIP_KEY;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
+import static info.freelibrary.jiiify.Constants.SLASH;
 import static info.freelibrary.jiiify.Metadata.CONTENT_DISPOSITION;
 import static info.freelibrary.jiiify.Metadata.CONTENT_LENGTH;
 import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
@@ -44,6 +46,8 @@ import info.freelibrary.jiiify.iiif.InvalidInfoException;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -68,6 +72,8 @@ public class DownloadHandler extends JiiifyHandler {
         ENV.put("create", "true");
         ENV.put("encoding", "UTF-8");
     }
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(DownloadHandler.class, MESSAGES);
 
     /**
      * Creates a download handler.
@@ -104,7 +110,7 @@ public class DownloadHandler extends JiiifyHandler {
             final HttpServerRequest request = aContext.request();
             final String param = request.getParam(DOWNLOAD_SERVER_PARAM);
 
-            if (param == null || param.trim().equals("") || !param.startsWith("http")) {
+            if ((param == null) || param.trim().equals("") || !param.startsWith("http")) {
                 final HttpServerResponse response = aContext.response();
 
                 // FIXME: Quick and dirty redirect back to form for now -- add message
@@ -226,7 +232,7 @@ public class DownloadHandler extends JiiifyHandler {
                     if (handler.succeeded()) {
                         try {
                             Files.createDirectories(zipFS.getPath(Paths.get(path).getParent().toString()));
-                            Files.write(zipFS.getPath("/", path), handler.result().getBytes(), CREATE_NEW);
+                            Files.write(zipFS.getPath(SLASH, path), handler.result().getBytes(), CREATE_NEW);
                             future.complete();
                         } catch (final IOException details) {
                             future.fail(details);
@@ -279,7 +285,7 @@ public class DownloadHandler extends JiiifyHandler {
     private Path createZip(final Path aZipPath, final ImageInfo aImageInfo, final String aServer, final String aID)
             throws IOException {
         // Set the server in the info JSON file with information supplied via download form
-        aImageInfo.setID(aServer + (aServer.endsWith("/") ? "" : File.separator) + aID);
+        aImageInfo.setID(aServer + (aServer.endsWith(SLASH) ? "" : File.separator) + aID);
 
         final ZipOutputStream out = new ZipOutputStream(new FileOutputStream(aZipPath.toFile()));
         final ZipEntry zipEntry = new ZipEntry(ImageInfo.FILE_NAME);
@@ -292,5 +298,10 @@ public class DownloadHandler extends JiiifyHandler {
         out.close();
 
         return aZipPath;
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 }

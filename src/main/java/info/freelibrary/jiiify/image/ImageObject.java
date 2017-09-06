@@ -22,19 +22,19 @@ public interface ImageObject {
      *
      * @return The width of the image.
      */
-    public int getWidth();
+    int getWidth();
 
     /**
      * Returns the height of the image.
      *
      * @return The height of the image.
      */
-    public int getHeight();
+    int getHeight();
 
     /**
      * Frees resources associated with the image.
      */
-    public void free();
+    void free();
 
     /**
      * Changes the image object by extracting a region from the whole.
@@ -42,7 +42,7 @@ public interface ImageObject {
      * @param aRegion A IIIF image region
      * @throws IOException If there is trouble reading the image region
      */
-    public void extractRegion(final ImageRegion aRegion) throws IOException;
+    void extractRegion(ImageRegion aRegion) throws IOException;
 
     /**
      * Changes the image object by resizing it.
@@ -50,7 +50,7 @@ public interface ImageObject {
      * @param aSize A IIIF image size
      * @throws IOException If there is trouble reading the image size
      */
-    public void resize(final ImageSize aSize) throws IOException;
+    void resize(ImageSize aSize) throws IOException;
 
     /**
      * Changes the image object by rotating it.
@@ -58,7 +58,7 @@ public interface ImageObject {
      * @param aRotation A IIIF image rotation
      * @throws IOException If there is trouble reading the image rotation
      */
-    public void rotate(final ImageRotation aRotation) throws IOException;
+    void rotate(ImageRotation aRotation) throws IOException;
 
     /**
      * Changes the image object by adjusting its quality.
@@ -66,7 +66,7 @@ public interface ImageObject {
      * @param aQuality A IIIF image quality
      * @throws IOException If there is trouble reading the image quality
      */
-    public void adjustQuality(final ImageQuality aQuality) throws IOException;
+    void adjustQuality(ImageQuality aQuality) throws IOException;
 
     /**
      * Writes the image object to a Vertx {@link io.vertx.core.buffer.Buffer}.
@@ -75,6 +75,6 @@ public interface ImageObject {
      * @throws IOException If there is trouble writing the image to the Vert.x buffer
      * @return A Vert.x {@link io.vertx.core.buffer.Buffer}
      */
-    public Buffer toBuffer(final String aFileExt) throws IOException;
+    Buffer toBuffer(String aFileExt) throws IOException;
 
 }

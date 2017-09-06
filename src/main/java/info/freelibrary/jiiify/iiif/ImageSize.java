@@ -13,13 +13,23 @@ import info.freelibrary.util.LoggerFactory;
  */
 public class ImageSize {
 
-    private final Logger LOGGER = LoggerFactory.getLogger(ImageSize.class, Constants.MESSAGES);
-
     public static final String FULL = "full";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageSize.class, Constants.MESSAGES);
+
+    private static final String HEIGHT = "height";
+
+    private static final String WIDTH = "width";
+
+    private static final String DELIM = ",";
+
+    private static final String SCALE_DELIM = "!";
+
+    private static final String PCT_LABEL = "pct:";
 
     private boolean isPercentage;
 
-    private boolean canBeScaled;
+    private boolean isScalable;
 
     private int myPercentage;
 
@@ -68,64 +78,64 @@ public class ImageSize {
         } else if (aSizeString.equals(FULL)) {
             isPercentage = true;
             myPercentage = 100;
-        } else if (aSizeString.startsWith("pct:")) {
+        } else if (aSizeString.startsWith(PCT_LABEL)) {
             try {
                 isPercentage = true;
                 myPercentage = Integer.parseInt(aSizeString.substring(4));
 
-                if (myPercentage < 1 || myPercentage > 100) {
+                if ((myPercentage < 1) || (myPercentage > 100)) {
                     throw new InvalidSizeException(MessageCodes.EXC_014, aSizeString);
                 }
             } catch (final NumberFormatException details) {
                 throw new InvalidSizeException(MessageCodes.EXC_014, aSizeString);
             }
-        } else if (aSizeString.contains(",")) {
-            final String[] parts = aSizeString.split(",");
+        } else if (aSizeString.contains(DELIM)) {
+            final String[] parts = aSizeString.split(DELIM);
 
             if (parts.length == 0) {
                 throw new InvalidSizeException(MessageCodes.EXC_015);
-            } else if (aSizeString.length() - aSizeString.replace(",", "").length() > 1) {
+            } else if ((aSizeString.length() - aSizeString.replace(DELIM, "").length()) > 1) {
                 throw new InvalidSizeException(MessageCodes.EXC_016, aSizeString);
             }
 
-            if (aSizeString.startsWith(",")) {
+            if (aSizeString.startsWith(DELIM)) {
                 try {
                     myHeight = Integer.parseInt(parts[1]);
                 } catch (final NumberFormatException details) {
-                    throw new InvalidSizeException(MessageCodes.EXC_017, "height", parts[1]);
+                    throw new InvalidSizeException(MessageCodes.EXC_017, HEIGHT, parts[1]);
                 }
-            } else if (aSizeString.startsWith("!")) {
-                canBeScaled = true;
+            } else if (aSizeString.startsWith(SCALE_DELIM)) {
+                isScalable = true;
 
                 try {
                     // Chop off the exclamation point at the start of the string
                     myWidth = Integer.parseInt(parts[0].substring(1));
                 } catch (final NumberFormatException details) {
-                    throw new InvalidSizeException(MessageCodes.EXC_017, "width", parts[0]);
+                    throw new InvalidSizeException(MessageCodes.EXC_017, WIDTH, parts[0]);
                 }
 
                 try {
                     myHeight = Integer.parseInt(parts[1]);
                 } catch (final NumberFormatException details) {
-                    throw new InvalidSizeException(MessageCodes.EXC_017, "height", parts[0]);
+                    throw new InvalidSizeException(MessageCodes.EXC_017, HEIGHT, parts[0]);
                 }
-            } else if (aSizeString.endsWith(",")) {
+            } else if (aSizeString.endsWith(DELIM)) {
                 try {
                     myWidth = Integer.parseInt(parts[0]);
                 } catch (final NumberFormatException details) {
-                    throw new InvalidSizeException(MessageCodes.EXC_017, "width", parts[0]);
+                    throw new InvalidSizeException(MessageCodes.EXC_017, WIDTH, parts[0]);
                 }
             } else {
                 try {
                     myWidth = Integer.parseInt(parts[0]);
                 } catch (final NumberFormatException details) {
-                    throw new InvalidSizeException(MessageCodes.EXC_017, "width", parts[0]);
+                    throw new InvalidSizeException(MessageCodes.EXC_017, WIDTH, parts[0]);
                 }
 
                 try {
                     myHeight = Integer.parseInt(parts[1]);
                 } catch (final NumberFormatException details) {
-                    throw new InvalidSizeException(MessageCodes.EXC_017, "height", parts[0]);
+                    throw new InvalidSizeException(MessageCodes.EXC_017, HEIGHT, parts[0]);
                 }
             }
         } else {
@@ -157,7 +167,7 @@ public class ImageSize {
      * @return True if this image size request is for the full size of the image
      */
     public boolean isFullSize() {
-        return isPercentage && myPercentage == 100;
+        return isPercentage && (myPercentage == 100);
     }
 
     /**
@@ -185,15 +195,15 @@ public class ImageSize {
         if (isFullSize()) {
             sb.append(FULL);
         } else if (isPercentage()) {
-            sb.append("pct:").append(getPercentage());
-        } else if (canBeScaled()) {
-            sb.append('!').append(getWidth()).append(',').append(getHeight());
+            sb.append(PCT_LABEL).append(getPercentage());
+        } else if (isScalable()) {
+            sb.append(SCALE_DELIM).append(getWidth()).append(DELIM).append(getHeight());
         } else if (!hasHeight()) {
-            sb.append(getWidth()).append(',');
+            sb.append(getWidth()).append(DELIM);
         } else if (!hasWidth()) {
-            sb.append(',').append(getHeight());
+            sb.append(DELIM).append(getHeight());
         } else {
-            sb.append(getWidth()).append(',').append(getHeight());
+            sb.append(getWidth()).append(DELIM).append(getHeight());
         }
 
         return sb.toString();
@@ -204,8 +214,8 @@ public class ImageSize {
      *
      * @return True if a scaled response is acceptable; else, false
      */
-    public boolean canBeScaled() {
-        return canBeScaled;
+    public boolean isScalable() {
+        return isScalable;
     }
 
     /**
@@ -228,8 +238,8 @@ public class ImageSize {
 
     /**
      * Returns height of the image request taking into consideration the supplied actual height of the image. If the
-     * supplied height is less than the requested height, the supplied height is returned. If the image size request is
-     * for a percentage of the original image, the percentage of the supplied number is returned.
+     * supplied height is less than the requested height, the supplied height is returned. If the image size request
+     * is for a percentage of the original image, the percentage of the supplied number is returned.
      *
      * @param aImageHeight The image's actual height in pixels
      * @param aImageWidth The image's actual width in pixels
@@ -241,7 +251,7 @@ public class ImageSize {
         if (myHeight == 0) {
             if (isPercentage) {
                 LOGGER.debug(MessageCodes.DBG_073, myPercentage);
-                height = myPercentage / 100 * aImageHeight;
+                height = (myPercentage / 100) * aImageHeight;
             } else {
                 height = Math.round(scale(myWidth, aImageWidth) * aImageHeight);
                 LOGGER.debug(MessageCodes.DBG_074, height);
@@ -263,8 +273,8 @@ public class ImageSize {
 
     /**
      * Returns width of the image request taking into consideration the supplied actual width of the image. If the
-     * supplied width is less than the requested width, the supplied width is returned. If the image size request is for
-     * a percentage of the original image, the percentage of the supplied number is returned.
+     * supplied width is less than the requested width, the supplied width is returned. If the image size request is
+     * for a percentage of the original image, the percentage of the supplied number is returned.
      *
      * @param aImageWidth The image's actual width in pixels
      * @param aImageHeight The image's actual height in pixels
@@ -276,7 +286,7 @@ public class ImageSize {
         if (myWidth == 0) {
             if (isPercentage) {
                 LOGGER.debug(MessageCodes.DBG_078, myPercentage);
-                width = myPercentage / 100 * aImageWidth;
+                width = (myPercentage / 100) * aImageWidth;
             } else {
                 width = Math.round(scale(myHeight, aImageHeight) * aImageWidth);
                 LOGGER.debug(MessageCodes.DBG_079, width);

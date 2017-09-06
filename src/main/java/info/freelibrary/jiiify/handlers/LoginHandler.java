@@ -4,6 +4,7 @@ package info.freelibrary.jiiify.handlers;
 import static info.freelibrary.jiiify.Constants.FAILURE_RESPONSE;
 import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.HTTP_HOST_PROP;
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SUCCESS_RESPONSE;
 import static info.freelibrary.jiiify.Metadata.CONTENT_TYPE;
 import static info.freelibrary.jiiify.Metadata.TEXT_MIME_TYPE;
@@ -17,6 +18,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.Handler;
@@ -49,6 +52,8 @@ public class LoginHandler extends JiiifyHandler {
     private static final String FACEBOOK_HOST = "graph.facebook.com";
 
     private static final String FACEBOOK_PATH = "/debug_token?input_token={}&access_token={}";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(LoginHandler.class, MESSAGES);
 
     // TODO: check JSON service aud to make sure it matches the client ID
     private final JWTAuth myJwtAuth;
@@ -84,7 +89,7 @@ public class LoginHandler extends JiiifyHandler {
             final String token = aContext.request().getParam("token");
             final String site = aContext.request().getParam("site");
 
-            if (StringUtils.trimToNull(token) != null && StringUtils.trimToNull(site) != null) {
+            if ((StringUtils.trimToNull(token) != null) && (StringUtils.trimToNull(site) != null)) {
                 final HttpClientOptions options = new HttpClientOptions().setSsl(true);
                 final HttpClient client = aContext.vertx().createHttpClient(options);
 
@@ -142,7 +147,11 @@ public class LoginHandler extends JiiifyHandler {
         }
     }
 
-    private class JWTBodyHandler implements Handler<Buffer> {
+    private final class JWTBodyHandler implements Handler<Buffer> {
+
+        private static final String NAME = "name";
+
+        private static final String EMAIL = "email";
 
         private final RoutingContext myContext;
 
@@ -195,7 +204,7 @@ public class LoginHandler extends JiiifyHandler {
 
         private JsonObject extractJWT(final JsonObject aJsonObject) throws FailedLoginException {
             final JsonObject jsonObject = new JsonObject();
-            final String email = aJsonObject.getString("email", "");
+            final String email = aJsonObject.getString(EMAIL, "");
             final String[] users = myConfig.getUsers();
 
             // If we don't have any configured users, we allow all
@@ -209,7 +218,7 @@ public class LoginHandler extends JiiifyHandler {
                 }
 
                 if (!found) {
-                    if (email.equals("")) {
+                    if ("".equals(email)) {
                         throw new FailedLoginException(msg(MessageCodes.EXC_063));
                     } else {
                         throw new FailedLoginException(msg(MessageCodes.EXC_064, email));
@@ -217,10 +226,10 @@ public class LoginHandler extends JiiifyHandler {
                 }
             }
 
-            jsonObject.put("email", email);
+            jsonObject.put(EMAIL, email);
 
-            if (aJsonObject.containsKey("name")) {
-                jsonObject.put("name", aJsonObject.getString("name"));
+            if (aJsonObject.containsKey(NAME)) {
+                jsonObject.put(NAME, aJsonObject.getString(NAME));
             } else {
                 LOGGER.warn(MessageCodes.WARN_010);
             }
@@ -228,4 +237,10 @@ public class LoginHandler extends JiiifyHandler {
             return jsonObject;
         }
     }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
 }

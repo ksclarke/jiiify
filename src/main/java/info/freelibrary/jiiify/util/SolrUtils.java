@@ -16,7 +16,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
-public class SolrUtils {
+public final class SolrUtils {
 
     public static final String ADD = "add";
 

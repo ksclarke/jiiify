@@ -2,13 +2,11 @@
 package info.freelibrary.jiiify.verticles;
 
 import static info.freelibrary.jiiify.Constants.CONFIG_KEY;
-import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SHARED_DATA_KEY;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.util.Logger;
-import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -23,14 +21,12 @@ import io.vertx.core.json.JsonObject;
  */
 public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
 
-    protected final Logger LOGGER = LoggerFactory.getLogger(getClass().getName(), MESSAGES);
-
-    protected final int INGEST_TIMEOUT = Integer.MAX_VALUE;
+    protected static final int INGEST_TIMEOUT = Integer.MAX_VALUE;
 
     @Override
     public void stop(final Future<Void> aFuture) {
-        if (LOGGER.isDebugEnabled()) {
-            LOGGER.debug(MessageCodes.DBG_000, getClass().getName(), deploymentID());
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(MessageCodes.DBG_000, getClass().getName(), deploymentID());
         }
 
         aFuture.complete();
@@ -61,9 +57,9 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
         vertx.eventBus().send(aVerticleName, aJsonObject, options, response -> {
             if (response.failed()) {
                 if (response.cause() != null) {
-                    LOGGER.error(response.cause(), MessageCodes.EXC_039, aVerticleName, aJsonObject);
+                    getLogger().error(response.cause(), MessageCodes.EXC_039, aVerticleName, aJsonObject);
                 } else {
-                    LOGGER.error(MessageCodes.EXC_039, aVerticleName, aJsonObject);
+                    getLogger().error(MessageCodes.EXC_039, aVerticleName, aJsonObject);
                 }
             }
         });
@@ -78,4 +74,7 @@ public abstract class AbstractJiiifyVerticle extends AbstractVerticle {
     protected void sendMessage(final JsonObject aJsonObject, final String aVerticleName) {
         sendMessage(aJsonObject, aVerticleName, DeliveryOptions.DEFAULT_TIMEOUT);
     }
+
+    protected abstract Logger getLogger();
+
 }

@@ -34,10 +34,13 @@ import java.util.Map;
 import javax.naming.ConfigurationException;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageFormat;
 import info.freelibrary.util.FileExtFileFilter;
 import info.freelibrary.util.FileUtils;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
@@ -48,6 +51,8 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class WatchFolderVerticle extends AbstractJiiifyVerticle {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(WatchFolderVerticle.class, Constants.MESSAGES);
 
     private final Map<WatchKey, Path> myKeys = new HashMap<>();
 
@@ -153,8 +158,8 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
                 final Path child = dir.resolve(name);
 
                 // Check the watch folder event
-                if (kind == ENTRY_MODIFY && !Files.isDirectory(child, NOFOLLOW_LINKS) && ImageFormat.isSupportedFormat(
-                        FileUtils.getExt(child.toString()))) {
+                if ((kind == ENTRY_MODIFY) && !Files.isDirectory(child, NOFOLLOW_LINKS) && ImageFormat
+                        .isSupportedFormat(FileUtils.getExt(child.toString()))) {
                     final String childPath = child.toAbsolutePath().toString();
                     final JsonObject json = new JsonObject().put(OVERWRITE_KEY, true);
 
@@ -236,6 +241,11 @@ public class WatchFolderVerticle extends AbstractJiiifyVerticle {
         }
 
         myKeys.put(watchKey, aDirPath);
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

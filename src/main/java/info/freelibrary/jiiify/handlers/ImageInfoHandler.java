@@ -1,6 +1,7 @@
 
 package info.freelibrary.jiiify.handlers;
 
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Metadata.DEFAULT_CACHE_CONTROL;
 import static info.freelibrary.jiiify.Metadata.JSON_MIME_TYPE;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_HEADER;
@@ -14,6 +15,8 @@ import info.freelibrary.jiiify.Metadata;
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -27,6 +30,8 @@ import io.vertx.ext.web.RoutingContext;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImageInfoHandler extends JiiifyHandler {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageInfoHandler.class, MESSAGES);
 
     /**
      * Creates a handler that handles requests for image info JSON files.
@@ -100,6 +105,11 @@ public class ImageInfoHandler extends JiiifyHandler {
     private void error(final RoutingContext aContext, final HttpServerRequest aRequest) {
         aContext.put(ERROR_HEADER, "Image Info Request Error");
         aContext.put(ERROR_MESSAGE, msg("Failed to serve image info: {}", aRequest.uri()));
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

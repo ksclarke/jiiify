@@ -20,7 +20,7 @@ public class IIIFException extends I18nException {
     /**
      * The resource bundle name from which we pull our exception messages.
      */
-    private final static String BUNDLE_NAME = "jiiify_messages";
+    private static final String BUNDLE_NAME = "jiiify_messages";
 
     /**
      * Constructs a new <code>IIIFException</code>.

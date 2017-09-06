@@ -21,7 +21,7 @@ public class IIIFErrorHandler extends JiiifyHandler {
 
     public static final String ERROR_MESSAGE = "error-message";
 
-    private final Logger LOGGER = LoggerFactory.getLogger(IIIFErrorHandler.class, MESSAGES);
+    private static final Logger LOGGER = LoggerFactory.getLogger(IIIFErrorHandler.class, MESSAGES);
 
     /**
      * An error handler for IIIF-related exceptions.
@@ -85,6 +85,11 @@ public class IIIFErrorHandler extends JiiifyHandler {
             response.end(errorMessage);
             response.close();
         }
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

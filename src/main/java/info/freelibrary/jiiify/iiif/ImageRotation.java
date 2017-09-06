@@ -10,6 +10,8 @@ import info.freelibrary.jiiify.MessageCodes;
  */
 public class ImageRotation {
 
+    private static final String MIRRORED_LABEL = "!";
+
     public boolean isMirrored;
 
     public float myRotation;
@@ -28,7 +30,7 @@ public class ImageRotation {
      * @throws InvalidRotationException If the supplied string isn't a valid IIIF URI rotation string
      */
     public ImageRotation(final String aRotationString) throws InvalidRotationException {
-        if (aRotationString.startsWith("!")) {
+        if (aRotationString.startsWith(MIRRORED_LABEL)) {
             isMirrored = true;
             parseRotation(aRotationString.substring(1));
         } else {
@@ -67,7 +69,7 @@ public class ImageRotation {
 
     @Override
     public String toString() {
-        final String value = isMirrored() ? "!" + getValueAsString() : getValueAsString();
+        final String value = isMirrored() ? MIRRORED_LABEL + getValueAsString() : getValueAsString();
         return value.endsWith(".0") ? value.substring(0, value.length() - 2) : value;
     }
 
@@ -99,7 +101,7 @@ public class ImageRotation {
     }
 
     private void validate() throws InvalidRotationException {
-        if (myRotation < 0 || myRotation > 360) {
+        if ((myRotation < 0) || (myRotation > 360)) {
             throw new InvalidRotationException(MessageCodes.EXC_013, myRotation);
         }
     }

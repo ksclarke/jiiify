@@ -1,8 +1,12 @@
 
 package info.freelibrary.jiiify.handlers;
 
+import static info.freelibrary.jiiify.Constants.MESSAGES;
+
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.verticles.JiiifyMainVerticle;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
@@ -16,17 +20,19 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class StatusHandler extends JiiifyHandler {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(StatusHandler.class, MESSAGES);
+
     /* The critical flag as expected by our Nagios script */
-    private final String CRITICAL = "CRITICAL_";
+    private static final String CRITICAL = "CRITICAL_";
 
     /* The okay flag as expected by our Nagios script */
-    private final String OK = "OK_";
+    private static final String OK = "OK_";
 
     /* The unknown flag as expected by our Nagios script */
-    private final String UNKNOWN = "UNKNOWN_";
+    private static final String UNKNOWN = "UNKNOWN_";
 
     /* Count is one of the out of the box metrics */
-    private final String COUNT = "count";
+    private static final String COUNT = "count";
 
     /**
      * Creates a status handler.
@@ -37,17 +43,19 @@ public class StatusHandler extends JiiifyHandler {
         super(aConfig);
     }
 
+    // FIXME: There is now a standard status checker in Vert.x we should use instead.
+
     @Override
     public void handle(final RoutingContext aContext) {
+        final String mainVerticle = "vertx.verticles." + JiiifyMainVerticle.class.getName();
         final MetricsService metricsService = MetricsService.create(aContext.vertx());
         final JsonObject metrics = metricsService.getMetricsSnapshot(aContext.vertx());
         final String[] pathParts = aContext.request().path().split("\\/");
         final String statusCheck = pathParts[pathParts.length - 1];
         final HttpServerResponse response = aContext.response();
 
-        if (statusCheck.equals("basic")) {
-            switch (metrics.getJsonObject("vertx.verticles." + JiiifyMainVerticle.class.getName(), new JsonObject().put(
-                    COUNT, -1)).getInteger(COUNT)) {
+        if ("basic".equals(statusCheck)) {
+            switch (metrics.getJsonObject(mainVerticle, new JsonObject().put(COUNT, -1)).getInteger(COUNT)) {
                 case 0:
                     response.end(CRITICAL + "Jiiify Main Verticle is dead");
                     break;
@@ -60,6 +68,11 @@ public class StatusHandler extends JiiifyHandler {
         }
 
         response.close();
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

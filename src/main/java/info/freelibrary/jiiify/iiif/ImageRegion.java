@@ -12,14 +12,16 @@ public class ImageRegion {
 
     public static final String FULL = "full";
 
+    public static final String PERCENT = "pct:";
+
     // X-WIDTH (horizontal) Y-HEIGHT (vertical)
-    public static enum Region {
+    public enum Region {
         X, Y, WIDTH, HEIGHT
     }
 
     private final float[] myDimensions;
 
-    private boolean usesPercentages;
+    private boolean isPercentage;
 
     private boolean isFullImage;
 
@@ -28,8 +30,8 @@ public class ImageRegion {
      */
     public ImageRegion() {
         isFullImage = true;
+        isPercentage = true;
         myDimensions = new float[] { 100f, 100f, 100f, 100f };
-        usesPercentages = true;
     }
 
     /**
@@ -55,11 +57,11 @@ public class ImageRegion {
             throw new InvalidRegionException(new NullPointerException());
         } else if (aRegionString.equals(FULL)) {
             isFullImage = true;
-            usesPercentages = true;
+            isPercentage = true;
             myDimensions = new float[] { 100f, 100f, 100f, 100f };
-        } else if (aRegionString.startsWith("pct:")) {
+        } else if (aRegionString.startsWith(PERCENT)) {
             isFullImage = true;
-            usesPercentages = true;
+            isPercentage = true;
             myDimensions = getDimensions(aRegionString.substring(4));
 
             // Mark it a full size image even if it's using percentages
@@ -110,7 +112,7 @@ public class ImageRegion {
             sb.append(FULL);
         } else {
             if (usesPercentages()) {
-                sb.append("pct:");
+                sb.append(PERCENT);
             }
 
             sb.append(prettyPrint(myDimensions[0])).append(',');
@@ -128,7 +130,7 @@ public class ImageRegion {
      * @return True if this image region is represented with percentages
      */
     public boolean usesPercentages() {
-        return usesPercentages;
+        return isPercentage;
     }
 
     /**

@@ -11,11 +11,14 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageInfo;
 import info.freelibrary.jiiify.iiif.ImageRegion.Region;
 import info.freelibrary.jiiify.util.PathUtils;
 import info.freelibrary.pairtree.PairtreeObject;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
@@ -26,6 +29,8 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImageInfoVerticle extends AbstractJiiifyVerticle {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageInfoVerticle.class, Constants.MESSAGES);
 
     @Override
     public void start() throws IOException {
@@ -72,6 +77,11 @@ public class ImageInfoVerticle extends AbstractJiiifyVerticle {
         } catch (final URISyntaxException details) {
             throw new RuntimeException(details);
         }
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

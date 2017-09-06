@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import info.freelibrary.jiiify.Configuration;
+import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.RoutePatterns;
 import info.freelibrary.jiiify.handlers.DownloadHandler;
@@ -39,6 +40,8 @@ import info.freelibrary.jiiify.handlers.SearchHandler;
 import info.freelibrary.jiiify.handlers.StatusHandler;
 import info.freelibrary.jiiify.templates.HandlebarsTemplateEngine;
 import info.freelibrary.util.IOUtils;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.AsyncResult;
@@ -69,6 +72,8 @@ import io.vertx.ext.web.templ.TemplateEngine;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RoutePatterns {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(JiiifyMainVerticle.class, Constants.MESSAGES);
 
     private Configuration myConfig;
 
@@ -423,6 +428,11 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
         });
 
         return aFuture;
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

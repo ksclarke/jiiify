@@ -27,7 +27,7 @@ public class FailureHandler extends JiiifyHandler {
 
     public static final String ERROR_MESSAGE = "error-message";
 
-    private final Logger LOGGER = LoggerFactory.getLogger(FailureHandler.class, MESSAGES);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FailureHandler.class, MESSAGES);
 
     private final TemplateEngine myTemplateEngine;
 
@@ -128,6 +128,11 @@ public class FailureHandler extends JiiifyHandler {
                 response.close();
             }
         });
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

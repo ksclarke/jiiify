@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.naming.ConfigurationException;
 
+import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.iiif.ImageQuality;
 import info.freelibrary.jiiify.iiif.ImageRequest;
@@ -22,6 +23,8 @@ import info.freelibrary.jiiify.image.ImageObject;
 import info.freelibrary.jiiify.image.ImmutableBytes;
 import info.freelibrary.jiiify.util.ImageUtils;
 import info.freelibrary.pairtree.PairtreeObject;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
@@ -36,6 +39,8 @@ import io.vertx.core.shareddata.SharedData;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageWorkerVerticle.class, Constants.MESSAGES);
 
     @Override
     public void start() throws ConfigurationException, IOException {
@@ -132,7 +137,7 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
                     Thread.sleep(TimeUnit.MILLISECONDS.convert(1, TimeUnit.SECONDS));
 
                     /* This is just a wild unfounded amount of time based on nothing */
-                    if (count > 60 * 5) {
+                    if (count > (60 * 5)) {
                         LOGGER.warn(MessageCodes.WARN_006, aFilePath);
                         skipBuffer = true;
                         break;
@@ -173,8 +178,8 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
         return image;
     }
 
-    private void processImage(final ImageRequest aRequest, final ImageObject aImage, final Message<JsonObject> aMessage)
-            throws IOException {
+    private void processImage(final ImageRequest aRequest, final ImageObject aImage,
+            final Message<JsonObject> aMessage) throws IOException {
         final PairtreeObject ptObj = getConfig().getDataDir(aRequest.getID()).getObject(aRequest.getID());
         final Buffer imageBuffer;
 
@@ -211,5 +216,10 @@ public class ImageWorkerVerticle extends AbstractJiiifyVerticle {
                 aMessage.reply(FAILURE_RESPONSE);
             }
         });
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 }

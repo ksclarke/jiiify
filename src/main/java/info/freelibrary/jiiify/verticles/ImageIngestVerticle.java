@@ -16,10 +16,13 @@ import java.util.Properties;
 
 import javax.naming.ConfigurationException;
 
+import info.freelibrary.jiiify.Constants;
 import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.SolrMetadata;
 import info.freelibrary.pairtree.PairtreeObject;
 import info.freelibrary.util.FileUtils;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
@@ -34,6 +37,8 @@ import io.vertx.core.json.JsonObject;
  * @author <a href="mailto:ksclarke@ksclarke.io">Kevin S. Clarke</a>
  */
 public class ImageIngestVerticle extends AbstractJiiifyVerticle {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ImageIngestVerticle.class, Constants.MESSAGES);
 
     private static final String SKIP_PROPERTIES = "skipproperties";
 
@@ -177,6 +182,11 @@ public class ImageIngestVerticle extends AbstractJiiifyVerticle {
 
             LOGGER.debug(MessageCodes.DBG_106, aID);
         }
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }

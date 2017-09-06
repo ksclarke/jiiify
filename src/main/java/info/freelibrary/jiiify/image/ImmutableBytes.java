@@ -27,7 +27,7 @@ public final class ImmutableBytes implements Shareable {
      *
      * @return A byte array
      */
-    public final byte[] getBytes() {
+    public byte[] getBytes() {
         return myBytes;
     }
 }

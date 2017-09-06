@@ -10,96 +10,100 @@ import java.nio.charset.Charset;
  */
 public interface Constants {
 
-    public static final String UTF_8_ENCODING = Charset.forName("UTF-8").name();
+    String UTF_8_ENCODING = Charset.forName("UTF-8").name();
 
-    public static final String MESSAGES = "jiiify_messages";
+    String MESSAGES = "jiiify_messages";
 
     /* The following are properties that can be set by the user */
 
-    public static final String HTTP_PORT_PROP = "jiiify.port";
+    String HTTP_PORT_PROP = "jiiify.port";
 
-    public static final String HTTP_PORT_REDIRECT_PROP = "jiiify.redirect.port";
+    String HTTP_PORT_REDIRECT_PROP = "jiiify.redirect.port";
 
-    public static final String HTTP_HOST_PROP = "jiiify.host";
+    String HTTP_HOST_PROP = "jiiify.host";
 
-    public static final String JIIIFY_CORES_PROP = "jiiify.cores";
+    String JIIIFY_CORES_PROP = "jiiify.cores";
 
-    public static final String URL_SCHEME_PROP = "jiiify.url.scheme";
+    String URL_SCHEME_PROP = "jiiify.url.scheme";
 
-    public static final String DATA_DIR_PROP = "jiiify.data.dir";
+    String DATA_DIR_PROP = "jiiify.data.dir";
 
-    public static final String UPLOADS_DIR_PROP = "jiiify.uploads.dir";
+    String UPLOADS_DIR_PROP = "jiiify.uploads.dir";
 
-    public static final String WATCH_FOLDER_PROP = "jiiify.watch.folder";
+    String WATCH_FOLDER_PROP = "jiiify.watch.folder";
 
-    public static final String SOLR_SERVER_PROP = "jiiify.solr.server";
+    String SOLR_SERVER_PROP = "jiiify.solr.server";
 
-    public static final String LOG_LEVEL_PROP = "jiiify.log.level";
+    String LOG_LEVEL_PROP = "jiiify.log.level";
 
-    public static final String SERVICE_PREFIX_PROP = "jiiify.service.prefix";
+    String SERVICE_PREFIX_PROP = "jiiify.service.prefix";
 
-    public static final String ID_PREFIXES_PROP = "jiiify.id.prefixes";
+    String ID_PREFIXES_PROP = "jiiify.id.prefixes";
 
-    public static final String TILE_SIZE_PROP = "jiiify.tile.size";
+    String TILE_SIZE_PROP = "jiiify.tile.size";
 
-    public static final String THUMBNAIL_SIZE_PROP = "jiiify.thumbnail.size";
+    String THUMBNAIL_SIZE_PROP = "jiiify.thumbnail.size";
 
-    public static final String KEY_PASS_PROP = "jiiify.key.pass";
+    String KEY_PASS_PROP = "jiiify.key.pass";
 
-    public static final String JCEKS_PROP = "jiiify.jceks";
+    String JCEKS_PROP = "jiiify.jceks";
 
-    public static final String JKS_PROP = "jiiify.jks";
+    String JKS_PROP = "jiiify.jks";
 
-    public static final String METRICS_REG_PROP = "jiiify.metrics";
+    String METRICS_REG_PROP = "jiiify.metrics";
 
-    public static final String FEDORA_IP_PROP = "fedora.ip";
+    String FEDORA_IP_PROP = "fedora.ip";
 
     /* These config values are only used internally. */
 
-    public static final String JIIIFY_TESTING = "jiiify.ignore.failures";
+    String JIIIFY_TESTING = "jiiify.ignore.failures";
 
-    public static final String FILE_PATH_KEY = "jiiify.file.path";
+    String FILE_PATH_KEY = "jiiify.file.path";
 
-    public static final String IIIF_PATH_KEY = "jiiify.iiif.path";
+    String IIIF_PATH_KEY = "jiiify.iiif.path";
 
-    public static final String IMAGE_SOURCE_KEY = "jiiify.image.source";
+    String IMAGE_SOURCE_KEY = "jiiify.image.source";
 
-    public static final String IMAGE_CLEANUP_KEY = "jiiify.image.cleanup";
+    String IMAGE_CLEANUP_KEY = "jiiify.image.cleanup";
 
-    public static final String SHARED_DATA_KEY = "jiiify.shared.data";
+    String SHARED_DATA_KEY = "jiiify.shared.data";
 
-    public static final String SOLR_SERVICE_KEY = "jiiify.solr";
+    String SOLR_SERVICE_KEY = "jiiify.solr";
 
-    public static final String CONFIG_KEY = "jiiify.config";
+    String CONFIG_KEY = "jiiify.config";
 
-    public static final String HBS_DATA_KEY = "hbs.data";
+    String HBS_DATA_KEY = "hbs.data";
 
-    public static final String HBS_PATH_SKIP_KEY = "hbs.path.skip";
+    String HBS_PATH_SKIP_KEY = "hbs.path.skip";
 
-    public static final String ID_KEY = "id";
+    String ID_KEY = "id";
 
-    public static final String GOOGLE_OAUTH_CLIENT_ID = "jiiify.oauth.google.clientId";
+    String GOOGLE_OAUTH_CLIENT_ID = "jiiify.oauth.google.clientId";
 
-    public static final String FACEBOOK_OAUTH_CLIENT_ID = "jiiify.oauth.facebook.clientId";
+    String FACEBOOK_OAUTH_CLIENT_ID = "jiiify.oauth.facebook.clientId";
 
-    public static final String OAUTH_USERS = "jiiify.oauth.users";
+    String OAUTH_USERS = "jiiify.oauth.users";
 
-    public static final String OVERWRITE_KEY = "jiiify.file.overwrite";
+    String OVERWRITE_KEY = "jiiify.file.overwrite";
 
-    public static final String JIIIFY_ARRAY = "jiiify.json.array";
+    String JIIIFY_ARRAY = "jiiify.json.array";
 
-    public static final String TILE_REQUEST_KEY = "jiiify.tile.request.id";
+    String TILE_REQUEST_KEY = "jiiify.tile.request.id";
 
-    public static final String IMAGE_BUFFER_KEY = "jiiify.image.buffer";
+    String IMAGE_BUFFER_KEY = "jiiify.image.buffer";
 
-    public static final String IMAGE_COUNTER_KEY = "jiiify.image.counter";
+    String IMAGE_COUNTER_KEY = "jiiify.image.counter";
 
-    public static final String IMAGE_TILE_COUNT = "jiiify.tile.count";
+    String IMAGE_TILE_COUNT = "jiiify.tile.count";
 
     /* Message values */
 
-    public static final String SUCCESS_RESPONSE = "success";
+    String SUCCESS_RESPONSE = "success";
 
-    public static final String FAILURE_RESPONSE = "failure";
+    String FAILURE_RESPONSE = "failure";
+
+    /* Commonly used values */
+
+    String SLASH = "/";
 
 }

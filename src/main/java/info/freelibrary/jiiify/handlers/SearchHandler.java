@@ -3,6 +3,7 @@ package info.freelibrary.jiiify.handlers;
 
 import static info.freelibrary.jiiify.Constants.HBS_DATA_KEY;
 import static info.freelibrary.jiiify.Constants.ID_KEY;
+import static info.freelibrary.jiiify.Constants.MESSAGES;
 import static info.freelibrary.jiiify.Constants.SERVICE_PREFIX_PROP;
 import static info.freelibrary.jiiify.Constants.SOLR_SERVICE_KEY;
 import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_HEADER;
@@ -25,6 +26,8 @@ import info.freelibrary.jiiify.MessageCodes;
 import info.freelibrary.jiiify.SolrMetadata;
 import info.freelibrary.jiiify.services.SolrService;
 import info.freelibrary.jiiify.util.PathUtils;
+import info.freelibrary.util.Logger;
+import info.freelibrary.util.LoggerFactory;
 import info.freelibrary.util.StringUtils;
 
 import io.vertx.core.http.HttpServerRequest;
@@ -39,13 +42,43 @@ import io.vertx.ext.web.RoutingContext;
  */
 public class SearchHandler extends JiiifyHandler {
 
-    private final String TYPE_FIELD = "jiiify_type_s";
+    private static final Logger LOGGER = LoggerFactory.getLogger(SearchHandler.class, MESSAGES);
+
+    private static final String TYPE_FIELD = "jiiify_type_s";
+
+    private static final String QUERY = "query";
+
+    private static final String OFFSET = "offset";
+
+    private static final String FILTER = "filter";
+
+    private static final String PATH = "path";
+
+    private static final String YES = "yes";
+
+    private static final String COLON = ":";
+
+    private static final String MANIFEST = "manifest";
+
+    private static final String PAGE_START = "page-start";
+
+    private static final String PAGE_NUMBER = "page-number";
+
+    private static final String EVERYTHING = "*:*";
+
+    private static final String IMAGE = "image";
+
+    private static final String START = "start";
+
+    private static final String COUNT = "count";
+
+    private static final String LIMIT = "limit";
 
     /* Default Solr start */
-    private final int START = 0;
+    private static final int DEFAULT_START = 0;
 
     /* Default Solr rows */
-    private final int COUNT = 10;
+    private static final int DEFAULT_COUNT = 10;
 
     /**
      * Creates a search handler for the administrative interface.
@@ -60,13 +93,15 @@ public class SearchHandler extends JiiifyHandler {
     public void handle(final RoutingContext aContext) {
         final SolrService service = SolrService.createProxy(aContext.vertx(), SOLR_SERVICE_KEY);
         final HttpServerRequest request = aContext.request();
-        final String query = StringUtils.trimTo(request.getParam("query"), "*:*");
-        final String type = StringUtils.trimTo(request.getParam("type"), "image");
-        final int start = toInt(StringUtils.trimTo(request.getParam("start"), String.valueOf(START)), START);
-        final int count = toInt(StringUtils.trimTo(request.getParam("count"), String.valueOf(COUNT)), COUNT);
+        final String query = StringUtils.trimTo(request.getParam(QUERY), EVERYTHING);
+        final String type = StringUtils.trimTo(request.getParam("type"), IMAGE);
+        final int start = toInt(StringUtils.trimTo(request.getParam(START), String.valueOf(DEFAULT_START)),
+                DEFAULT_START);
+        final int count = toInt(StringUtils.trimTo(request.getParam(COUNT), String.valueOf(DEFAULT_COUNT)),
+                DEFAULT_COUNT);
         final JsonObject solrQuery = new JsonObject();
 
-        solrQuery.put("query", query).put("limit", count).put("offset", start).put("filter", TYPE_FIELD + ":" + type);
+        solrQuery.put(QUERY, query).put(LIMIT, count).put(OFFSET, start).put(FILTER, TYPE_FIELD + COLON + type);
 
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug(MessageCodes.DBG_063, solrQuery);
@@ -77,7 +112,7 @@ public class SearchHandler extends JiiifyHandler {
                 final JsonObject solrJson = handler.result();
 
                 // Add a little additional contextual information
-                solrJson.put("path", aContext.request().path());
+                solrJson.put(PATH, aContext.request().path());
 
                 if (LOGGER.isDebugEnabled()) {
                     LOGGER.debug(MessageCodes.DBG_064, solrJson.toString());
@@ -110,11 +145,11 @@ public class SearchHandler extends JiiifyHandler {
         final ObjectNode jsonNode = mapper.createObjectNode();
         final ArrayNode imageArray = jsonNode.putArray("images");
         final ArrayNode pageArray = jsonNode.putArray("pages");
-        final int count = jsonParams.getInteger("limit", COUNT);
-        final String filter = jsonParams.getString("filter", "");
-        final String query = jsonParams.getString("query", "");
+        final int count = jsonParams.getInteger(LIMIT, DEFAULT_COUNT);
+        final String filter = jsonParams.getString(FILTER, "");
+        final String query = jsonParams.getString(QUERY, "");
         final int total = response.getInteger("numFound", 0);
-        final int start = jsonParams.getInteger("offset", START);
+        final int start = jsonParams.getInteger(OFFSET, DEFAULT_START);
 
         // Return the list of images to display on the page
         for (int index = 0; index < docs.size(); index++) {
@@ -127,25 +162,25 @@ public class SearchHandler extends JiiifyHandler {
         }
 
         // Set which filter we're currently using
-        if (getFilter(filter).equals("image")) {
-            jsonNode.put("imageType", "yes");
-            jsonNode.put("filter", "image");
-        } else if (getFilter(filter).equals("manifest")) {
-            jsonNode.put("manifestType", "yes");
-            jsonNode.put("filter", "manifest");
+        if (getFilter(filter).equals(IMAGE)) {
+            jsonNode.put("imageType", YES);
+            jsonNode.put(FILTER, IMAGE);
+        } else if (getFilter(filter).equals(MANIFEST)) {
+            jsonNode.put("manifestType", YES);
+            jsonNode.put(FILTER, MANIFEST);
         } else {
             LOGGER.debug(MessageCodes.DBG_065, filter);
         }
 
         jsonNode.put("total", total);
-        jsonNode.put("start", start);
+        jsonNode.put(START, start);
 
-        if (aJsonObject.getString("path").endsWith("browse")) {
+        if (aJsonObject.getString(PATH).endsWith("browse")) {
             LOGGER.debug(MessageCodes.DBG_066, query);
             jsonNode.put("browseQuery", query);
         } else {
             LOGGER.debug(MessageCodes.DBG_067, query);
-            jsonNode.put("searchQuery", query.equals("*:*") ? "" : query);
+            jsonNode.put("searchQuery", EVERYTHING.equals(query) ? "" : query);
         }
 
         // Set here so we can add selected to our count dropdown
@@ -167,17 +202,17 @@ public class SearchHandler extends JiiifyHandler {
         }
 
         // Note our count to make constructing URLs easier
-        jsonNode.put("count", count);
+        jsonNode.put(COUNT, count);
 
         // We have to use two -- Handlebars' #if doesn't see prevPageNum == 0
-        if (total > 0 && start - count >= 0) {
-            jsonNode.put("prevPage", "yes");
+        if ((total > 0) && ((start - count) >= 0)) {
+            jsonNode.put("prevPage", YES);
             jsonNode.put("prevPageNum", start - count);
         }
 
         // And we'll do the same here for consistency's sake
-        if (start + count < total) {
-            jsonNode.put("nextPage", "yes");
+        if ((start + count) < total) {
+            jsonNode.put("nextPage", YES);
             jsonNode.put("nextPageNum", start + count);
         }
 
@@ -185,7 +220,7 @@ public class SearchHandler extends JiiifyHandler {
 
         // Generate our pages list for page to page navigation
         for (int index = 0, pageNumber = 0; index < total; index += count) {
-            if (start >= index && start < index + count) {
+            if ((start >= index) && (start < (index + count))) {
                 currentPage = currentPage + 1;
                 LOGGER.debug(MessageCodes.DBG_069, currentPage);
             }
@@ -194,16 +229,16 @@ public class SearchHandler extends JiiifyHandler {
         }
 
         if (pairs.size() > 200) {
-            final int listStart = currentPage - 100 <= 0 ? 0 : currentPage - 100;
-            final int listEnd = currentPage + 100 >= pairs.size() ? pairs.size() : currentPage + 100;
+            final int listStart = (currentPage - 100) <= 0 ? 0 : currentPage - 100;
+            final int listEnd = (currentPage + 100) >= pairs.size() ? pairs.size() : currentPage + 100;
             final List<Pair<Integer, Integer>> subpairs = pairs.subList(listStart, listEnd);
 
             for (int index = 0; index < subpairs.size(); index++) {
                 final ObjectNode objNode = mapper.createObjectNode();
                 final Pair<Integer, Integer> pair = pairs.get(index);
 
-                objNode.put("page-start", pair.getValue0());
-                objNode.put("page-number", pair.getValue1());
+                objNode.put(PAGE_START, pair.getValue0());
+                objNode.put(PAGE_NUMBER, pair.getValue1());
                 pageArray.add(objNode);
             }
         } else {
@@ -211,8 +246,8 @@ public class SearchHandler extends JiiifyHandler {
                 final ObjectNode objNode = mapper.createObjectNode();
                 final Pair<Integer, Integer> pair = pairs.get(index);
 
-                objNode.put("page-start", pair.getValue0());
-                objNode.put("page-number", pair.getValue1());
+                objNode.put(PAGE_START, pair.getValue0());
+                objNode.put(PAGE_NUMBER, pair.getValue1());
                 pageArray.add(objNode);
             }
         }
@@ -224,7 +259,7 @@ public class SearchHandler extends JiiifyHandler {
     }
 
     private String getFilter(final String aFilter) {
-        final int colonIndex = aFilter.indexOf(":");
+        final int colonIndex = aFilter.indexOf(COLON);
         final String filter;
 
         if (colonIndex != -1) {
@@ -243,6 +278,11 @@ public class SearchHandler extends JiiifyHandler {
             LOGGER.warn(MessageCodes.WARN_013, aIntString);
             return aDefaultInt;
         }
+    }
+
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
     }
 
 }
