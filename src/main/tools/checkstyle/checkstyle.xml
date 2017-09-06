@@ -63,7 +63,9 @@
     <module name="FinalParameters" />
     <module name="GenericWhitespace" />
     <module name="MissingDeprecated" />
-    <module name="MultipleStringLiterals" />
+    <module name="MultipleStringLiterals">
+      <property name="allowedDuplicates" value="1" />
+    </module>
     <module name="MissingSwitchDefault" />
     <module name="MultipleVariableDeclarations" />
     <module name="ParameterName">
