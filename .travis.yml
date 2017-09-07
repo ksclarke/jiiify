@@ -63,4 +63,4 @@ notifications:
   slack:
     secure: eMZgS79kzSH6opY2sSJhrYdTg0jLB/JzLEvQFcn6xoDtek3/WjWWg4+M8sYv/qPqwzY3jeJ0vxd8SIwcgBJkgOHVJqvmqxWV49/F8EOENaDU+oWo5vUUh8GvM1e+B/4wZd14PbD6w9m4qs1gIAUcPECE21p0KDtvN/VYnH+96LI=
 
-sudo: true
+sudo: false
