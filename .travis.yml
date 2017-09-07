@@ -14,11 +14,11 @@ install:
   mvn validate
 
 script:
-  mvn package -Djiiify.ignore.auth=true
+  MAVEN_OPTS="-Dmaven.repo.local=$HOME/.m2/repository -Xmx1024m -XX:MaxPermSize=192m" mvn package -Djiiify.ignore.auth=true
 
 # Right now, we build twice: once with auth off for testing and once with auth on for deploy
 after_success:
-  - mvn install
+  - mvn install -DskipTests
   - mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken="${PROJECT_TOKEN}" -DapiToken="${API_TOKEN}"
 
 deploy:
