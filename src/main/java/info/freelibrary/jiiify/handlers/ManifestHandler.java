@@ -7,6 +7,7 @@ import static info.freelibrary.jiiify.handlers.FailureHandler.ERROR_MESSAGE;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 
 import info.freelibrary.jiiify.Configuration;
 import info.freelibrary.jiiify.MessageCodes;
@@ -105,13 +106,28 @@ public class ManifestHandler extends JiiifyHandler {
         final JsonObject defaultItem = aJsonObject.getJsonObject("default");
         final JsonObject resource = aJsonObject.getJsonObject("resource");
         final JsonObject service = aJsonObject.getJsonObject("service");
-        final String thumbnail = aJsonObject.getString(THUMBNAIL);
         final String logo = aJsonObject.getString(LOGO);
         final String id = aJsonObject.getString(ID);
         final String on = aJsonObject.getString(ON);
         final String iiifService = aService + "/";
         final JsonArray jsonArray = new JsonArray();
         final Iterator<Object> iterator;
+
+        final Object thumbObject = aJsonObject.getValue(THUMBNAIL);
+        final String thumbnail;
+
+        if (thumbObject instanceof String) {
+            thumbnail = (String) thumbObject;
+        } else if (thumbObject instanceof LinkedHashMap) {
+            @SuppressWarnings("unchecked")
+            final LinkedHashMap<String, ?> map = (LinkedHashMap<String, ?>) thumbObject;
+
+            thumbnail = (String) map.get(ID);
+        } else {
+            thumbnail = null;
+        }
+
+        // final String thumbnail = aJsonObject.getString(THUMBNAIL);
 
         if ((thumbnail != null) && thumbnail.contains(iiifService)) {
             aJsonObject.put(THUMBNAIL, aServer + thumbnail.substring(thumbnail.indexOf(iiifService)));
