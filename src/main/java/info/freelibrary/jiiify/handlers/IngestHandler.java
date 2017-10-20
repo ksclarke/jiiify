@@ -47,6 +47,8 @@ public class IngestHandler extends JiiifyHandler {
 
     private static final String MANIFEST_FILE = "manifest-file";
 
+    private static final String MANIFEST = "manifest.json";
+
     private static final String MANIFEST_ID = "manifest-id";
 
     private static final String OVERWRITE = "overwrite";
@@ -117,7 +119,7 @@ public class IngestHandler extends JiiifyHandler {
                 final boolean shouldOverwrite = (overwrite != null) && OVERWRITE.equals(overwrite);
 
                 // We want to see if a manifest already exists before writing a new one
-                ptObj.find(MANIFEST_FILE, findHandler -> {
+                ptObj.find(MANIFEST, findHandler -> {
                     if (findHandler.succeeded()) {
                         if (findHandler.result()) {
                             if (shouldOverwrite) {
@@ -151,10 +153,10 @@ public class IngestHandler extends JiiifyHandler {
         aContext.vertx().fileSystem().readFile(aFilePath, readHandler -> {
             if (readHandler.succeeded()) {
                 // This overwrites by default if the file exists
-                aPtObj.put(MANIFEST_FILE, readHandler.result(), putHandler -> {
+                aPtObj.put(MANIFEST, readHandler.result(), putHandler -> {
                     if (putHandler.succeeded()) {
                         if (LOGGER.isDebugEnabled()) {
-                            LOGGER.debug(MessageCodes.DBG_039, aPtObj.getPath(MANIFEST_FILE));
+                            LOGGER.debug(MessageCodes.DBG_039, aPtObj.getPath(MANIFEST));
                         }
                     } else {
                         fail(aContext, putHandler.cause());
