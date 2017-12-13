@@ -49,6 +49,17 @@ deploy:
     secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
     bucket: "build-artifacts.library.ucla.edu"
     local_dir: target/build-artifact
+    upload_dir: jiiify/stage
+    skip_cleanup: true
+    acl: public_read
+    region: us-west-2
+    on:
+      branch: master
+  - provider: s3
+    access_key_id: "${AWS_ACCESS_KEY_ID}"
+    secret_access_key: "${AWS_SECRET_ACCESS_KEY}"
+    bucket: "build-artifacts.library.ucla.edu"
+    local_dir: target/build-artifact
     upload_dir: jiiify
     skip_cleanup: true
     acl: public_read
