@@ -15,11 +15,6 @@ import io.vertx.core.json.JsonObject;
 public class ImageInfoTest {
 
     @Test
-    public void testImageInfo() {
-        System.out.println(new ImageInfo("asdf").toString());
-    }
-
-    @Test
     public void testImageInfoJsonObject() {
         try {
             final ImageInfo info = new ImageInfo(new JsonObject());
