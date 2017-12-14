@@ -46,6 +46,7 @@
     <jiiify.host>localhost</jiiify.host>
     <jiiify.redirect.port>8000</jiiify.redirect.port>
     <jiiify.jks>jiiify.jks</jiiify.jks>
+    <jiiify.jceks>jiiify.jceks</jiiify.jceks>
     <jiiify.logs.dir>target</jiiify.logs.dir>
     <dev.tools/>
     <jiiify.memory/>

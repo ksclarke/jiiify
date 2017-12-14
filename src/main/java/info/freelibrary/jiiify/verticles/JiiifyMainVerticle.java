@@ -111,12 +111,13 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
         if (myConfig.usesHttps()) {
             final String jksProperty = System.getProperty(JKS_PROP, JKS_PROP);
+            final String jceksProperty = System.getProperty(JCEKS_PROP, JCEKS_PROP);
             final String ksPassword = System.getProperty(KEY_PASS_PROP, "");
             final JksOptions jksOptions = new JksOptions().setPassword(ksPassword);
             final JsonObject jceksConfig = new JsonObject();
             final File jksFile = new File(jksProperty);
 
-            jceksConfig.put("path", JCEKS_PROP).put("type", "jceks").put("password", ksPassword);
+            jceksConfig.put("path", jceksProperty).put("type", "jceks").put("password", ksPassword);
 
             try {
                 /* This is where "Keystore was tampered with, or password was incorrect" is thrown */
@@ -131,11 +132,11 @@ public class JiiifyMainVerticle extends AbstractJiiifyVerticle implements RouteP
 
                     /* Get JKS configuration from a configuration file in the jar file */
                     if (inStream != null) {
-                        LOGGER.debug(MessageCodes.DBG_019);
+                        LOGGER.warn(MessageCodes.DBG_019);
                         jksOptions.setValue(Buffer.buffer(IOUtils.readBytes(inStream)));
                     } else {
                         /* Get JKS configuration from the Maven build's target directory */
-                        LOGGER.debug(MessageCodes.DBG_018, jksProperty);
+                        LOGGER.warn(MessageCodes.DBG_018, jksProperty);
                         jksOptions.setPath("target/classes/" + jksProperty);
                     }
                 }
