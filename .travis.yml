@@ -18,7 +18,7 @@ script:
 
 # Right now, we build twice: once with auth off for testing and once with auth on for code analysis and deployment
 after_success:
-  - mvn install
+  - mvn install -Djiiify.logs.dir=/var/log/jiiify
   - mvn com.gavinmogan:codacy-maven-plugin:coverage -DcoverageReportFile=target/site/jacoco/jacoco.xml -DprojectToken="${PROJECT_TOKEN}" -DapiToken="${API_TOKEN}"
 
 deploy:
