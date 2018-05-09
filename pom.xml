@@ -5,7 +5,7 @@
 
   <artifactId>jiiify</artifactId>
   <packaging>jar</packaging>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.0.3-SNAPSHOT</version>
   <name>The Jiiify Image Server</name>
   <description>A Java-based IIIF Image Server</description>
 
@@ -57,17 +57,19 @@
     <jiiify.json.config.path>${project.basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
 
     <!-- Versions of dependencies managed in this POM -->
-    <vertx.version>3.4.2</vertx.version>
-    <javatuples.version>1.2</javatuples.version>
-    <commons.cli.version>1.3.1</commons.cli.version>
+    <vertx.version>3.5.1</vertx.version>
     <opencsv.version>3.9</opencsv.version>
-    <imgscalr.version>4.2</imgscalr.version>
-    <twelvemonkeys.version>3.3.2</twelvemonkeys.version>
-    <handlebars.version>4.0.6</handlebars.version>
     <scribe.version>1.3.7</scribe.version>
     <jquery.version>1.11.1</jquery.version>
+    <jackson.version>2.9.5</jackson.version>
+    <imgscalr.version>4.2</imgscalr.version>
+    <javatuples.version>1.2</javatuples.version>
     <json.path.version>2.1.0</json.path.version>
     <bootstrap.version>3.3.7</bootstrap.version>
+    <handlebars.version>4.0.6</handlebars.version>
+    <commons.cli.version>1.3.1</commons.cli.version>
+    <freelib.utils.version>0.8.8</freelib.utils.version>
+    <twelvemonkeys.version>3.3.2</twelvemonkeys.version>
     <openseadragon.version>2.3.0</openseadragon.version>
     <codacy.plugin.version>1.0.2</codacy.plugin.version>
     <java.assist.version>3.21.0-GA</java.assist.version>
@@ -135,6 +137,11 @@
       <artifactId>vertx-web-client</artifactId>
       <version>${vertx.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
     <!-- Netty dependencies -->
     <dependency>
       <groupId>org.javassist</groupId>
@@ -189,6 +196,7 @@
     <dependency>
       <groupId>info.freelibrary</groupId>
       <artifactId>freelib-utils</artifactId>
+      <version>${freelib.utils.version}</version>
     </dependency>
     <dependency>
       <groupId>info.freelibrary</groupId>
@@ -285,6 +293,7 @@
         <plugin>
           <groupId>info.freelibrary</groupId>
           <artifactId>freelib-utils</artifactId>
+          <version>${freelib.utils.version}</version>
           <executions>
             <execution>
               <id>configure-java-logging</id>
@@ -652,6 +661,7 @@
       <plugin>
         <groupId>info.freelibrary</groupId>
         <artifactId>freelib-utils</artifactId>
+        <version>${freelib.utils.version}</version>
         <executions>
           <execution>
             <phase>process-resources</phase>
@@ -963,7 +973,7 @@
   <parent>
     <groupId>info.freelibrary</groupId>
     <artifactId>freelib-parent</artifactId>
-    <version>0.2.0</version>
+    <version>0.2.8</version>
   </parent>
 
 </project>

@@ -147,6 +147,11 @@ public class LoginHandler extends JiiifyHandler {
         }
     }
 
+    @Override
+    protected Logger getLogger() {
+        return LOGGER;
+    }
+
     private final class JWTBodyHandler implements Handler<Buffer> {
 
         private static final String NAME = "name";
@@ -236,11 +241,6 @@ public class LoginHandler extends JiiifyHandler {
 
             return jsonObject;
         }
-    }
-
-    @Override
-    protected Logger getLogger() {
-        return LOGGER;
     }
 
 }
