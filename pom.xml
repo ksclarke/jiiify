@@ -973,7 +973,7 @@
   <parent>
     <groupId>info.freelibrary</groupId>
     <artifactId>freelib-parent</artifactId>
-    <version>0.2.8</version>
+    <version>0.2.9</version>
   </parent>
 
 </project>
