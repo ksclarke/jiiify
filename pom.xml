@@ -71,7 +71,7 @@
     <openseadragon.version>2.3.0</openseadragon.version>
     <codacy.plugin.version>1.0.2</codacy.plugin.version>
     <java.assist.version>3.21.0-GA</java.assist.version>
-    <vertx.pairtree.version>0.0.2</vertx.pairtree.version>
+    <vertx.pairtree.version>1.0.0</vertx.pairtree.version>
     <netty.tcnative.version>1.1.33.Fork26</netty.tcnative.version>
 
     <!-- Versions of plug-ins managed in this POM -->
