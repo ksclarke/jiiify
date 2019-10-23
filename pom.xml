@@ -57,7 +57,7 @@
     <jiiify.json.config.path>${project.basedir}/src/main/resources/sample-config.json</jiiify.json.config.path>
 
     <!-- Versions of dependencies managed in this POM -->
-    <vertx.version>3.4.2</vertx.version>
+    <vertx.version>3.8.2</vertx.version>
     <javatuples.version>1.2</javatuples.version>
     <commons.cli.version>1.3.1</commons.cli.version>
     <opencsv.version>3.9</opencsv.version>
